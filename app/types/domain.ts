@@ -1,3 +1,5 @@
+export type ActiveFlow = "favorites" | null;
+
 export type User = {
   id: string;
   waId: string;
@@ -6,15 +8,25 @@ export type User = {
   optedIn: boolean;
   onboardingComplete: boolean;
   onboardingStep: number;
+  activeFlow: ActiveFlow;
+  favoritePlayerPhones: string[];
   createdAt: string;
   updatedAt: string;
 };
 
-export type InboundMessage = {
+export type Player = {
+  phone: string;
+  name: string;
+};
+
+export type MessageDirection = "in" | "out";
+
+export type Message = {
   id: string;
   userId: string;
   body: string;
-  receivedAt: string;
+  direction: MessageDirection;
+  at: string;
 };
 
 export type Game = {
@@ -26,6 +38,7 @@ export type Game = {
 
 export type Database = {
   users: User[];
+  players: Player[];
   games: Game[];
-  messages: InboundMessage[];
+  messages: Message[];
 };

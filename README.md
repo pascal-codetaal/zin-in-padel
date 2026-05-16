@@ -52,6 +52,7 @@ Kopieer `.env.example` naar `.env`:
 | `TWILIO_ACCOUNT_SID` | Twilio Account SID |
 | `TWILIO_AUTH_TOKEN` | Twilio Auth Token |
 | `TWILIO_WHATSAPP_FROM` | WhatsApp-sender, bijv. `whatsapp:+14155238886` |
+| `OPENAI_API_KEY` | OpenAI API key voor de Mastra-agent (favorieten-flow) |
 
 De webhook gebruikt voorlopig vooral TwiML-replies; de variabelen zijn nodig voor toekomstige outbound API-calls en optionele signature-validatie.
 
@@ -82,11 +83,28 @@ In het [Twilio Console](https://console.twilio.com/) → **Messaging** → **Try
 
 | Bericht | Actie |
 |---------|--------|
-| `JA` | Opt-in + onboarding voltooid |
-| `STOP` | Afmelden |
+| `JA` | Opt-in + start direct de favorieten-flow |
+| `MAATJES` | Start (opnieuw) de favorieten-flow met de Mastra-agent |
+| `STOP` | Afmelden (sluit ook actieve flow) |
 | `HELP` | Commando-overzicht |
 
 Alle bot-antwoorden staan in `app/lib/bot-messages.nl.ts`.
+
+## Mastra agent (favorieten-flow)
+
+Na `JA` of `MAATJES` neemt een Mastra-agent de conversatie over om favoriete medespelers (naam + mobiel in strikt `+31...` formaat) te verzamelen. De agent eindigt zijn laatste bericht met `[DONE]` (intern, wordt gestript) zodra de gebruiker klaar is — daarna staat `user.activeFlow` weer op `null` en pakken de hardcoded commando's de besturing terug.
+
+Hardcoded commando's (`JA`/`STOP`/`HELP`/`MAATJES`) bypassen de agent altijd.
+
+### Mastra Studio
+
+Voor het iteratief tunen van het system prompt en handmatig testen van de tools:
+
+```bash
+npm run mastra:dev
+```
+
+Open [http://localhost:4111](http://localhost:4111). Studio draait naast `npm run dev` en gebruikt dezelfde `.env`.
 
 ## Vercel deployment
 
@@ -112,6 +130,10 @@ app/
     twilio.server.ts                # Form parse + TwiML
     whatsapp-bot.server.ts          # Bot-logica
     bot-messages.nl.ts              # Nederlandse teksten
+    mastra/
+      index.ts                      # Mastra registry (voor Studio)
+      agent.server.ts               # Favorieten-agent
+      tools.server.ts               # readDb + addFavorite tools
 data/
   db.json                           # Lokale POC-database
 ```
@@ -121,6 +143,7 @@ data/
 | Script | Beschrijving |
 |--------|--------------|
 | `npm run dev` | Development server |
+| `npm run mastra:dev` | Mastra Studio (http://localhost:4111) |
 | `npm run build` | Production build |
 | `npm run start` | Serve production build |
 | `npm run typecheck` | Typegen + TypeScript check |

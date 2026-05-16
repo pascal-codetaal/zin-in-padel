@@ -1,8 +1,20 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { Database, InboundMessage, User } from "~/types/domain";
+import type {
+  Database,
+  Message,
+  MessageDirection,
+  Player,
+  User,
+} from "~/types/domain";
 
 const DB_PATH = path.join(process.cwd(), "data", "db.json");
+
+const E164_REGEX = /^\+[1-9]\d{6,14}$/;
+
+export function isE164(s: string): boolean {
+  return E164_REGEX.test(s);
+}
 
 async function readDb(): Promise<Database> {
   const raw = await readFile(DB_PATH, "utf-8");
@@ -20,6 +32,11 @@ export async function getDatabase(): Promise<Database> {
 export async function findUserByWaId(waId: string): Promise<User | undefined> {
   const db = await readDb();
   return db.users.find((user) => user.waId === waId);
+}
+
+export async function findUserById(userId: string): Promise<User | undefined> {
+  const db = await readDb();
+  return db.users.find((user) => user.id === userId);
 }
 
 export async function upsertUser(
@@ -45,6 +62,8 @@ export async function upsertUser(
     optedIn: false,
     onboardingComplete: false,
     onboardingStep: 0,
+    activeFlow: null,
+    favoritePlayerPhones: [],
     createdAt: now,
     updatedAt: now,
   };
@@ -57,7 +76,15 @@ export async function upsertUser(
 export async function updateUser(
   userId: string,
   patch: Partial<
-    Pick<User, "optedIn" | "onboardingComplete" | "onboardingStep" | "profileName">
+    Pick<
+      User,
+      | "optedIn"
+      | "onboardingComplete"
+      | "onboardingStep"
+      | "profileName"
+      | "activeFlow"
+      | "favoritePlayerPhones"
+    >
   >,
 ): Promise<User> {
   const db = await readDb();
@@ -75,16 +102,66 @@ export async function updateUser(
 export async function appendMessage(
   userId: string,
   body: string,
-): Promise<InboundMessage> {
+  direction: MessageDirection,
+): Promise<Message> {
   const db = await readDb();
-  const message: InboundMessage = {
+  const message: Message = {
     id: crypto.randomUUID(),
     userId,
     body,
-    receivedAt: new Date().toISOString(),
+    direction,
+    at: new Date().toISOString(),
   };
 
   db.messages.push(message);
   await writeDb(db);
   return message;
+}
+
+export async function getRecentMessages(
+  userId: string,
+  limit = 20,
+): Promise<Message[]> {
+  const db = await readDb();
+  const messages = db.messages.filter((m) => m.userId === userId);
+  return messages.slice(-limit);
+}
+
+export async function findPlayerByPhone(
+  phone: string,
+): Promise<Player | undefined> {
+  const db = await readDb();
+  return db.players.find((p) => p.phone === phone);
+}
+
+export async function upsertPlayer(input: Player): Promise<Player> {
+  const db = await readDb();
+  const existing = db.players.find((p) => p.phone === input.phone);
+
+  if (existing) {
+    existing.name = input.name;
+    await writeDb(db);
+    return existing;
+  }
+
+  const player: Player = { phone: input.phone, name: input.name };
+  db.players.push(player);
+  await writeDb(db);
+  return player;
+}
+
+export async function addFavoriteToUser(
+  userId: string,
+  phone: string,
+): Promise<User> {
+  const db = await readDb();
+  const user = db.users.find((u) => u.id === userId);
+  if (!user) throw new Error(`User not found: ${userId}`);
+
+  if (!user.favoritePlayerPhones.includes(phone)) {
+    user.favoritePlayerPhones.push(phone);
+    user.updatedAt = new Date().toISOString();
+    await writeDb(db);
+  }
+  return user;
 }
