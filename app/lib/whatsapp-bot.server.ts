@@ -22,11 +22,11 @@ function displayName(profileName: string, waId: string): string {
   return profileName.trim() || waId || "daar";
 }
 
-async function runProfileAgent(
+async function runFavoritesAgent(
   user: User,
   inboundBody: string,
 ): Promise<string> {
-  const agent = mastra.getAgent("profileAgent");
+  const agent = mastra.getAgent("favoritesAgent");
   const requestContext = new RequestContext();
   requestContext.set("userId", user.id);
   const result = await agent.generate(inboundBody, {
@@ -120,7 +120,7 @@ export async function handleIncomingMessage(
       user.activeFlow === "favorites" ||
       (!user.onboardingComplete && user.optedIn)
     ) {
-      replyBody = await runProfileAgent(user, inbound.body);
+      replyBody = await runFavoritesAgent(user, inbound.body);
     } else {
       replyBody = messages.unknownCommand;
     }
