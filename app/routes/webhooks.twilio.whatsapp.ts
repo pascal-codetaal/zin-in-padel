@@ -1,6 +1,10 @@
 import type { Route } from "./+types/webhooks.twilio.whatsapp";
 import { handleIncomingMessage } from "~/lib/whatsapp-bot.server";
-import { parseTwilioForm, twimlResponse } from "~/lib/twilio.server";
+import {
+  messagingReply,
+  parseTwilioForm,
+  twimlResponse,
+} from "~/lib/twilio.server";
 
 export async function action({ request }: Route.ActionArgs) {
   if (request.method !== "POST") {
@@ -9,7 +13,7 @@ export async function action({ request }: Route.ActionArgs) {
 
   const form = await request.formData();
   const inbound = parseTwilioForm(form);
-  const twiml = await handleIncomingMessage(inbound);
+  const reply = await handleIncomingMessage(inbound);
 
-  return twimlResponse(twiml);
+  return twimlResponse(messagingReply(reply));
 }

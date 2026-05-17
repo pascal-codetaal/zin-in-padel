@@ -68,12 +68,22 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
               WhatsApp bot — admin dashboard
             </p>
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Webhook:{" "}
-            <code className="rounded bg-gray-100 px-1.5 py-0.5 text-xs dark:bg-gray-800">
-              POST /webhooks/twilio/whatsapp
-            </code>
-          </p>
+          <div className="flex flex-col items-start gap-2 sm:items-end">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Webhook:{" "}
+              <code className="rounded bg-gray-100 px-1.5 py-0.5 text-xs dark:bg-gray-800">
+                POST /webhooks/twilio/whatsapp
+              </code>
+            </p>
+            {import.meta.env.DEV && (
+              <a
+                href="/dev/simulator"
+                className="text-sm font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+              >
+                WhatsApp simulator →
+              </a>
+            )}
+          </div>
         </div>
       </header>
 
@@ -106,7 +116,8 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
                     <Th>WaId</Th>
                     <Th>Onboarding</Th>
                     <Th>Opt-in</Th>
-                    <Th>Stap</Th>
+                    <Th>Niveau</Th>
+                    <Th>Vrienden</Th>
                     <Th>Laatst bijgewerkt</Th>
                   </tr>
                 </thead>
@@ -131,7 +142,8 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
                           inactiveLabel="Nee"
                         />
                       </Td>
-                      <Td>{user.onboardingStep}</Td>
+                      <Td>{user.level ?? "—"}</Td>
+                      <Td>{user.favoritePlayerRefs.length}</Td>
                       <Td className="whitespace-nowrap text-gray-500 dark:text-gray-400">
                         {formatDate(user.updatedAt)}
                       </Td>

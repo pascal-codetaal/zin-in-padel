@@ -41,6 +41,7 @@ npm run dev
 De app draait op [http://localhost:5173](http://localhost:5173).
 
 - **Dashboard:** `/`
+- **WhatsApp simulator (alleen lokaal):** `/dev/simulator`
 - **Webhook:** `POST /webhooks/twilio/whatsapp`
 
 ## Omgevingsvariabelen
@@ -110,6 +111,19 @@ npm run mastra:dev
 
 Open [http://localhost:4111](http://localhost:4111). Studio draait naast `npm run dev` en gebruikt dezelfde `.env`.
 
+## WhatsApp simulator (lokaal)
+
+Voor end-to-end tests zonder Twilio-sandbox of localtunnel:
+
+1. `npm run dev`
+2. Open [http://localhost:5173/dev/simulator](http://localhost:5173/dev/simulator)
+3. Kies een gebruiker uit `data/db.json` (of maak een testgebruiker)
+4. Bekijk het WhatsApp-gesprek en stuur berichten — dezelfde `handleIncomingMessage`-pipeline als de webhook
+
+De simulator **emuleert Twilio** (inbound/outbound in `messages[]`); de bot, Mastra-agent en geheugen (`data/mastra-memory.db`, `thread = user.id`) zijn identiek aan productie. Vereist `OPENAI_API_KEY` voor de favorieten-flow.
+
+De route is niet beschikbaar als `NODE_ENV=production`.
+
 ## Vercel deployment
 
 1. Push naar GitHub en importeer het project in [Vercel](https://vercel.com/new).
@@ -128,11 +142,15 @@ npm run start   # productie-build lokaal
 app/
   routes/
     _index.tsx                      # Admin dashboard
+    dev.simulator.tsx               # Lokale WhatsApp-emulatie (dev only)
     webhooks.twilio.whatsapp.ts     # POST webhook (resource route)
   lib/
     db.server.ts                    # JSON read/write (lokaal)
     twilio.server.ts                # Form parse + TwiML
     whatsapp-bot.server.ts          # Bot-logica
+    whatsapp-messaging.server.ts    # Outbound (db + toekomstige Twilio API)
+    dev-guard.server.ts             # Dev-only route guard
+    dev-inbound.server.ts           # Synthetic Twilio inbound
     bot-messages.nl.ts              # Nederlandse teksten
     mastra/
       index.ts                      # Mastra registry (voor Studio)

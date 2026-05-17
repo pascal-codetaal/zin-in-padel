@@ -13,21 +13,108 @@
         "+32 477 37 05 86"
       ],
       "createdAt": "2026-05-17T12:56:16.817Z",
-      "updatedAt": "2026-05-17T13:18:41.160Z"
+      "updatedAt": "2026-05-17T13:50:22.832Z",
+      "favoritePlayerRefs": [
+        "+32484085782",
+        "+32477370586"
+      ],
+      "preferredClubIds": [],
+      "matchPreference": "friends_only",
+      "matchLevelMin": null,
+      "matchLevelMax": null
+    },
+    {
+      "id": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "waId": "+32460256335",
+      "phone": "whatsapp:+32460256335",
+      "profileName": "",
+      "optedIn": false,
+      "onboardingComplete": false,
+      "activeFlow": null,
+      "pendingFriend": null,
+      "level": null,
+      "favoritePlayerRefs": [],
+      "preferredClubIds": [],
+      "matchPreference": null,
+      "matchLevelMin": null,
+      "matchLevelMax": null,
+      "createdAt": "2026-05-16T12:52:06.985Z",
+      "updatedAt": "2026-05-17T07:53:24.187Z"
+    },
+    {
+      "id": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "waId": "dev-5fe6d471",
+      "phone": "whatsapp:+dev-5fe6d471",
+      "profileName": "Testgebruiker",
+      "optedIn": true,
+      "onboardingComplete": false,
+      "activeFlow": "onboarding",
+      "pendingFriend": null,
+      "level": 4,
+      "favoritePlayerRefs": [
+        "+32497470725"
+      ],
+      "preferredClubIds": [],
+      "matchPreference": "open",
+      "matchLevelMin": null,
+      "matchLevelMax": null,
+      "createdAt": "2026-05-17T11:07:55.976Z",
+      "updatedAt": "2026-05-17T13:52:43.130Z"
+    },
+    {
+      "id": "85cf0597-8294-4315-9266-13374b85cb4b",
+      "waId": "dev-85cf0597",
+      "phone": "whatsapp:+dev-85cf0597",
+      "profileName": "Testgebruiker",
+      "optedIn": false,
+      "onboardingComplete": false,
+      "activeFlow": null,
+      "level": null,
+      "favoritePlayerRefs": [],
+      "preferredClubIds": [],
+      "matchPreference": null,
+      "matchLevelMin": null,
+      "matchLevelMax": null,
+      "pendingFriend": null,
+      "createdAt": "2026-05-17T13:17:58.421Z",
+      "updatedAt": "2026-05-17T13:17:58.421Z"
+    },
+    {
+      "id": "6b0eca8f-8838-4371-88aa-47c09ec28531",
+      "waId": "dev-6b0eca8f",
+      "phone": "whatsapp:+dev-6b0eca8f",
+      "profileName": "test",
+      "optedIn": true,
+      "onboardingComplete": false,
+      "activeFlow": "onboarding",
+      "level": null,
+      "favoritePlayerRefs": [
+        "+32497470725"
+      ],
+      "preferredClubIds": [],
+      "matchPreference": null,
+      "matchLevelMin": null,
+      "matchLevelMax": null,
+      "pendingFriend": null,
+      "createdAt": "2026-05-17T13:18:00.956Z",
+      "updatedAt": "2026-05-17T13:24:33.816Z"
     }
   ],
   "players": [
     {
-      "phone": "+32484085782",
-      "name": "Pascal Van Hecke"
+      "ref": "+32484085782",
+      "name": "Pascal Van Hecke",
+      "phone": "+32484085782"
     },
     {
-      "phone": "+32477370586",
-      "name": "Pieter Van Neste"
+      "ref": "+32477370586",
+      "name": "Pieter Van Neste",
+      "phone": "+32477370586"
     },
     {
-      "phone": "+32 477 37 05 86",
-      "name": "Pieter Van Neste"
+      "ref": "+32497470725",
+      "name": "Joris Heyens",
+      "phone": "+32497470725"
     }
   ],
   "games": [
@@ -452,284 +539,368 @@
       "at": "2026-05-17T07:53:24.189Z"
     },
     {
-      "id": "275e765e-3ae7-436e-adbf-91df1d075e98",
-      "userId": "5b4b0452-749e-4b48-857c-194a5fb9b9e0",
-      "body": "",
-      "direction": "in",
-      "at": "2026-05-17T08:34:17.083Z"
-    },
-    {
-      "id": "6e2ccf7a-a129-41b5-8d63-4c4adcbf94f0",
-      "userId": "5b4b0452-749e-4b48-857c-194a5fb9b9e0",
-      "body": "Hoi daar! Welkom bij Zin in Padel. Antwoord met JA om updates over padel te ontvangen.",
-      "direction": "out",
-      "at": "2026-05-17T08:34:17.084Z"
-    },
-    {
-      "id": "a4336a80-403f-473f-bf8e-7c2693372e59",
-      "userId": "5b4b0452-749e-4b48-857c-194a5fb9b9e0",
-      "body": "",
-      "direction": "in",
-      "at": "2026-05-17T08:38:37.576Z"
-    },
-    {
-      "id": "8efa6b94-af50-4fba-b168-2b0aca4e792f",
-      "userId": "5b4b0452-749e-4b48-857c-194a5fb9b9e0",
-      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
-      "direction": "out",
-      "at": "2026-05-17T08:38:37.577Z"
-    },
-    {
-      "id": "2328e0db-3dc4-4b00-bcd3-60027d6e9c41",
-      "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
-      "body": "\"Hello there\"",
-      "direction": "in",
-      "at": "2026-05-17T08:42:49.813Z"
-    },
-    {
-      "id": "e6219884-2550-4d3d-9584-5da60ce7744c",
-      "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
-      "body": "Ik spreek alleen Nederlands, maar ik ben hier om te helpen! Wie wil je nog meer toevoegen? Geef me de naam en het nummer.",
-      "direction": "out",
-      "at": "2026-05-17T08:42:54.321Z"
-    },
-    {
-      "id": "93b105be-c309-4a52-92c8-6d44f09a3da7",
+      "id": "7233efac-90a6-401f-9b11-ccb10acc7343",
       "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
       "body": "HELP",
       "direction": "in",
-      "at": "2026-05-17T08:43:30.896Z"
+      "at": "2026-05-17T11:06:22.701Z"
     },
     {
-      "id": "c8e5c976-8726-4b2b-aad7-2b84ba16b1f3",
+      "id": "3c7ed3e8-f204-46a1-b311-ef828e4d8fd3",
       "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
       "body": "Beschikbare commando's:\n• JA — aanmelden voor berichten\n• MAATJES — favoriete medespelers toevoegen\n• STOP — afmelden\n• HELP — dit overzicht",
       "direction": "out",
-      "at": "2026-05-17T08:43:30.897Z"
+      "at": "2026-05-17T11:06:22.721Z"
     },
     {
-      "id": "e64f96d9-84bc-4c80-ac97-be4788e844d1",
+      "id": "b979b76d-248a-4d6d-a055-c555606a6e90",
       "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
-      "body": "Maatjes",
+      "body": "HELP",
       "direction": "in",
-      "at": "2026-05-17T08:51:39.113Z"
+      "at": "2026-05-17T11:06:28.880Z"
     },
     {
-      "id": "c7ef124a-941e-481f-829d-89aae13fd51a",
+      "id": "fb89a6f5-d05e-4c49-81d6-890d8bc65728",
       "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
-      "body": "Top, laten we je maatjeslijst bijwerken! Wie wil je toevoegen? Geef naam + mobiel nummer.",
+      "body": "Beschikbare commando's:\n• JA — aanmelden voor berichten\n• MAATJES — favoriete medespelers toevoegen\n• STOP — afmelden\n• HELP — dit overzicht",
       "direction": "out",
-      "at": "2026-05-17T08:51:39.117Z"
+      "at": "2026-05-17T11:06:28.881Z"
     },
     {
-      "id": "195bf5d0-4093-4825-ba5d-a90a9eaf678c",
-      "userId": "a7a4407b-18c2-4f56-abbf-c8262f968776",
-      "body": "",
+      "id": "e9816439-7ca1-4c4d-a951-5d807a0b6999",
+      "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
+      "body": "HELP",
       "direction": "in",
-      "at": "2026-05-17T09:03:17.487Z"
+      "at": "2026-05-17T11:06:31.738Z"
     },
     {
-      "id": "c9cafe59-27f5-4287-a691-71a484ec4574",
-      "userId": "a7a4407b-18c2-4f56-abbf-c8262f968776",
-      "body": "Hoi +32497470725! Welkom bij Zin in Padel. Antwoord met JA om updates over padel te ontvangen.",
+      "id": "58fb8f85-f873-4101-b374-09fb3c79edfa",
+      "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
+      "body": "Beschikbare commando's:\n• JA — aanmelden voor berichten\n• MAATJES — favoriete medespelers toevoegen\n• STOP — afmelden\n• HELP — dit overzicht",
       "direction": "out",
-      "at": "2026-05-17T09:03:17.487Z"
+      "at": "2026-05-17T11:06:31.750Z"
     },
     {
-      "id": "4dd7def2-0e8b-4424-a868-0331e7077355",
-      "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
-      "body": "",
+      "id": "863b16ce-74f6-4a4c-afbb-7ecff6a3c9fd",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "hallo",
       "direction": "in",
-      "at": "2026-05-17T09:05:01.094Z"
+      "at": "2026-05-17T11:10:23.721Z"
     },
     {
-      "id": "4a7bda7b-e3de-4082-8bcf-9778f3abc276",
-      "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
-      "body": "Ik spreek alleen Nederlands, maar ik ben hier om te helpen! Wie wil je nog meer toevoegen? Geef me de naam en het nummer.Ik zie dat je niks hebt ingevoerd. Wil je nog een speler toevoegen? Geef me de naam en het nummer!",
+      "id": "06a5458e-9765-4b64-951d-614e49dda636",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
       "direction": "out",
-      "at": "2026-05-17T09:05:05.435Z"
+      "at": "2026-05-17T11:10:23.725Z"
     },
     {
-      "id": "78a52436-bdb0-407b-85be-97fedad0977b",
-      "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
-      "body": "maatjes",
+      "id": "c6d4a6d4-d967-43e0-beba-e9286af88978",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "ja",
       "direction": "in",
-      "at": "2026-05-17T09:05:36.613Z"
+      "at": "2026-05-17T11:10:28.769Z"
     },
     {
-      "id": "f6ea5de7-0585-4e46-8dd4-6f8806fc5c7b",
-      "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
-      "body": "Top, laten we je maatjeslijst bijwerken! Wie wil je toevoegen? Geef naam + mobiel nummer.",
-      "direction": "out",
-      "at": "2026-05-17T09:05:36.621Z"
-    },
-    {
-      "id": "a01bbd81-7b05-4867-80c0-eff41ba8feb2",
-      "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
-      "body": "Wie zit er al in?",
-      "direction": "in",
-      "at": "2026-05-17T09:06:03.490Z"
-    },
-    {
-      "id": "58d1fb70-cfcd-4988-ae1f-8c0adb2ad75f",
-      "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
-      "body": "Je hebt al twee favorieten:\n\n1. Pascal Van Hecke\n2. Pieter Van Neste\n\nWil je nog iemand toevoegen?",
-      "direction": "out",
-      "at": "2026-05-17T09:06:04.954Z"
-    },
-    {
-      "id": "ae64f7e1-9e47-40a2-831c-8bcffa30c4ac",
-      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
-      "body": "Hallo",
-      "direction": "in",
-      "at": "2026-05-17T12:56:16.819Z"
-    },
-    {
-      "id": "58651f56-a385-4b0f-ac0d-31001d2143a1",
-      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
-      "body": "Hoi Joris Heyens! Welkom bij Zin in Padel. Antwoord met JA om updates over padel te ontvangen.",
-      "direction": "out",
-      "at": "2026-05-17T12:56:16.822Z"
-    },
-    {
-      "id": "e942e728-a89e-4828-b19c-510e2a5d6652",
-      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
-      "body": "JA",
-      "direction": "in",
-      "at": "2026-05-17T12:56:27.465Z"
-    },
-    {
-      "id": "a84c733e-ab64-4f05-b4b7-58551a3bc5f2",
-      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "id": "2e9645d0-ab33-494c-b013-ba222df6f853",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
       "body": "Top! Je bent aangemeld 🎾 Laten we eerst je padel-maatjes verzamelen. Met wie speel je vaak? Geef naam + mobiel nummer.",
       "direction": "out",
-      "at": "2026-05-17T12:56:27.468Z"
+      "at": "2026-05-17T11:10:28.781Z"
     },
     {
-      "id": "aaf2d673-447d-48c1-9d4d-3a995a4b1111",
-      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
-      "body": "Pieter Van Neste +32 477 37 05 86",
+      "id": "e2cbf6ae-b8bd-4d65-bf45-81cf4a817048",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "wat kan je doen voor mij?",
       "direction": "in",
-      "at": "2026-05-17T12:56:46.646Z"
+      "at": "2026-05-17T11:13:02.493Z"
     },
     {
-      "id": "115d5ff6-c0ec-4b74-8779-bc95c1c1a01b",
-      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
-      "body": "Pieter is toegevoegd! Nog iemand?",
+      "id": "7ff2be61-577e-4c57-8556-b482b09c6983",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "Ik kan je helpen om je favoriete padelspelers op te slaan. Wil je beginnen? 😊",
       "direction": "out",
-      "at": "2026-05-17T12:56:51.827Z"
+      "at": "2026-05-17T11:13:07.460Z"
     },
     {
-      "id": "d1848283-4db5-4a20-98e0-36d7bbf6e90c",
-      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
-      "body": "maatjes",
+      "id": "53a7bdcb-b68a-44ed-a12b-ec7cf1473ab6",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "Joris Heyens +32 497 47 07 25",
       "direction": "in",
-      "at": "2026-05-17T13:07:44.723Z"
+      "at": "2026-05-17T11:45:43.531Z"
     },
     {
-      "id": "0b4d6535-af31-4d08-a4ad-b86240f50396",
-      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
-      "body": "Top, laten we je maatjeslijst bijwerken! Wie wil je toevoegen? Geef naam + mobiel nummer.",
-      "direction": "out",
-      "at": "2026-05-17T13:07:44.724Z"
-    },
-    {
-      "id": "61cedf44-ee52-4cb5-acc2-0585d60dc6e7",
-      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
-      "body": "Wie zit er nu al in?`",
-      "direction": "in",
-      "at": "2026-05-17T13:08:39.329Z"
-    },
-    {
-      "id": "74011ef4-0e6d-4e27-9cc5-ec4901d11158",
-      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
-      "body": "Je hebt al Pieter Van Neste in je favorieten. Nog iemand anders?",
-      "direction": "out",
-      "at": "2026-05-17T13:08:43.257Z"
-    },
-    {
-      "id": "c7b9b3e4-d3c8-4595-9b76-acbe1bc5eb99",
-      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
-      "body": "",
-      "direction": "in",
-      "at": "2026-05-17T13:14:55.201Z"
-    },
-    {
-      "id": "a798fc97-c18c-4147-bb0e-b4dcc8270ef7",
-      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
-      "body": "Je hebt al Pieter Van Neste in je favorieten. Nog iemand anders?Wie wil je nog toevoegen? Geef me naam en mobiel nummer!",
-      "direction": "out",
-      "at": "2026-05-17T13:14:56.710Z"
-    },
-    {
-      "id": "a4a5426c-9707-4c19-8d00-86b1cc07e4b4",
-      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
-      "body": "Niemand anders?d",
-      "direction": "in",
-      "at": "2026-05-17T13:15:46.935Z"
-    },
-    {
-      "id": "e951faa2-c322-4182-9234-9b18dbc9b78b",
-      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
-      "body": "Dat is prima! Laat het weten als je ooit nog iemand wilt toevoegen. 😊",
-      "direction": "out",
-      "at": "2026-05-17T13:15:48.975Z"
-    },
-    {
-      "id": "d68c5b0f-0905-43f0-8d6f-92c9bfc8e9d1",
-      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
-      "body": "En Pascal Van Hecken dan?",
-      "direction": "in",
-      "at": "2026-05-17T13:17:15.319Z"
-    },
-    {
-      "id": "cde4c598-9308-4a1c-b934-62c0dfdb54cb",
-      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "id": "4ed5ad73-3665-433a-b632-c9deca6804f7",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
       "body": "Sorry, dat begrijp ik niet. Typ HELP voor een overzicht van commando's.",
       "direction": "out",
-      "at": "2026-05-17T13:17:15.320Z"
+      "at": "2026-05-17T11:45:43.544Z"
     },
     {
-      "id": "0087e3a0-7f02-464f-a1e3-a8ec77dcc385",
-      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
-      "body": "En Pascal Van Hecke dan?",
+      "id": "1f4132c6-d452-4d6d-8562-65d658f3cf00",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "Joris Heyens +32 497 47 07 25",
       "direction": "in",
-      "at": "2026-05-17T13:17:29.932Z"
+      "at": "2026-05-17T11:55:03.238Z"
     },
     {
-      "id": "426dd728-3267-4bf3-9f4b-883e55331681",
-      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "id": "8a1b6ced-9dfc-4f7f-9c75-1c9785bf3ac0",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
       "body": "Sorry, dat begrijp ik niet. Typ HELP voor een overzicht van commando's.",
       "direction": "out",
-      "at": "2026-05-17T13:17:29.939Z"
+      "at": "2026-05-17T11:55:03.253Z"
     },
     {
-      "id": "2f537c46-ba40-4326-8127-21e8d088c286",
-      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
-      "body": "Maatjes",
+      "id": "41552206-97f5-41da-bd21-d12c8ca2e92f",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "help",
       "direction": "in",
-      "at": "2026-05-17T13:18:20.408Z"
+      "at": "2026-05-17T11:55:09.128Z"
     },
     {
-      "id": "42c0fe58-fd23-4cee-8dc5-a057cd6ef3b6",
-      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
-      "body": "Top, laten we je maatjeslijst bijwerken! Wie wil je toevoegen? Geef naam + mobiel nummer.",
+      "id": "426ff341-0cd9-42ce-84f2-2fb29e1598ea",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "Beschikbare commando's:\n• JA — aanmelden / profiel opnieuw starten\n• MAATJES — medespeler toevoegen\n• STOP — afmelden\n• HELP — dit overzicht",
       "direction": "out",
-      "at": "2026-05-17T13:18:20.409Z"
+      "at": "2026-05-17T11:55:09.136Z"
     },
     {
-      "id": "cc4c9e44-ddb8-4df0-a493-825d846abc1c",
-      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
-      "body": "Pascal van Hecke wil ik toevoegen",
+      "id": "2b9df25b-6618-4765-9382-6f2bed85c04b",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "JA",
       "direction": "in",
-      "at": "2026-05-17T13:18:41.165Z"
+      "at": "2026-05-17T11:55:15.777Z"
     },
     {
-      "id": "63940802-6d9f-4e08-b1af-3143cf303327",
-      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
-      "body": "Wat is het mobiele nummer van Pascal?",
+      "id": "caa6fc41-5e10-487f-90a7-94a4fdededec",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "Top, je bent aangemeld 🎾\n\nVertel gerust over jezelf: je padelniveau (1–7), met wie je speelt, in welke clubs, en of je vooral met maatjes of bepaalde niveaus wilt spelen. Je mag ook meteen namen van medespelers sturen — we zoeken ze op bij Tennis en Padel Vlaanderen.",
       "direction": "out",
-      "at": "2026-05-17T13:18:42.751Z"
+      "at": "2026-05-17T11:55:15.791Z"
+    },
+    {
+      "id": "848d1350-82a1-4b80-8b9f-809c1b3c5870",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "Joris Heyens +32 497 47 07 25",
+      "direction": "in",
+      "at": "2026-05-17T11:55:20.458Z"
+    },
+    {
+      "id": "6d404e00-0bae-4af7-8aea-c9c75736d10a",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "Joris Heyens is toegevoegd als maatje! 🎉 Heb je nog meer spelers die je wilt toevoegen?",
+      "direction": "out",
+      "at": "2026-05-17T11:55:28.540Z"
+    },
+    {
+      "id": "d7f7f4ca-ccff-45c0-809f-5d7d597d4d5b",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "heb je hem teruggevonden op tennis vlaanderen?",
+      "direction": "in",
+      "at": "2026-05-17T11:55:41.820Z"
+    },
+    {
+      "id": "abd03d4d-7e6a-4905-ad41-dd5db4418f99",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "Ja, ik heb Joris Heyens gevonden op Tennis Vlaanderen en hij is nu toegevoegd als maatje! Heb je nog andere namen of iets anders waarmee ik je kan helpen? 😊",
+      "direction": "out",
+      "at": "2026-05-17T11:55:43.724Z"
+    },
+    {
+      "id": "42229630-ae1d-4b2c-a747-06436c1766e3",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "heb je zijn niveau?",
+      "direction": "in",
+      "at": "2026-05-17T11:55:53.638Z"
+    },
+    {
+      "id": "b1e7396a-805b-4532-9efb-7c0e7bf47f88",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "Sorry, ik heb geen informatie over zijn niveau. Dat kan ik alleen voor jouw profiel bijhouden. Wil je misschien je eigen padelniveau doorgeven? 😊",
+      "direction": "out",
+      "at": "2026-05-17T11:55:55.041Z"
+    },
+    {
+      "id": "a48fe096-c75e-4b0f-833a-08f9c87ad0bd",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "P400",
+      "direction": "in",
+      "at": "2026-05-17T11:56:03.444Z"
+    },
+    {
+      "id": "1f1cea52-8a0a-498d-a53e-6dca15f9dd7a",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "Je padelniveau is nu ingesteld op P400! 🎾 Wil je misschien clubs waar je wilt spelen bespreken of een matchvoorkeur aangeven?",
+      "direction": "out",
+      "at": "2026-05-17T11:56:06.708Z"
+    },
+    {
+      "id": "b709e33e-e124-43bd-a4ad-7f0a4e63a8fc",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "Garrincha the Loop en Arsenaal",
+      "direction": "in",
+      "at": "2026-05-17T11:56:36.977Z"
+    },
+    {
+      "id": "2a0ab875-ef19-424d-ac6d-d14fc5ab0b38",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "De clubs \"Garrincha the Loop\" en \"Arsenaal\" staan niet in de lijst die ik heb. Maar ik zie wel andere clubs, zoals Padel Arena Gent en Padelclub Antwerpen. Wil je een van deze clubs toevoegen? 😊\n\nEn wat is je matchvoorkeur: wil je dat ik dat ook instel?",
+      "direction": "out",
+      "at": "2026-05-17T11:56:45.332Z"
+    },
+    {
+      "id": "b83b7465-05cb-42ef-bfbe-a18695468e1b",
+      "userId": "6b0eca8f-8838-4371-88aa-47c09ec28531",
+      "body": "hallo",
+      "direction": "in",
+      "at": "2026-05-17T13:18:08.807Z"
+    },
+    {
+      "id": "125afbd0-9402-427f-8b14-57c25a477637",
+      "userId": "6b0eca8f-8838-4371-88aa-47c09ec28531",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-17T13:18:08.812Z"
+    },
+    {
+      "id": "cce5ea3f-b059-437a-919d-c7ae7c7a91c7",
+      "userId": "6b0eca8f-8838-4371-88aa-47c09ec28531",
+      "body": "JA",
+      "direction": "in",
+      "at": "2026-05-17T13:18:12.447Z"
+    },
+    {
+      "id": "cb516357-8c8c-4674-b353-a0550879107a",
+      "userId": "6b0eca8f-8838-4371-88aa-47c09ec28531",
+      "body": "Top, je bent aangemeld 🎾\n\nVertel gerust over jezelf: je padelniveau (1–7), met wie je speelt, in welke clubs, en of je vooral met maatjes of bepaalde niveaus wilt spelen. Je mag ook meteen namen van medespelers sturen — we zoeken ze op bij Tennis en Padel Vlaanderen.",
+      "direction": "out",
+      "at": "2026-05-17T13:18:12.456Z"
+    },
+    {
+      "id": "d479dc38-ff62-4a94-8bf2-45103f9f890c",
+      "userId": "6b0eca8f-8838-4371-88aa-47c09ec28531",
+      "body": "ikben een p400",
+      "direction": "in",
+      "at": "2026-05-17T13:19:10.414Z"
+    },
+    {
+      "id": "32482fc7-2fb2-4bee-b613-10984963efe7",
+      "userId": "6b0eca8f-8838-4371-88aa-47c09ec28531",
+      "body": "Top! Je hebt een padelniveau van p400. Heb je al maatjes in gedachten die je zou willen toevoegen? Je kunt namen of bondsnummers geven. ",
+      "direction": "out",
+      "at": "2026-05-17T13:19:17.589Z"
+    },
+    {
+      "id": "09045a21-273a-4447-89ea-eb4917f0d930",
+      "userId": "6b0eca8f-8838-4371-88aa-47c09ec28531",
+      "body": "Joris heyens",
+      "direction": "in",
+      "at": "2026-05-17T13:19:26.441Z"
+    },
+    {
+      "id": "511462c8-ef3c-4b57-a076-cd4d1796e107",
+      "userId": "6b0eca8f-8838-4371-88aa-47c09ec28531",
+      "body": "Joris Heyens is toegevoegd als maatje! Heb je ook een voorkeur voor clubs waar je wilt spelen? Hier zijn een paar opties:\n\n- Padel Arena Gent\n- Padelclub Antwerpen\n- Sportoase Brugge\n- Padel Lounge Leuven\n- Topspin Padel Mechelen\n\nLaat maar weten welke je leuk vindt!",
+      "direction": "out",
+      "at": "2026-05-17T13:19:31.731Z"
+    },
+    {
+      "id": "a756a2e5-c4ce-4d42-ae86-427868240717",
+      "userId": "6b0eca8f-8838-4371-88aa-47c09ec28531",
+      "body": "wie zijn miijn maatjes?",
+      "direction": "in",
+      "at": "2026-05-17T13:23:34.343Z"
+    },
+    {
+      "id": "916afe60-f451-4d51-a3ef-7d0ae0092914",
+      "userId": "6b0eca8f-8838-4371-88aa-47c09ec28531",
+      "body": "Je hebt nog geen maatjes toegevoegd, behalve Joris Heyens. Wil je nog meer spelers toevoegen of zijn er iets anders waar ik je mee kan helpen?",
+      "direction": "out",
+      "at": "2026-05-17T13:23:37.265Z"
+    },
+    {
+      "id": "01c2a6b4-ef1b-49d2-874b-0c13bde04179",
+      "userId": "6b0eca8f-8838-4371-88aa-47c09ec28531",
+      "body": "kan je joris zijn rating terugvinden?",
+      "direction": "in",
+      "at": "2026-05-17T13:23:52.906Z"
+    },
+    {
+      "id": "0f143e9f-5577-4d16-bad2-ad9417465bbb",
+      "userId": "6b0eca8f-8838-4371-88aa-47c09ec28531",
+      "body": "Ik heb Joris Heyens gevonden, maar ik heb zijn mobiele nummer nodig om zijn rating terug te vinden. Kun je me dat nummer geven?",
+      "direction": "out",
+      "at": "2026-05-17T13:23:56.797Z"
+    },
+    {
+      "id": "9714a1de-50af-43ce-8149-9d501f1fd28c",
+      "userId": "6b0eca8f-8838-4371-88aa-47c09ec28531",
+      "body": "+32 497 47 07 25",
+      "direction": "in",
+      "at": "2026-05-17T13:24:09.066Z"
+    },
+    {
+      "id": "337c40d2-4a02-4044-8c22-b09062adfa6f",
+      "userId": "6b0eca8f-8838-4371-88aa-47c09ec28531",
+      "body": "Joris Heyens toegevoegd (+32497470725). Die stond al in je maatjeslijst.",
+      "direction": "out",
+      "at": "2026-05-17T13:24:09.093Z"
+    },
+    {
+      "id": "af6a75ef-e7f6-4f69-83d0-48ebca20b4c3",
+      "userId": "6b0eca8f-8838-4371-88aa-47c09ec28531",
+      "body": "kan je zijn rating terugvinden?",
+      "direction": "in",
+      "at": "2026-05-17T13:24:19.709Z"
+    },
+    {
+      "id": "fbe2513c-b628-4296-b60b-ae80961a81f6",
+      "userId": "6b0eca8f-8838-4371-88aa-47c09ec28531",
+      "body": "Ik kan Joris' rating alleen terugvinden als ik zijn mobiele nummer heb. Heb je dat nummer voor me? Dan kan ik verder zoeken!",
+      "direction": "out",
+      "at": "2026-05-17T13:24:22.838Z"
+    },
+    {
+      "id": "f12ef3dc-3547-4298-9670-ee6648e3664d",
+      "userId": "6b0eca8f-8838-4371-88aa-47c09ec28531",
+      "body": "+32 497 47 07 25",
+      "direction": "in",
+      "at": "2026-05-17T13:24:31.109Z"
+    },
+    {
+      "id": "4720a813-249e-4ee0-84f7-822a0ff8570e",
+      "userId": "6b0eca8f-8838-4371-88aa-47c09ec28531",
+      "body": "Joris Heyens is al toegevoegd als maatje met het nummer +32 497 47 07 25. Helaas kan ik zijn rating nog steeds niet vinden. \n\nWil je verdergaan met het instellen van je profiel of iets anders doen?",
+      "direction": "out",
+      "at": "2026-05-17T13:24:35.912Z"
+    },
+    {
+      "id": "41f31195-f49e-4d96-beb3-0ec24163fc7c",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "wat is de status hier?",
+      "direction": "in",
+      "at": "2026-05-17T13:50:22.842Z"
+    },
+    {
+      "id": "341c6607-5637-469b-8d14-748dfb6c6ed6",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "Het lijkt erop dat je profiel nog niet helemaal compleet is. We hebben je padelniveau en een vriend met telefoonnummer nodig. Laten we beginnen met je niveau! Wat is je padelniveau van 1 tot 7? 🎾",
+      "direction": "out",
+      "at": "2026-05-17T13:50:28.168Z"
+    },
+    {
+      "id": "3898df12-4c10-422d-987b-a91c8bc584e4",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "kan je nog eens kijken?",
+      "direction": "in",
+      "at": "2026-05-17T13:52:43.134Z"
+    },
+    {
+      "id": "7152c409-16af-45fb-a463-ea817affe461",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "Ik heb mijn best gedaan, maar Garrincha the Loop en Arsenaal staan helaas niet in mijn actuele clublijst. Hier zijn de clubs die wel in de lijst staan:\n\n1. Padel Arena Gent\n2. Padelclub Antwerpen\n3. Sportoase Brugge\n4. Padel Lounge Leuven\n5. Topspin Padel Mechelen\n\nMisschien zijn ze niet geregistreerd bij de gegevens die ik heb. Wil je dat ik een van de clubs uit deze lijst toevoeg, of heb je andere informatie? 😊",
+      "direction": "out",
+      "at": "2026-05-17T13:52:46.566Z"
     }
   ]
 }

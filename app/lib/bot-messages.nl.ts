@@ -1,15 +1,26 @@
 export const messages = {
   welcome: (name: string) =>
-    `Hoi ${name}! Welkom bij Zin in Padel. Antwoord met JA om updates over padel te ontvangen.`,
-  optInConfirmed:
-    "Top! Je bent aangemeld 🎾 Laten we eerst je padel-maatjes verzamelen. Met wie speel je vaak? Geef naam + mobiel nummer.",
-  maatjesStart:
-    "Top, laten we je maatjeslijst bijwerken! Wie wil je toevoegen? Geef naam + mobiel nummer.",
+    `Hoi ${name}! Welkom bij Zin in Padel. Antwoord met JA om te starten.`,
+
+  optInConfirmed: `Top, je bent aangemeld 🎾
+
+Vertel gerust over jezelf: je padelniveau (1–7), met wie je speelt (naam + mobiel nummer), in welke clubs, en hoe je wilt matchen.`,
+
+  friendsStart:
+    "Welke vriend wil je toevoegen? Geef naam en mobiel nummer (bv. Pascal 0470123456).",
+
   optInRequired:
     "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+
   optOutConfirmed:
     "Je bent afgemeld. Je ontvangt geen berichten meer. Antwoord met JA om je opnieuw aan te melden.",
-  help: "Beschikbare commando's:\n• JA — aanmelden voor berichten\n• MAATJES — favoriete medespelers toevoegen\n• STOP — afmelden\n• HELP — dit overzicht",
+
+  help: `Beschikbare commando's:
+• JA — aanmelden / profiel opnieuw starten
+• FRIENDS — vriend toevoegen
+• STOP — afmelden
+• HELP — dit overzicht`,
+
   unknownCommand:
     "Sorry, dat begrijp ik niet. Typ HELP voor een overzicht van commando's.",
 } as const;
