@@ -4,22 +4,22 @@
 
 ### User
 Someone who interacts with the WhatsApp bot. Identified by `waId` (WhatsApp ID).
-Has opt-in state, onboarding state, and an `activeFlow`. A User always has a `phone`
-in E.164 format.
+Has opt-in state, onboarding state, and an `activeFlow`.
 
 ### Player
-A co-player (teammate or opponent) identified by **mobile phone number in E.164**.
-A Player may or may not also be a User. The phone number is the unique key
-and the join with `User.phone`. The User ↔ Player link is **derived** by phone
-match — not stored explicitly.
+A co-player (teammate or opponent) identified by their **mobile phone number**.
+A Player may or may not also be a User. The phone string is the unique key and
+the join with `User.phone`. The User ↔ Player link is **derived** by phone
+match — not stored explicitly. Format is whatever the user provides; no
+canonical form is enforced (POC scope).
 
 Fields: `{ phone, name }`. Phone is unique across all Players.
 
 ### Favorite Player
 A Player that a User has marked as a co-player they regularly play with.
-Stored as `User.favoritePlayerPhones: string[]` (E.164 strings, each must
-exist as a `Player` record). Multiple Users may share the same favorite
-Player (deduplicated globally in `players[]`).
+Stored as `User.favoritePlayerPhones: string[]` (each must exist as a
+`Player` record). Multiple Users may share the same favorite Player
+(deduplicated globally in `players[]`).
 
 ### Active Flow
 A User's currently-running conversational subroutine. `User.activeFlow` is
@@ -60,12 +60,14 @@ reconstructing conversation history for the agent.
 
 ## Phone numbers
 
-- **Canonical storage:** E.164 (`+316...`)
-- **Validation:** strict — agent must prompt user for E.164 format and the
-  `addFavorite` tool refuses non-E.164 input.
+- **No format validation.** Phone is stored as the user typed it and is the
+  unique key for `Player`. Two users entering the same number in different
+  shapes (e.g. `0612345678` vs `+31612345678`) currently produce two distinct
+  Players. Revisit when leaving POC scope — see ADR 0001.
 
 ## Notes
 
 - `data/db.json` is POC-only (not Vercel-safe). See README.
-- Conversation memory is reconstructed from `messages[]` per turn (no
-  Mastra Memory store yet). Swap to LibSQL/Postgres when leaving JSON.
+- Agent conversation memory lives in Mastra Memory + LibSQL
+  (`data/mastra-memory.db`, gitignored), keyed by `thread = user.id`.
+  See `app/lib/mastra/memory.server.ts`.

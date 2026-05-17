@@ -10,12 +10,6 @@ import type {
 
 const DB_PATH = path.join(process.cwd(), "data", "db.json");
 
-const E164_REGEX = /^\+[1-9]\d{6,14}$/;
-
-export function isE164(s: string): boolean {
-  return E164_REGEX.test(s);
-}
-
 async function readDb(): Promise<Database> {
   const raw = await readFile(DB_PATH, "utf-8");
   return JSON.parse(raw) as Database;
@@ -118,14 +112,6 @@ export async function appendMessage(
   return message;
 }
 
-export async function getRecentMessages(
-  userId: string,
-  limit = 20,
-): Promise<Message[]> {
-  const db = await readDb();
-  const messages = db.messages.filter((m) => m.userId === userId);
-  return messages.slice(-limit);
-}
 
 export async function findPlayerByPhone(
   phone: string,

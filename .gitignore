@@ -9,3 +9,6 @@
 
 # Mastra build output
 /.mastra/
+
+# Mastra memory store (LibSQL)
+/data/mastra-memory.db*

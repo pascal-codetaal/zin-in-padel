@@ -1,6 +1,45 @@
 {
-  "users": [],
-  "players": [],
+  "users": [
+    {
+      "id": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
+      "waId": "32497470725",
+      "phone": "whatsapp:+32497470725",
+      "profileName": "Joris Heyens",
+      "optedIn": true,
+      "onboardingComplete": true,
+      "onboardingStep": 1,
+      "activeFlow": "favorites",
+      "favoritePlayerPhones": [
+        "+32484085782",
+        "+32477370586"
+      ],
+      "createdAt": "2026-05-16T12:52:04.677Z",
+      "updatedAt": "2026-05-17T07:53:14.299Z"
+    },
+    {
+      "id": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "waId": "+32460256335",
+      "phone": "whatsapp:+32460256335",
+      "profileName": "",
+      "optedIn": false,
+      "onboardingComplete": false,
+      "onboardingStep": 0,
+      "activeFlow": null,
+      "favoritePlayerPhones": [],
+      "createdAt": "2026-05-16T12:52:06.985Z",
+      "updatedAt": "2026-05-17T07:53:24.187Z"
+    }
+  ],
+  "players": [
+    {
+      "phone": "+32484085782",
+      "name": "Pascal Van Hecke"
+    },
+    {
+      "phone": "+32477370586",
+      "name": "Pieter Van Neste"
+    }
+  ],
   "games": [
     {
       "id": "game-1",
@@ -15,5 +54,412 @@
       "status": "open"
     }
   ],
-  "messages": []
+  "messages": [
+    {
+      "id": "137e9ec8-4b51-4640-ae4b-4f91749087f9",
+      "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
+      "body": "maatjes",
+      "direction": "in",
+      "at": "2026-05-16T13:27:00.150Z"
+    },
+    {
+      "id": "8a9d8bbd-8d8a-4585-b2ff-68c71307c1f5",
+      "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
+      "body": "Top, laten we je maatjeslijst bijwerken! Wie wil je toevoegen? Geef naam + mobiel nummer.",
+      "direction": "out",
+      "at": "2026-05-16T13:27:00.151Z"
+    },
+    {
+      "id": "389e7d64-fdda-4631-bbd3-6c7d3063fba0",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-16T13:27:01.148Z"
+    },
+    {
+      "id": "2a185044-b1dc-4bb5-adf3-435531a21770",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-16T13:27:01.148Z"
+    },
+    {
+      "id": "91e8b242-c3a2-4f67-b727-50e2c2cd065a",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-16T13:27:03.268Z"
+    },
+    {
+      "id": "ebcfdeef-4d2e-4901-855f-67156e119179",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-16T13:27:03.272Z"
+    },
+    {
+      "id": "61bf80da-3d1b-4182-9d63-6895ae4752f8",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-16T13:27:04.318Z"
+    },
+    {
+      "id": "870029f4-19e3-43ef-baf2-3030a30dbd8c",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-16T13:27:04.319Z"
+    },
+    {
+      "id": "09d30f06-bf85-4612-af45-8c38ebcef949",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-16T13:27:04.349Z"
+    },
+    {
+      "id": "2069549a-ca09-4718-bddb-f3c1f8818f5e",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-16T13:27:04.350Z"
+    },
+    {
+      "id": "5efc002f-4e78-4057-8f3e-f4ae2951f8e0",
+      "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-16T13:27:24.438Z"
+    },
+    {
+      "id": "87363cfb-c77b-48e7-8c94-b93baa5e185b",
+      "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
+      "body": "Je hebt al één favoriet opgeslagen: Pascal Van Hecke. Wie wil je nog meer toevoegen? Geef me de naam en het mobiele nummer!Ik zie dat je niks hebt ingevoerd. Wil je nog een speler toevoegen? Geef me de naam en het nummer!",
+      "direction": "out",
+      "at": "2026-05-16T13:27:27.761Z"
+    },
+    {
+      "id": "7bf47621-2d92-4d1b-8728-6d735cdb4c15",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-16T13:27:29.128Z"
+    },
+    {
+      "id": "eed500f2-afaf-4005-a61e-95a9033ac950",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-16T13:27:29.129Z"
+    },
+    {
+      "id": "717fdce4-ed23-4374-b1c6-3bf06a0d34ca",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-16T13:27:31.147Z"
+    },
+    {
+      "id": "54df6ec7-d4c2-40b4-85b4-f24de33821a7",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-16T13:27:31.148Z"
+    },
+    {
+      "id": "f79edb65-4cc2-43fd-add3-fef85bb844e1",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-16T13:27:32.341Z"
+    },
+    {
+      "id": "b13c8b09-16d6-405c-bedc-e0a9e4c8f32d",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-16T13:27:32.342Z"
+    },
+    {
+      "id": "ba4db139-771f-42b8-ac0d-900ba6620291",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-16T13:27:32.373Z"
+    },
+    {
+      "id": "1102b5b5-fabc-4021-8f66-8ac831322320",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-16T13:27:32.373Z"
+    },
+    {
+      "id": "4f15d837-092f-41ed-bb53-bfd0c4a6aa10",
+      "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
+      "body": "Maatjes",
+      "direction": "in",
+      "at": "2026-05-16T13:50:26.757Z"
+    },
+    {
+      "id": "96dfd26c-c4e5-4853-9fd7-f313591e0eb7",
+      "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
+      "body": "Top, laten we je maatjeslijst bijwerken! Wie wil je toevoegen? Geef naam + mobiel nummer.",
+      "direction": "out",
+      "at": "2026-05-16T13:50:26.758Z"
+    },
+    {
+      "id": "93d43b07-f97a-40d1-8796-febf077b7611",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-16T13:50:28.319Z"
+    },
+    {
+      "id": "6af36f5c-d006-4ffe-ab87-555c27f62e92",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-16T13:50:28.319Z"
+    },
+    {
+      "id": "45883c5e-a66f-4ce1-9878-5d8a31774718",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-16T13:50:30.545Z"
+    },
+    {
+      "id": "1e016168-15d6-46db-836e-69f24fcd14f9",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-16T13:50:30.545Z"
+    },
+    {
+      "id": "f30ec387-c20f-4936-84f7-3d928429144b",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-16T13:50:30.857Z"
+    },
+    {
+      "id": "1304c8a8-49b9-4351-9925-56f233340b02",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-16T13:50:30.857Z"
+    },
+    {
+      "id": "b78c8e40-965e-432d-ae7d-bf76a3196427",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-16T13:50:30.975Z"
+    },
+    {
+      "id": "7275bf37-2fb6-4251-89e8-05d845443c24",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-16T13:50:30.976Z"
+    },
+    {
+      "id": "957b6f7e-5026-4896-93a5-37139de7707c",
+      "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
+      "body": "Pieter Van Neste +32 477 37 05 86",
+      "direction": "in",
+      "at": "2026-05-16T13:50:46.218Z"
+    },
+    {
+      "id": "2fb7cf72-c6d0-4907-85c2-5bf9bfee4d9b",
+      "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
+      "body": "Pieter Van Neste is toegevoegd! Nog iemand?",
+      "direction": "out",
+      "at": "2026-05-16T13:50:50.802Z"
+    },
+    {
+      "id": "a20cb59f-53ab-4c64-b240-7eadc7c88103",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-16T13:50:52.709Z"
+    },
+    {
+      "id": "0c3e8f73-2969-4e37-8edf-0d62f289bc06",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-16T13:50:52.709Z"
+    },
+    {
+      "id": "fa139590-85d2-4ef9-8d9b-201ec90a0d13",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-16T13:50:54.929Z"
+    },
+    {
+      "id": "11f33d4f-bc18-41b3-9a12-be497abbb800",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-16T13:50:54.929Z"
+    },
+    {
+      "id": "761ac095-8790-4796-a1f6-1a1014f3b719",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-16T13:50:54.947Z"
+    },
+    {
+      "id": "641b10af-0d2d-4121-8cbb-a7f6bb6ed9f9",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-16T13:50:54.947Z"
+    },
+    {
+      "id": "af917c15-fd52-4dfe-9e5b-228a9b21450e",
+      "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
+      "body": "maatjes",
+      "direction": "in",
+      "at": "2026-05-17T07:53:00.803Z"
+    },
+    {
+      "id": "2f5e8082-55c9-4d69-9131-eb23b3417a9a",
+      "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
+      "body": "Top, laten we je maatjeslijst bijwerken! Wie wil je toevoegen? Geef naam + mobiel nummer.",
+      "direction": "out",
+      "at": "2026-05-17T07:53:00.804Z"
+    },
+    {
+      "id": "d573d909-17d2-4c05-8359-144c7d7f34e1",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-17T07:53:02.056Z"
+    },
+    {
+      "id": "a7a51453-a4e6-4331-87c6-fa9ec36f120e",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-17T07:53:02.057Z"
+    },
+    {
+      "id": "734909c6-1ade-4556-b8f1-6d3336d0afbe",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-17T07:53:04.243Z"
+    },
+    {
+      "id": "29c6d7be-d070-4e65-8018-608ccc19c00d",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-17T07:53:04.243Z"
+    },
+    {
+      "id": "a71559ce-e12f-4d50-8e28-89b421b8614e",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-17T07:53:05.994Z"
+    },
+    {
+      "id": "2951c835-1796-44b5-ae72-f6b5cefba55b",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-17T07:53:05.994Z"
+    },
+    {
+      "id": "4571e0bf-247b-4b35-be78-cee874777f77",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-17T07:53:06.217Z"
+    },
+    {
+      "id": "d6d41ddf-cfb4-4bd9-a0cf-8c02b8cc8ac4",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-17T07:53:06.218Z"
+    },
+    {
+      "id": "6518ba96-96b8-4f4e-beb4-a74394e353c6",
+      "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
+      "body": "Pieter Van Neste +32 477 37 05 86",
+      "direction": "in",
+      "at": "2026-05-17T07:53:14.300Z"
+    },
+    {
+      "id": "4140220e-e5b7-48ed-9c08-402822b0379b",
+      "userId": "bcd42a2f-67f4-4b26-a990-6fbea94b3453",
+      "body": "Pieter Van Neste staat al als favoriet! Wil je nog iemand anders toevoegen?",
+      "direction": "out",
+      "at": "2026-05-17T07:53:19.165Z"
+    },
+    {
+      "id": "24e613ad-1807-4929-b16e-c0baa8ce2eb7",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-17T07:53:21.000Z"
+    },
+    {
+      "id": "649414fe-639d-4a04-9fdc-e0e3d59b132c",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-17T07:53:21.000Z"
+    },
+    {
+      "id": "f51d5843-a8b5-40e1-b6f8-9419381ff806",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-17T07:53:23.058Z"
+    },
+    {
+      "id": "9385fc9e-9ef3-4ebf-a1b6-cb29c606991d",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-17T07:53:23.059Z"
+    },
+    {
+      "id": "92ce7c01-6e44-4b68-9ae3-eaa67d7d1195",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-17T07:53:24.082Z"
+    },
+    {
+      "id": "f78a98eb-17b1-4f00-803e-d4bb2962003c",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-17T07:53:24.083Z"
+    },
+    {
+      "id": "e59cb384-e152-42f4-976f-af40b2a5bcb3",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-17T07:53:24.188Z"
+    },
+    {
+      "id": "01251d7f-81ae-4fcc-89fd-45165c3333f7",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-17T07:53:24.189Z"
+    }
+  ]
 }

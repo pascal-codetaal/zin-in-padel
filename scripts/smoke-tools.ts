@@ -2,7 +2,8 @@
 // no LLM round-trip required. Run with: npx tsx scripts/smoke-tools.ts
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { createFavoritesTools } from "../app/lib/mastra/tools.server";
+import { RequestContext } from "@mastra/core/request-context";
+import { addFavoriteTool, readDbTool } from "../app/lib/mastra/tools.server";
 
 const DB_PATH = path.join(process.cwd(), "data", "db.json");
 
@@ -42,50 +43,56 @@ function assert(cond: unknown, msg: string): asserts cond {
   if (!cond) throw new Error("ASSERT FAIL: " + msg);
 }
 
+function ctxFor(userId: string) {
+  const requestContext = new RequestContext();
+  requestContext.set("userId", userId);
+  return { requestContext };
+}
+
 async function main() {
   const snap = await backup();
   try {
     const userId = await seedTestUser();
-    const { readDb, addFavorite } = createFavoritesTools(userId);
+    const ctx = ctxFor(userId);
 
     // 1. readDb on fresh user
-    const before = await (readDb as any).execute({});
+    const before = await (readDbTool as any).execute({}, ctx);
     assert(before.currentUser?.id === userId, "currentUser found");
     assert(before.favoritePlayers.length === 0, "no favorites yet");
     assert(before.allPlayers.length === 0, "no players yet");
     console.log("✓ readDb: clean state");
 
-    // 2. addFavorite with bad phone
-    const bad = await (addFavorite as any).execute({
-      name: "Foo",
-      phone: "0612345678",
-    });
-    assert(bad.ok === false && bad.error === "phone_not_e164", "rejects non-E164");
-    console.log("✓ addFavorite: rejects 06... format");
-
-    // 3. addFavorite with good phone
-    const good = await (addFavorite as any).execute({
-      name: "Marieke",
-      phone: "+31612345678",
-    });
-    assert(good.ok === true, "accepts E164");
+    // 2. addFavorite (any phone format accepted)
+    const good = await (addFavoriteTool as any).execute(
+      { name: "Marieke", phone: "0612345678" },
+      ctx,
+    );
+    assert(good.ok === true, "accepts arbitrary phone");
     assert(good.player?.name === "Marieke", "player returned");
     assert(good.alreadyFavorite === false, "not duplicate");
-    console.log("✓ addFavorite: accepts +31...");
+    console.log("✓ addFavorite: accepts any phone format");
 
-    // 4. duplicate add
-    const dup = await (addFavorite as any).execute({
-      name: "Marieke",
-      phone: "+31612345678",
-    });
+    // 3. duplicate add
+    const dup = await (addFavoriteTool as any).execute(
+      { name: "Marieke", phone: "0612345678" },
+      ctx,
+    );
     assert(dup.ok === true && dup.alreadyFavorite === true, "duplicate flagged");
     console.log("✓ addFavorite: dedup works");
 
-    // 5. readDb shows the favorite
-    const after = await (readDb as any).execute({});
+    // 4. readDb shows the favorite
+    const after = await (readDbTool as any).execute({}, ctx);
     assert(after.favoritePlayers.length === 1, "favorite persisted");
     assert(after.allPlayers.length === 1, "player persisted");
     console.log("✓ readDb: reflects writes");
+
+    // 5. no userId → returns error
+    const noCtx = await (addFavoriteTool as any).execute(
+      { name: "Anon", phone: "999" },
+      { requestContext: new RequestContext() },
+    );
+    assert(noCtx.ok === false && noCtx.error === "no_user_context", "no userId rejected");
+    console.log("✓ addFavorite: rejects missing userId");
 
     console.log("\nALL SMOKE TESTS PASSED");
   } finally {

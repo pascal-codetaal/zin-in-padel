@@ -92,9 +92,13 @@ Alle bot-antwoorden staan in `app/lib/bot-messages.nl.ts`.
 
 ## Mastra agent (favorieten-flow)
 
-Na `JA` of `MAATJES` neemt een Mastra-agent de conversatie over om favoriete medespelers (naam + mobiel in strikt `+31...` formaat) te verzamelen. De agent eindigt zijn laatste bericht met `[DONE]` (intern, wordt gestript) zodra de gebruiker klaar is — daarna staat `user.activeFlow` weer op `null` en pakken de hardcoded commando's de besturing terug.
+Na `JA` of `MAATJES` neemt een Mastra-agent de conversatie over om favoriete medespelers (naam + mobiel nummer) te verzamelen. De agent eindigt zijn laatste bericht met `[DONE]` (intern, wordt gestript) zodra de gebruiker klaar is — daarna staat `user.activeFlow` weer op `null` en pakken de hardcoded commando's de besturing terug.
 
 Hardcoded commando's (`JA`/`STOP`/`HELP`/`MAATJES`) bypassen de agent altijd.
+
+### Agent-geheugen
+
+De agent heeft een persistent geheugen via Mastra Memory + LibSQL (SQLite-bestand op `data/mastra-memory.db`, gitignored). Elke gebruiker krijgt een eigen `thread` (`= user.id`); de laatste 20 turns worden bij elke `generate`-call automatisch meegestuurd. Geen vector recall, geen externe afhankelijkheden — bestand-lokaal en in lijn met de POC-schaal van `data/db.json`. Geconfigureerd in `app/lib/mastra/memory.server.ts`.
 
 ### Mastra Studio
 
@@ -134,6 +138,7 @@ app/
       index.ts                      # Mastra registry (voor Studio)
       agent.server.ts               # Favorieten-agent
       tools.server.ts               # readDb + addFavorite tools
+      memory.server.ts              # LibSQL-backed agent memory
 data/
   db.json                           # Lokale POC-database
 ```
