@@ -2,9 +2,9 @@ export const messages = {
   welcome: (name: string) =>
     `Hoi ${name}! Welkom bij Zin in Padel. Antwoord met JA om updates over padel te ontvangen.`,
   optInConfirmed:
-    "Top! Je bent aangemeld 🎾 Laten we eerst je padel-maatjes verzamelen. Met wie speel je vaak? Geef naam + mobiel nummer (in +31... formaat).",
+    "Top! Je bent aangemeld 🎾 Laten we eerst je padel-maatjes verzamelen. Met wie speel je vaak? Geef naam + mobiel nummer.",
   maatjesStart:
-    "Top, laten we je maatjeslijst bijwerken! Wie wil je toevoegen? Geef naam + mobiel nummer (in +31... formaat).",
+    "Top, laten we je maatjeslijst bijwerken! Wie wil je toevoegen? Geef naam + mobiel nummer.",
   optInRequired:
     "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
   optOutConfirmed:

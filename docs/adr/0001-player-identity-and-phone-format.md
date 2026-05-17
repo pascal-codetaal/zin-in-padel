@@ -1,7 +1,8 @@
 # 0001 — Player identity and phone number format
 
 ## Status
-Accepted
+Superseded in part — see "Update (POC relaxation)" below. Phone-as-primary-key
+still stands; strict E.164 validation has been dropped.
 
 ## Context
 The bot collects a User's "favorite players" — co-players identified by mobile
@@ -55,3 +56,19 @@ schema from going out of sync.
 - **Auto-normalize `06...` → `+316...`**: friendlier UX but bakes in NL
   country assumptions and creates ambiguity for foreign numbers. Revisit
   if NL-only assumption is confirmed product-wide.
+
+## Update (POC relaxation)
+
+The strict E.164 validation was dropped: it created too much conversational
+friction for the prototype, and the `phone_not_e164` tool-error loop made
+the agent feel pedantic instead of helpful. The `addFavorite` tool now
+accepts any non-empty string and stores it verbatim.
+
+Trade-off acknowledged: two users entering the same number in different
+shapes (e.g. `0612345678` vs `+31612345678`) produce two distinct Players,
+breaking the global dedup invariant for that case. Acceptable for the POC.
+
+When leaving the POC, revisit with either:
+- a normalization step in `upsertPlayer` (e.g. `libphonenumber-js`), or
+- re-introducing strict E.164 validation now that the agent has memory and
+  can carry context across turns more naturally.

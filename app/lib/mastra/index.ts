@@ -1,11 +1,16 @@
 import { Mastra } from "@mastra/core";
-import { createFavoritesAgent } from "./agent.server";
+import { getMastraStorage } from "./memory.server";
+import { favoritesAgent } from "./agent.server";
 
-// Studio-facing Mastra instance. The agent is parameterized by userId in
-// production (see whatsapp-bot.server.ts); for Studio prompt iteration we
-// register one instance with a placeholder userId.
+// Single Mastra instance. Storage is configured here; the Memory attached to
+// the agent has no own storage and inherits this one at resolve time
+// (Agent.getMemory -> Memory.setStorage(mastra.getStorage()) when !hasOwnStorage).
+//
+// One agent, no per-user factory. Per-request data (userId) flows in via
+// `requestContext` on each agent.generate() call.
 export const mastra = new Mastra({
+  storage: getMastraStorage(),
   agents: {
-    favoritesAgent: createFavoritesAgent("studio-placeholder-user"),
+    favoritesAgent,
   },
 });

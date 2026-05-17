@@ -1,15 +1,15 @@
 import {
   appendMessage,
   findUserByWaId,
-  getRecentMessages,
   updateUser,
   upsertUser,
 } from "~/lib/db.server";
 import { messages } from "~/lib/bot-messages.nl";
-import { createFavoritesAgent } from "~/lib/mastra/agent.server";
+import { mastra } from "~/lib/mastra";
+import { RequestContext } from "@mastra/core/request-context";
 import { messagingReply } from "~/lib/twilio.server";
 import type { TwilioInboundMessage } from "~/lib/twilio.server";
-import type { Message, User } from "~/types/domain";
+import type { User } from "~/types/domain";
 
 const DONE_MARKER = "[DONE]";
 
@@ -21,23 +21,17 @@ function displayName(profileName: string, waId: string): string {
   return profileName.trim() || waId || "daar";
 }
 
-function messagesToHistory(history: Message[]) {
-  return history.map((m) => ({
-    role: m.direction === "in" ? ("user" as const) : ("assistant" as const),
-    content: m.body,
-  }));
-}
-
 async function runFavoritesAgent(
   user: User,
   inboundBody: string,
 ): Promise<string> {
-  const history = await getRecentMessages(user.id, 10);
-  const agent = createFavoritesAgent(user.id);
-  const result = await agent.generate([
-    ...messagesToHistory(history),
-    { role: "user", content: inboundBody },
-  ]);
+  const agent = mastra.getAgent("favoritesAgent");
+  const requestContext = new RequestContext();
+  requestContext.set("userId", user.id);
+  const result = await agent.generate(inboundBody, {
+    memory: { thread: user.id, resource: user.id },
+    requestContext,
+  });
 
   let text = result.text ?? "";
   const isDone = text.includes(DONE_MARKER);
