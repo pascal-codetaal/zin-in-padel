@@ -5,7 +5,7 @@
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
-    "mastra:dev": "mastra dev --dir app/lib/mastra --env .env",
+    "mastra:dev": "mastra dev --dir app/lib/mastra --env .env --request-context-presets presets.json",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc"
   },

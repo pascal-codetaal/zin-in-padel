@@ -3,7 +3,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { RequestContext } from "@mastra/core/request-context";
-import { addFavoriteTool, readDbTool } from "../app/lib/mastra/tools.server";
+import { addFavoriteTool, readDbTool } from "../app/lib/mastra/agents/favoritePlayers/tools.server";
 
 const DB_PATH = path.join(process.cwd(), "data", "db.json");
 
