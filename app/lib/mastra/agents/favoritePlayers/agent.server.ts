@@ -1,6 +1,6 @@
 import { Agent } from "@mastra/core/agent";
 import { addFavoriteTool, readDbTool } from "./tools.server";
-import { getFavoritesMemory } from "./memory.server";
+import { getFavoritesMemory } from "../../memory.server";
 
 const SYSTEM_PROMPT = `Je bent een vriendelijke Nederlandse padel-assistent voor "Zin in Padel".
 Je taak: de favoriete medespelers (maatjes) van de gebruiker verzamelen en opslaan.

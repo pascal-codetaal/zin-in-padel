@@ -72,6 +72,10 @@ export function getFavoritesMemory(): Memory {
         lastMessages: 20,
         // No vector search / semantic recall — file-local SQLite, POC scope.
         semanticRecall: false,
+        // Auto-generate a short thread title from the first user message so
+        // threads show up with readable names in Mastra Studio's chat sidebar
+        // instead of as blank UUID entries.
+        generateTitle: true,
       },
     });
   }

@@ -5,7 +5,7 @@ import {
   findUserById,
   getDatabase,
   upsertPlayer,
-} from "../db.server";
+} from "../../../db.server";
 
 export const readDbTool = createTool({
   id: "read-db",
