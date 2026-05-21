@@ -1,0 +1,293 @@
+import { useMemo, useState } from "react";
+import { Link } from "react-router";
+import {
+  MAATJE_SLOT_COUNT,
+  type MaatjeSlots,
+  type MatchPickerPlayer,
+} from "~/lib/match-picker";
+import {
+  formatPadelLevelCompact,
+  type PadelLevel,
+} from "~/types/domain";
+
+export type MatchCourtPickerProps = {
+  organizerName: string;
+  organizerLevel: PadelLevel | null;
+  players: MatchPickerPlayer[];
+  defaultSlots: MaatjeSlots;
+  maatjesHref: string;
+};
+
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  const first = parts[0];
+  if (parts.length === 1 && first) return first.slice(0, 2).toUpperCase();
+  const last = parts[parts.length - 1];
+  return `${first?.[0] ?? ""}${last?.[0] ?? ""}`.toUpperCase();
+}
+
+export function MatchCourtPicker({
+  organizerName,
+  organizerLevel,
+  players,
+  defaultSlots,
+  maatjesHref,
+}: MatchCourtPickerProps) {
+  const validRefs = useMemo(
+    () => new Set(players.map((p) => p.ref)),
+    [players],
+  );
+
+  const initialSlots = useMemo((): MaatjeSlots => {
+    return defaultSlots.map((ref) =>
+      ref && validRefs.has(ref) ? ref : null,
+    ) as MaatjeSlots;
+  }, [defaultSlots, validRefs]);
+
+  const [slots, setSlots] = useState<MaatjeSlots>(initialSlots);
+  const [activeSlot, setActiveSlot] = useState<number | null>(null);
+
+  const playerByRef = useMemo(
+    () => new Map(players.map((p) => [p.ref, p])),
+    [players],
+  );
+
+  const filledCount = slots.filter(Boolean).length + 1;
+
+  function assignPlayer(ref: string) {
+    if (activeSlot === null) return;
+    setSlots((prev) => {
+      const next: MaatjeSlots = [...prev];
+      for (let i = 0; i < MAATJE_SLOT_COUNT; i++) {
+        if (next[i] === ref) next[i] = null;
+      }
+      next[activeSlot] = ref;
+      return next;
+    });
+    setActiveSlot(null);
+  }
+
+  function clearSlot(index: number) {
+    setSlots((prev) => {
+      const next: MaatjeSlots = [...prev];
+      next[index] = null;
+      return next;
+    });
+    if (activeSlot === index) setActiveSlot(null);
+  }
+
+  const availableForPick =
+    activeSlot !== null
+      ? players.filter(
+          (p) =>
+            !slots.some((s, i) => s === p.ref && i !== activeSlot),
+        )
+      : [];
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-soft">
+        <div className="relative grid grid-cols-4 gap-2">
+          <CourtSlotDisplay
+            name={organizerName || "Jij"}
+            level={organizerLevel}
+            fixed
+          />
+          {[0, 1, 2].map((slotIndex) => {
+            const ref = slots[slotIndex];
+            const player = ref ? playerByRef.get(ref) : undefined;
+            const isActive = activeSlot === slotIndex;
+            return (
+              <CourtSlotButton
+                key={slotIndex}
+                slotIndex={slotIndex}
+                name={player?.name}
+                level={player?.level ?? null}
+                isActive={isActive}
+                onSelect={() => setActiveSlot(slotIndex)}
+                onClear={() => clearSlot(slotIndex)}
+              />
+            );
+          })}
+          <div
+            className="absolute bottom-6 top-0 left-1/2 w-px -translate-x-1/2 bg-border"
+            aria-hidden
+          />
+        </div>
+
+        <div className="mt-2 flex justify-between px-1 text-2xl font-bold text-muted-foreground/50">
+          <span>A</span>
+          <span>B</span>
+        </div>
+
+        <p className="mt-3 text-center text-xs text-muted-foreground">
+          {filledCount}/4 plekken ingevuld
+        </p>
+      </div>
+
+      {activeSlot !== null ? (
+        <div className="space-y-2">
+          <p className="text-sm font-medium">
+            Kies wie op plek {activeSlot + 2} speelt
+          </p>
+          {availableForPick.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-border bg-secondary/30 px-4 py-4 text-center text-sm text-muted-foreground">
+              Geen maatjes beschikbaar.{" "}
+              <Link to={maatjesHref} className="font-medium underline">
+                Voeg toe →
+              </Link>
+            </p>
+          ) : (
+            <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {availableForPick.map((player) => (
+                <li key={player.ref}>
+                  <button
+                    type="button"
+                    onClick={() => assignPlayer(player.ref)}
+                    className="flex w-full flex-col items-center gap-2 rounded-2xl border border-border bg-card p-3 transition hover:border-primary hover:bg-primary/5"
+                  >
+                    <PlayerAvatar name={player.name} variant="confirmed" />
+                    <span className="w-full truncate text-center text-sm font-medium">
+                      {player.name.split(" ")[0]}
+                    </span>
+                    {player.level !== null && (
+                      <LevelBadge level={player.level} />
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <button
+            type="button"
+            onClick={() => setActiveSlot(null)}
+            className="text-xs font-medium text-muted-foreground transition hover:text-foreground"
+          >
+            Annuleren
+          </button>
+        </div>
+      ) : (
+        <p className="text-center text-sm text-muted-foreground">
+          Tik een lege plek (+) of een speler op de baan om te wijzigen
+        </p>
+      )}
+
+      {slots.map((ref, i) => (
+        <input
+          key={`slot-${i}`}
+          type="hidden"
+          name={`confirmedSlot_${i + 1}`}
+          value={ref ?? ""}
+          readOnly
+        />
+      ))}
+    </div>
+  );
+}
+
+function CourtSlotDisplay({
+  name,
+  level,
+  fixed,
+}: {
+  name: string;
+  level: PadelLevel | null;
+  fixed?: boolean;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-1.5">
+      <PlayerAvatar name={name} variant={fixed ? "confirmed" : "default"} />
+      <span className="w-full truncate text-center text-xs font-medium">
+        {name.split(" ")[0]}
+      </span>
+      {level !== null && <LevelBadge level={level} />}
+    </div>
+  );
+}
+
+function CourtSlotButton({
+  slotIndex,
+  name,
+  level,
+  isActive,
+  onSelect,
+  onClear,
+}: {
+  slotIndex: number;
+  name?: string;
+  level: PadelLevel | null;
+  isActive: boolean;
+  onSelect: () => void;
+  onClear: () => void;
+}) {
+  const filled = Boolean(name);
+  return (
+    <div className="flex flex-col items-center gap-1.5">
+      <button
+        type="button"
+        onClick={onSelect}
+        aria-pressed={isActive}
+        className={`rounded-full transition ${
+          isActive ? "ring-2 ring-primary ring-offset-2" : ""
+        }`}
+      >
+        {filled && name ? (
+          <PlayerAvatar name={name} variant="confirmed" />
+        ) : (
+          <span className="inline-flex h-14 w-14 items-center justify-center rounded-full border-2 border-dashed border-primary/50 bg-primary/5 text-xl font-medium text-primary">
+            +
+          </span>
+        )}
+      </button>
+      {filled && name ? (
+        <>
+          <span className="w-full truncate text-center text-xs font-medium">
+            {name.split(" ")[0]}
+          </span>
+          {level !== null && <LevelBadge level={level} />}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClear();
+            }}
+            className="text-[10px] font-medium text-muted-foreground transition hover:text-destructive"
+          >
+            Verwijder
+          </button>
+        </>
+      ) : (
+        <span className="text-[10px] text-muted-foreground">Plek {slotIndex + 2}</span>
+      )}
+    </div>
+  );
+}
+
+function PlayerAvatar({
+  name,
+  variant = "default",
+}: {
+  name: string;
+  variant?: "default" | "confirmed";
+}) {
+  return (
+    <span
+      className={`inline-flex h-14 w-14 items-center justify-center rounded-full text-sm font-semibold ${
+        variant === "confirmed"
+          ? "bg-primary text-primary-foreground"
+          : "bg-secondary text-secondary-foreground"
+      }`}
+    >
+      {initials(name)}
+    </span>
+  );
+}
+
+function LevelBadge({ level }: { level: PadelLevel }) {
+  return (
+    <span className="inline-flex rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold tabular-nums text-accent-foreground">
+      {formatPadelLevelCompact(level)}
+    </span>
+  );
+}

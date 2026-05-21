@@ -1,0 +1,143 @@
+import {
+  findPlayerByRef,
+  findUserById,
+  getDatabase,
+} from "~/lib/db.server";
+import {
+  MAATJE_SLOT_COUNT,
+  MAX_COURT_SLOTS,
+  type MaatjeSlots,
+  type MatchPickerPlayer,
+} from "~/lib/match-picker";
+import { phonesEquivalent } from "~/lib/phone-match.server";
+import type { Player, User } from "~/types/domain";
+
+export type { MaatjeSlots, MatchPickerPlayer } from "~/lib/match-picker";
+export { MAATJE_SLOT_COUNT, MAX_COURT_SLOTS } from "~/lib/match-picker";
+
+function findUserForPlayerPhone(
+  users: User[],
+  playerPhone: string,
+): User | undefined {
+  return users.find(
+    (u) =>
+      phonesEquivalent(playerPhone, u.phone) ||
+      phonesEquivalent(playerPhone, u.waId),
+  );
+}
+
+/** Favorite players enriched with P-level when they are a PadelMatch user. */
+export async function getMatchPickerPlayers(
+  userId: string,
+): Promise<MatchPickerPlayer[]> {
+  const user = await findUserById(userId);
+  if (!user) return [];
+
+  const db = await getDatabase();
+  const players: MatchPickerPlayer[] = [];
+
+  for (const ref of user.favoritePlayerRefs) {
+    const player: Player | undefined =
+      (await findPlayerByRef(ref)) ?? db.players.find((p) => p.ref === ref);
+
+    if (!player) {
+      players.push({ ref, name: "Onbekende speler", level: null });
+      continue;
+    }
+
+    const matchedUser = findUserForPlayerPhone(db.users, player.phone);
+    players.push({
+      ref: player.ref,
+      name: player.name,
+      level: matchedUser?.level ?? null,
+    });
+  }
+
+  return players;
+}
+
+function normalizeName(name: string): string {
+  return name.trim().toLowerCase();
+}
+
+/** Map draft confirmed names to three ordered court slots (after organizer). */
+export function maatjeSlotsFromDraft(
+  organizerName: string,
+  slotNames: string[],
+  players: MatchPickerPlayer[],
+): MaatjeSlots {
+  const orgKey = normalizeName(organizerName);
+  const slots: MaatjeSlots = [null, null, null];
+  let i = 0;
+  for (const name of slotNames) {
+    if (normalizeName(name) === orgKey) continue;
+    if (i >= MAATJE_SLOT_COUNT) break;
+    const player = players.find(
+      (p) => normalizeName(p.name) === normalizeName(name),
+    );
+    slots[i] = player?.ref ?? null;
+    i += 1;
+  }
+  return slots;
+}
+
+/** Build confirmedSlotNames: organizer + filled slots in order. */
+export function buildConfirmedSlotNames(
+  organizerName: string,
+  slots: MaatjeSlots,
+  players: MatchPickerPlayer[],
+): string[] {
+  const names: string[] = [organizerName.trim() || "Organisator"];
+  for (const ref of slots) {
+    if (!ref || names.length >= MAX_COURT_SLOTS) continue;
+    const player = players.find((p) => p.ref === ref);
+    if (player) names.push(player.name);
+  }
+  return names;
+}
+
+export function parseMaatjeSlotsForm(
+  form: FormData,
+  favoriteRefs: string[],
+): MaatjeSlots {
+  const allowed = new Set(favoriteRefs);
+  const read = (key: string): string | null => {
+    const raw = form.get(key)?.toString().trim() ?? "";
+    if (!raw || !allowed.has(raw)) return null;
+    return raw;
+  };
+  return [read("confirmedSlot_1"), read("confirmedSlot_2"), read("confirmedSlot_3")];
+}
+
+export function parseInvitedRefsForm(
+  form: FormData,
+  favoriteRefs: string[],
+  onCourtRefs: Iterable<string>,
+): string[] {
+  const allowed = new Set(favoriteRefs);
+  const onCourt = new Set(onCourtRefs);
+  return form
+    .getAll("invitedFriendRefs")
+    .map((v) => v.toString())
+    .filter((ref) => allowed.has(ref) && !onCourt.has(ref));
+}
+
+export async function applyConfirmedSlots(
+  matchId: string,
+  organizerName: string,
+  players: MatchPickerPlayer[],
+  slots: MaatjeSlots,
+): Promise<void> {
+  const { updateMatchDraft } = await import("~/lib/db.server");
+  await updateMatchDraft(matchId, {
+    confirmedSlotNames: buildConfirmedSlotNames(organizerName, slots, players),
+  });
+}
+
+export async function applyInvitedRefs(
+  matchId: string,
+  invitedRefs: string[],
+): Promise<void> {
+  const { updateMatchDraft } = await import("~/lib/db.server");
+  await updateMatchDraft(matchId, { invitedFriendRefs: invitedRefs });
+}

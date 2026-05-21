@@ -13,9 +13,10 @@ export default [
   ]),
   route("match/nieuw/:token", "routes/match.nieuw.$token.tsx", [
     index("routes/match.nieuw.$token._index.tsx"),
+    route("spelers", "routes/match.nieuw.$token.spelers.tsx"),
+    route("maatjes", "routes/match.nieuw.$token.maatjes.tsx"),
     route("wanneer", "routes/match.nieuw.$token.wanneer.tsx"),
     route("formaat", "routes/match.nieuw.$token.formaat.tsx"),
-    route("maatjes", "routes/match.nieuw.$token.maatjes.tsx"),
     route("uitnodigingen", "routes/match.nieuw.$token.uitnodigingen.tsx"),
     route("bevestigen", "routes/match.nieuw.$token.bevestigen.tsx"),
   ]),

@@ -9,6 +9,15 @@ import { MATCH_STEPS, useMatchWizardData } from "./match.nieuw.$token";
 import { formatScheduledAt } from "~/lib/match-defaults";
 import type { Route } from "./+types/match.nieuw.$token._index";
 
+const STEP_BULLETS = [
+  { title: "Spelers", sub: "Wie speelt al mee op de baan" },
+  { title: "Uitnodigen", sub: "Vraag maatjes voor open plekken" },
+  { title: "Wanneer & waar", sub: "Datum, uur en club" },
+  { title: "Formaat", sub: "Mixed, heren of dames" },
+  { title: "Invite-cascade", sub: "Eerst vrienden, dan breder" },
+  { title: "Bevestigen", sub: "Overzicht en versturen" },
+];
+
 export async function loader({ params }: Route.LoaderArgs) {
   const token = params.token!.trim();
   const user = await findUserByManageToken(token);
@@ -40,18 +49,9 @@ export async function action({ request, params }: Route.ActionArgs) {
     return redirect(`/match/nieuw/${token}`);
   }
 
-  // "start" — find or create the draft, jump to step 1.
   await findOrCreateDraftMatch(user.id);
   return redirect(`/match/nieuw/${token}/${MATCH_STEPS[0]!.slug}`);
 }
-
-const STEP_BULLETS = [
-  { title: "Wanneer & waar", sub: "Datum, uur en club" },
-  { title: "Formaat", sub: "Mixed, heren of dames" },
-  { title: "Maatjes", sub: "Wie je zeker uitnodigt" },
-  { title: "Invite-cascade", sub: "Eerst vrienden, dan breder" },
-  { title: "Bevestigen", sub: "Overzicht en versturen" },
-];
 
 export default function MatchWelcome({ loaderData }: Route.ComponentProps) {
   const { token, organizer } = useMatchWizardData();
@@ -69,8 +69,8 @@ export default function MatchWelcome({ loaderData }: Route.ComponentProps) {
             Plan een potje 🎾
           </h1>
           <p className="mt-2 text-base text-muted-foreground">
-            Hoi {organizer.profileName || "speler"}! Vijf snelle stappen, dan
-            sturen we uitnodigingen naar je maatjes.
+            Hoi {organizer.profileName || "speler"}! Eerst wie er al meespeelt,
+            dan wie je nog uitnodigt.
           </p>
         </div>
 

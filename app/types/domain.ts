@@ -199,6 +199,14 @@ export function formatPadelLevel(level: PadelLevel): string {
   return `P${level}`;
 }
 
+/** Compact rating for UI badges, e.g. P270 → "2,7". */
+export function formatPadelLevelCompact(level: PadelLevel): string {
+  return (level / 100).toLocaleString("nl-BE", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+}
+
 /**
  * Snap an arbitrary numeric input to the closest valid level for the gender.
  * Returns null if input is null or not numeric.

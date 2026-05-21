@@ -653,14 +653,6 @@ export async function findOrCreateDraftMatch(
       });
     }
 
-    for (const ref of user.favoritePlayerRefs) {
-      const exists = await tx.player.findUnique({ where: { ref } });
-      if (!exists) continue;
-      await tx.matchInvitedPlayer.create({
-        data: { matchId, playerRef: ref },
-      });
-    }
-
     const row = await tx.match.findUniqueOrThrow({
       where: { id: matchId },
       include: MATCH_INCLUDE,

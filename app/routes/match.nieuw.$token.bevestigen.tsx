@@ -115,16 +115,25 @@ export default function BevestigenStep({
             editTo={`/match/nieuw/${token}/formaat`}
           />
           <SummaryRow
+            label="Spelen mee"
+            value={
+              draft.confirmedSlotNames.length === 0
+                ? "—"
+                : draft.confirmedSlotNames.join(", ")
+            }
+            editTo={`/match/nieuw/${token}/spelers`}
+          />
+          <SummaryRow
             label="Open plaatsen"
             value={
               draft.openSlots === 0
                 ? `${draft.totalSlots}/${draft.totalSlots} (volzet)`
                 : `${draft.totalSlots - draft.openSlots}/${draft.totalSlots} ingevuld · ${draft.openSlots} open`
             }
-            editTo={`/match/nieuw/${token}/wanneer`}
+            editTo={`/match/nieuw/${token}/spelers`}
           />
           <SummaryRow
-            label="Maatjes"
+            label="Uitgenodigd"
             value={
               invitedPlayers.length === 0
                 ? "Geen maatjes geselecteerd"

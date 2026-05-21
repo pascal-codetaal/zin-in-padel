@@ -12,17 +12,19 @@ import type { Match, User } from "~/types/domain";
 /* ---------- Steps ---------- */
 
 export type MatchStepSlug =
+  | "spelers"
+  | "maatjes"
   | "wanneer"
   | "formaat"
-  | "maatjes"
   | "uitnodigingen"
   | "bevestigen";
 
 export const MATCH_STEPS: { slug: MatchStepSlug; shortTitle: string }[] = [
+  { slug: "spelers", shortTitle: "Spelers" },
+  { slug: "maatjes", shortTitle: "Uitnodig" },
   { slug: "wanneer", shortTitle: "Wanneer" },
   { slug: "formaat", shortTitle: "Formaat" },
-  { slug: "maatjes", shortTitle: "Maatjes" },
-  { slug: "uitnodigingen", shortTitle: "Invite" },
+  { slug: "uitnodigingen", shortTitle: "Cascade" },
   { slug: "bevestigen", shortTitle: "Bevestig" },
 ];
 
@@ -47,10 +49,11 @@ export function isMatchStepComplete(
   draft: Match | null,
 ): boolean {
   if (!draft) return false;
+  if (slug === "spelers") return true;
+  if (slug === "maatjes") return true;
   if (slug === "wanneer")
     return draft.scheduledAt !== null && draft.clubId !== null;
   if (slug === "formaat") return true; // always has a value
-  if (slug === "maatjes") return true; // can be empty list
   if (slug === "uitnodigingen") return true;
   if (slug === "bevestigen") return draft.status !== "draft";
   return false;
@@ -177,7 +180,7 @@ function Stepper({
 }) {
   const currentIndex = findMatchStepIndex(currentSlug);
   return (
-    <ol className="grid grid-cols-5 gap-1">
+    <ol className="grid grid-cols-6 gap-0.5">
       {MATCH_STEPS.map((step, i) => {
         const isActive = step.slug === currentSlug;
         const isDone = i < currentIndex;
