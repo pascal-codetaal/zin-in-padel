@@ -28,15 +28,7 @@ function displayName(profileName: string, waId: string): string {
   return profileName.trim() || waId || "daar";
 }
 
-/**
- * Single entry point for the merged agent. One thread per user — all
- * conversations (profile, favourites, match planning) share one memory.
- *
- * The agent decides itself when the flow is finished (it emits [DONE]).
- * onboardingComplete is *not* toggled here; the agent is expected to call
- * `update-profile` with `onboardingComplete: true` when the profile is done.
- */
-async function runAssistant(
+async function runPadelAssistantAgent(
   user: User,
   inboundBody: string,
   appOrigin?: string,
@@ -172,14 +164,7 @@ export async function handleIncomingMessage(
     }
 
     const pending = await tryResolvePendingFriend(user, inbound.body);
-    if (pending.handled) {
-      user = pending.user;
-      replyBody = pending.reply;
-    } else {
-      // Single unified assistant handles everything else: onboarding,
-      // favorites, match planning, and free-text questions.
-      replyBody = await runAssistant(user, inbound.body, options.appOrigin);
-    }
+    replyBody = await runPadelAssistantAgent(user, inbound.body);
   }
 
   const outbound = replyBody ?? messages.unknownCommand;
