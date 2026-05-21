@@ -9,7 +9,9 @@
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "prisma migrate dev",
+    "seed:users": "tsx scripts/seed-users.ts",
+    "seed:users:cleanup": "tsx scripts/seed-users.ts --cleanup"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.64",
