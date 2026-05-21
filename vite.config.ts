@@ -9,5 +9,7 @@ export default defineConfig({
   },
   server: {
     allowedHosts: ["padelbot-dev.loca.lt"],
+    // Public URL when tunneling — keeps asset URLs and SSR aligned with loca.lt.
+    origin: process.env.VITE_DEV_ORIGIN ?? "https://padelbot-dev.loca.lt",
   },
 });

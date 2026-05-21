@@ -13,7 +13,8 @@ export async function action({ request }: Route.ActionArgs) {
 
   const form = await request.formData();
   const inbound = parseTwilioForm(form);
-  const reply = await handleIncomingMessage(inbound);
+  const appOrigin = new URL(request.url).origin;
+  const reply = await handleIncomingMessage(inbound, { appOrigin });
 
   return twimlResponse(messagingReply(reply));
 }

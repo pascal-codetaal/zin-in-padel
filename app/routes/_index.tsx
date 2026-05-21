@@ -1,5 +1,6 @@
 import type { Route } from "./+types/_index";
 import { getDatabase } from "~/lib/db.server";
+import { formatPadelLevel } from "~/types/domain";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -12,7 +13,10 @@ export async function loader() {
   const db = await getDatabase();
 
   return {
-    users: db.users,
+    users: db.users.map((u) => ({
+      ...u,
+      maatjesPath: `/maatjes/${u.manageToken}`,
+    })),
     games: db.games,
     messageCount: db.messages.length,
     stats: {
@@ -116,8 +120,10 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
                     <Th>WaId</Th>
                     <Th>Onboarding</Th>
                     <Th>Opt-in</Th>
-                    <Th>Niveau</Th>
+                    <Th>Geslacht</Th>
+                    <Th>Klassement</Th>
                     <Th>Vrienden</Th>
+                    <Th>Persoonlijke link</Th>
                     <Th>Laatst bijgewerkt</Th>
                   </tr>
                 </thead>
@@ -142,8 +148,45 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
                           inactiveLabel="Nee"
                         />
                       </Td>
-                      <Td>{user.level ?? "—"}</Td>
+                      <Td>
+                        {user.gender === "m"
+                          ? "Heren"
+                          : user.gender === "w"
+                            ? "Dames"
+                            : "—"}
+                      </Td>
+                      <Td>
+                        {user.level !== null ? formatPadelLevel(user.level) : "—"}
+                      </Td>
                       <Td>{user.favoritePlayerRefs.length}</Td>
+                      <Td>
+                        <div className="flex gap-3">
+                          <a
+                            href={user.maatjesPath}
+                            className="text-xs font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+                          >
+                            Maatjes
+                          </a>
+                          <a
+                            href={`/profiel/${user.manageToken}`}
+                            className="text-xs font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+                          >
+                            Profiel
+                          </a>
+                          <a
+                            href={`/match/${user.manageToken}`}
+                            className="text-xs font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+                          >
+                            Matches
+                          </a>
+                          <a
+                            href={`/match/nieuw/${user.manageToken}`}
+                            className="text-xs font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+                          >
+                            + Match
+                          </a>
+                        </div>
+                      </Td>
                       <Td className="whitespace-nowrap text-gray-500 dark:text-gray-400">
                         {formatDate(user.updatedAt)}
                       </Td>

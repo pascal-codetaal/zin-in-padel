@@ -18,8 +18,12 @@ Vertel gerust over jezelf: je padelniveau (1–7), met wie je speelt (naam + mob
   help: `Beschikbare commando's:
 • JA — aanmelden / profiel opnieuw starten
 • FRIENDS — vriend toevoegen
+• MATCH — een match plannen (of plak een Playtomic-uitnodiging)
 • STOP — afmelden
 • HELP — dit overzicht`,
+
+  matchStartFresh:
+    "Top, laten we een match plannen. Geef datum, uur en club, of plak een Playtomic-bericht.",
 
   unknownCommand:
     "Sorry, dat begrijp ik niet. Typ HELP voor een overzicht van commando's.",

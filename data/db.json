@@ -8,20 +8,32 @@
       "optedIn": true,
       "onboardingComplete": true,
       "onboardingStep": 1,
-      "activeFlow": "favorites",
+      "activeFlow": "match_creation",
       "favoritePlayerPhones": [
         "+32 477 37 05 86"
       ],
       "createdAt": "2026-05-17T12:56:16.817Z",
-      "updatedAt": "2026-05-17T13:50:22.832Z",
+      "updatedAt": "2026-05-19T08:25:34.671Z",
       "favoritePlayerRefs": [
         "+32484085782",
-        "+32477370586"
+        "+32477370586",
+        "+32486914514"
       ],
-      "preferredClubIds": [],
-      "matchPreference": "friends_only",
-      "matchLevelMin": null,
-      "matchLevelMax": null
+      "preferredClubIds": [
+        "gantoise-gent",
+        "padel-4u2-gent-gentbrugge",
+        "garrincha-gent-gent",
+        "garrincha-gent-arsenaal-gentbrugge"
+      ],
+      "matchPreference": "level_only",
+      "matchLevelMin": 100,
+      "matchLevelMax": 200,
+      "pendingFriend": null,
+      "manageToken": "b188f34febd9489d966c0adbf5dc7d5a",
+      "gender": "m",
+      "level": 100,
+      "preferredSide": "right",
+      "playsBothSides": true
     },
     {
       "id": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
@@ -32,14 +44,21 @@
       "onboardingComplete": false,
       "activeFlow": null,
       "pendingFriend": null,
-      "level": null,
+      "level": 200,
       "favoritePlayerRefs": [],
-      "preferredClubIds": [],
-      "matchPreference": null,
-      "matchLevelMin": null,
-      "matchLevelMax": null,
+      "preferredClubIds": [
+        "garrincha-antwerpen-noord-antwerpen",
+        "garrincha-gent-gent"
+      ],
+      "matchPreference": "level_only",
+      "matchLevelMin": 100,
+      "matchLevelMax": 300,
       "createdAt": "2026-05-16T12:52:06.985Z",
-      "updatedAt": "2026-05-17T07:53:24.187Z"
+      "updatedAt": "2026-05-18T21:01:57.791Z",
+      "manageToken": "0980e8cc1f45484098acfec5792fe469",
+      "gender": "m",
+      "preferredSide": "right",
+      "playsBothSides": true
     },
     {
       "id": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
@@ -50,34 +69,45 @@
       "onboardingComplete": false,
       "activeFlow": "onboarding",
       "pendingFriend": null,
-      "level": 4,
+      "level": null,
       "favoritePlayerRefs": [
-        "+32497470725"
+        "+32497470725",
+        "+324848855"
       ],
       "preferredClubIds": [],
       "matchPreference": "open",
       "matchLevelMin": null,
       "matchLevelMax": null,
       "createdAt": "2026-05-17T11:07:55.976Z",
-      "updatedAt": "2026-05-17T13:52:43.130Z"
+      "updatedAt": "2026-05-17T19:29:20.481Z",
+      "manageToken": "7f4bfd98a0c943e099439a4047ba6faf",
+      "gender": null,
+      "preferredSide": null,
+      "playsBothSides": false
     },
     {
       "id": "85cf0597-8294-4315-9266-13374b85cb4b",
       "waId": "dev-85cf0597",
       "phone": "whatsapp:+dev-85cf0597",
       "profileName": "Testgebruiker",
-      "optedIn": false,
+      "optedIn": true,
       "onboardingComplete": false,
       "activeFlow": null,
       "level": null,
-      "favoritePlayerRefs": [],
+      "favoritePlayerRefs": [
+        "+324848855"
+      ],
       "preferredClubIds": [],
       "matchPreference": null,
       "matchLevelMin": null,
       "matchLevelMax": null,
       "pendingFriend": null,
       "createdAt": "2026-05-17T13:17:58.421Z",
-      "updatedAt": "2026-05-17T13:17:58.421Z"
+      "updatedAt": "2026-05-19T08:26:37.395Z",
+      "manageToken": "5e8f3db8e82e4fcd919e50d37c3c1b12",
+      "gender": null,
+      "preferredSide": null,
+      "playsBothSides": false
     },
     {
       "id": "6b0eca8f-8838-4371-88aa-47c09ec28531",
@@ -97,7 +127,50 @@
       "matchLevelMax": null,
       "pendingFriend": null,
       "createdAt": "2026-05-17T13:18:00.956Z",
-      "updatedAt": "2026-05-17T13:24:33.816Z"
+      "updatedAt": "2026-05-18T14:00:17.099Z",
+      "manageToken": "76df8c6b57f04791bc34a4564db07d68",
+      "gender": null,
+      "preferredSide": null,
+      "playsBothSides": false
+    },
+    {
+      "id": "6a6adb6c-670e-4e3c-b709-fc4fc9c38bd4",
+      "manageToken": "238165ee3abb4424bf8e8870b544da77",
+      "waId": "32484085782",
+      "phone": "whatsapp:+32484085782",
+      "profileName": "Pascal",
+      "optedIn": true,
+      "onboardingComplete": false,
+      "activeFlow": "onboarding",
+      "level": 400,
+      "favoritePlayerRefs": [
+        "+32497470725",
+        "+32477370586"
+      ],
+      "preferredClubIds": [
+        "racing-wetteren-tennis-en-padel-wetteren",
+        "padel-4u2-gent-gentbrugge",
+        "botz-padel-lokeren",
+        "gantoise-gent",
+        "garrincha-gent-gent",
+        "garrincha-gent-arsenaal-gentbrugge",
+        "padel-9000-sint-amandsberg-gent",
+        "k-t-c-azalea-brugge",
+        "hercull-rooftop-padel-brugge-sint-andries",
+        "brughia-sint-kruis-brugge",
+        "arenal-brugge-sint-kruis-brugge",
+        "vamos-brugge",
+        "k-g-witte-beer-sint-kruis-brugge"
+      ],
+      "matchPreference": "level_only",
+      "matchLevelMin": 300,
+      "matchLevelMax": 500,
+      "pendingFriend": null,
+      "createdAt": "2026-05-18T14:02:35.961Z",
+      "updatedAt": "2026-05-18T20:49:41.536Z",
+      "gender": "m",
+      "preferredSide": null,
+      "playsBothSides": false
     }
   ],
   "players": [
@@ -115,6 +188,16 @@
       "ref": "+32497470725",
       "name": "Joris Heyens",
       "phone": "+32497470725"
+    },
+    {
+      "ref": "+32486914514",
+      "name": "Greet de smet",
+      "phone": "+32486914514"
+    },
+    {
+      "ref": "+324848855",
+      "name": "pascal van hecke",
+      "phone": "+324848855"
     }
   ],
   "games": [
@@ -901,6 +984,480 @@
       "body": "Ik heb mijn best gedaan, maar Garrincha the Loop en Arsenaal staan helaas niet in mijn actuele clublijst. Hier zijn de clubs die wel in de lijst staan:\n\n1. Padel Arena Gent\n2. Padelclub Antwerpen\n3. Sportoase Brugge\n4. Padel Lounge Leuven\n5. Topspin Padel Mechelen\n\nMisschien zijn ze niet geregistreerd bij de gegevens die ik heb. Wil je dat ik een van de clubs uit deze lijst toevoeg, of heb je andere informatie? 😊",
       "direction": "out",
       "at": "2026-05-17T13:52:46.566Z"
+    },
+    {
+      "id": "46a5ca36-b358-4214-9ff2-939aa15bf231",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "p100",
+      "direction": "in",
+      "at": "2026-05-17T19:22:48.328Z"
+    },
+    {
+      "id": "73fc3bd4-4af4-4a29-999d-800fe57bafaf",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "Het lijkt erop dat \"p100\" niet herkend wordt als een niveau. Kun je je niveau aangeven van 1 tot 7? 😊",
+      "direction": "out",
+      "at": "2026-05-17T19:22:51.983Z"
+    },
+    {
+      "id": "c3d32ddf-fddc-4592-9fc7-796194afbfe5",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "FRIENDS",
+      "direction": "in",
+      "at": "2026-05-17T19:22:58.629Z"
+    },
+    {
+      "id": "7cf8108d-e820-406d-8388-580570d92b0f",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "Welke vriend wil je toevoegen? Geef naam en mobiel nummer (bv. Pascal 0470123456).",
+      "direction": "out",
+      "at": "2026-05-17T19:22:58.650Z"
+    },
+    {
+      "id": "0687e31d-0912-48ce-a5d1-746c64d24beb",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "kan je mij een link geven?",
+      "direction": "in",
+      "at": "2026-05-17T19:23:05.797Z"
+    },
+    {
+      "id": "621de650-fa56-4a47-a9c4-4c4d7e2911a6",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "Ik kan geen directe links geven. Maar je kunt je niveau vaak vinden in je profiel op de app of website van \"Zin in Padel.\" Heb je nog iemand om als favoriete medespeler toe te voegen? 😊",
+      "direction": "out",
+      "at": "2026-05-17T19:23:09.352Z"
+    },
+    {
+      "id": "d767821f-cd9e-49f2-b642-7daa33547b81",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "ik wil mijn vrienden aanpassen?",
+      "direction": "in",
+      "at": "2026-05-17T19:27:42.034Z"
+    },
+    {
+      "id": "0cc80234-aa11-47d7-840a-b676066b5907",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "Ik kan je helpen met het aanpassen van je vrienden. Zoek je iets specifieks, zoals een vriend verwijderen of een nieuwe vriend toevoegen? Laat maar weten! 😊",
+      "direction": "out",
+      "at": "2026-05-17T19:27:44.441Z"
+    },
+    {
+      "id": "e2d48e66-9ebe-4745-864f-21f1d682d448",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "geef mij de link",
+      "direction": "in",
+      "at": "2026-05-17T19:27:52.891Z"
+    },
+    {
+      "id": "f5e86898-8d5d-4e4b-8201-a68018117fb9",
+      "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a",
+      "body": "Je kunt je vrienden hier beheren: [maatjes beheren](http://localhost:5173/maatjes/7f4bfd98a0c943e099439a4047ba6faf). \n\nLaat me weten als je nog meer hulp nodig hebt! 😊",
+      "direction": "out",
+      "at": "2026-05-17T19:27:58.597Z"
+    },
+    {
+      "id": "4084c750-a615-4132-b1dd-d9701983ca31",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "test",
+      "direction": "in",
+      "at": "2026-05-18T08:44:10.951Z"
+    },
+    {
+      "id": "cc820874-cbc7-47d8-b517-603a16bef4de",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "Kun je me helpen met de naam en het mobiele nummer van de speler die je wilt toevoegen? 😊",
+      "direction": "out",
+      "at": "2026-05-18T08:44:14.742Z"
+    },
+    {
+      "id": "cc45efa6-1baa-4094-b9a3-240164abd73f",
+      "userId": "6a6adb6c-670e-4e3c-b709-fc4fc9c38bd4",
+      "body": "JA",
+      "direction": "in",
+      "at": "2026-05-18T14:02:35.971Z"
+    },
+    {
+      "id": "9a0f234a-7ee8-4e10-84c8-e539ae57022c",
+      "userId": "6a6adb6c-670e-4e3c-b709-fc4fc9c38bd4",
+      "body": "Top, je bent aangemeld 🎾\n\nVertel gerust over jezelf: je padelniveau (1–7), met wie je speelt (naam + mobiel nummer), in welke clubs, en hoe je wilt matchen.\n\nBeheer je maatjes online:\nhttp://padelbot-dev.loca.lt/maatjes/238165ee3abb4424bf8e8870b544da77",
+      "direction": "out",
+      "at": "2026-05-18T14:02:35.990Z"
+    },
+    {
+      "id": "75106f4f-8fff-42c0-b6d2-13489ef98b2a",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-18T14:02:39.060Z"
+    },
+    {
+      "id": "793f84d3-e227-4aab-816f-ea5deeaa0ee9",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-18T14:02:39.067Z"
+    },
+    {
+      "id": "2721b6f0-299d-4236-856e-df336d89d4b1",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-18T14:02:39.080Z"
+    },
+    {
+      "id": "a1988791-edea-4f16-8c35-22fe374cb12d",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-18T14:02:41.737Z"
+    },
+    {
+      "id": "b304d4d0-139b-472a-941d-989e22f303d6",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-18T14:02:41.743Z"
+    },
+    {
+      "id": "db67a5a6-bb3d-4e43-a700-71468b144507",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "",
+      "direction": "in",
+      "at": "2026-05-18T14:03:00.921Z"
+    },
+    {
+      "id": "03a3a6f4-1b67-40d9-8df9-a314c75b1408",
+      "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-18T14:03:00.929Z"
+    },
+    {
+      "id": "231724b5-796c-4ec1-8959-54c6da0f85b6",
+      "userId": "85cf0597-8294-4315-9266-13374b85cb4b",
+      "body": "ik wil een nieuwe wedstrijd opstarten",
+      "direction": "in",
+      "at": "2026-05-18T21:02:31.265Z"
+    },
+    {
+      "id": "4847248f-38f9-4e04-8b6b-83ecb7623702",
+      "userId": "85cf0597-8294-4315-9266-13374b85cb4b",
+      "body": "Antwoord eerst met JA om verder te gaan. Typ STOP om je later af te melden.",
+      "direction": "out",
+      "at": "2026-05-18T21:02:31.269Z"
+    },
+    {
+      "id": "af22c4d0-d086-4684-977f-cacf2cd51750",
+      "userId": "85cf0597-8294-4315-9266-13374b85cb4b",
+      "body": "JA",
+      "direction": "in",
+      "at": "2026-05-18T21:02:36.481Z"
+    },
+    {
+      "id": "1cc573ef-7337-4551-a476-ebb12e955410",
+      "userId": "85cf0597-8294-4315-9266-13374b85cb4b",
+      "body": "Top, je bent aangemeld 🎾\n\nVertel gerust over jezelf: je padelniveau (1–7), met wie je speelt (naam + mobiel nummer), in welke clubs, en hoe je wilt matchen.\n\nBeheer je maatjes online:\nhttp://localhost:5173/maatjes/5e8f3db8e82e4fcd919e50d37c3c1b12",
+      "direction": "out",
+      "at": "2026-05-18T21:02:36.502Z"
+    },
+    {
+      "id": "e13191d6-87b1-40dc-9243-417e35fea761",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "kan je mijn matches zien?",
+      "direction": "in",
+      "at": "2026-05-18T21:27:10.155Z"
+    },
+    {
+      "id": "8382f2df-19d7-4c4e-ab4d-60899db68ae1",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "Je hebt de volgende favoriete spelers:\n\n1. Pascal Van Hecke - +32484085782\n2. Pieter Van Neste - +32477370586\n3. Greet De Smet - +32486914514\n\nWil je iemand anders als favoriet toevoegen? 😊",
+      "direction": "out",
+      "at": "2026-05-18T21:27:16.321Z"
+    },
+    {
+      "id": "89d52afd-907d-407a-81fd-a7a2cdb7400a",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "kan je mijn matches zien?",
+      "direction": "in",
+      "at": "2026-05-18T21:29:09.396Z"
+    },
+    {
+      "id": "2d4de342-604d-40c3-a292-4f61d23bb546",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "Ik zie hier je maatjes en voorkeuren, maar niet je concrete matches. Als je je maatjes online wil beheren: http://localhost:5173/maatjes/b188f34febd9489d966c0adbf5dc7d5a",
+      "direction": "out",
+      "at": "2026-05-18T21:29:12.757Z"
+    },
+    {
+      "id": "9ed5e433-df65-4eca-bb0e-1f4572bcaf9a",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "*WEDSTRIJD IN GARRINCHA GENT THE LOOP*   📅 dinsdag 19, 10:30 (90min)  📍 Gent  📊 Niveau 1.99 - 2.99  ✅ Stefan Berth (2,2)  ⚪ ??  ✅ Christoph (2)  ✅ Bart Bousse (3,1) https://app.playtomic.io/t/OxQY6NI8",
+      "direction": "in",
+      "at": "2026-05-19T06:25:12.891Z"
+    },
+    {
+      "id": "ee6dedc1-2a68-4fe1-a956-0ac35c7f0367",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "Opgeslagen: een match in Garrincha Gent op dinsdag 19 mei om 10:30 voor 90 minuten in het heren-formaat.\n\nWie wil je uitnodigen? Je favorieten zijn:\n1. Pascal Van Hecke\n2. Pieter Van Neste\n3. Greet de smet\n\nNoem de namen of zeg \"allemaal\".",
+      "direction": "out",
+      "at": "2026-05-19T06:25:28.544Z"
+    },
+    {
+      "id": "bcc07bf9-51de-4a08-890d-265c39ee3db7",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "*WEDSTRIJD IN GARRINCHA GENT THE LOOP*   📅 dinsdag 19, 10:30 (90min)  📍 Gent  📊 Niveau 1.99 - 2.99  ✅ Stefan Berth (2,2)  ⚪ ??  ✅ Christoph (2)  ✅ Bart Bousse (3,1) https://app.playtomic.io/t/OxQY6NI8",
+      "direction": "in",
+      "at": "2026-05-19T07:28:11.407Z"
+    },
+    {
+      "id": "f7063b00-992d-416f-87e4-63fb12d72937",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "Ik kan de club \"Garrincha Gent The Loop\" niet vinden. Wil je een andere club in Gent proberen, zoals Gantoise of Padel 4U2? 🎾",
+      "direction": "out",
+      "at": "2026-05-19T07:28:17.115Z"
+    },
+    {
+      "id": "f44ece26-333d-445d-9cf4-b7d5aa2d1a14",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "*WEDSTRIJD IN GARRINCHA GENT THE LOOP*   📅 dinsdag 19, 10:30 (90min)  📍 Gent  📊 Niveau 1.99 - 2.99  ✅ Stefan Berth (2,2)  ⚪ ??  ✅ Christoph (2)  ✅ Bart Bousse (3,1) https://app.playtomic.io/t/OxQY6NI8",
+      "direction": "in",
+      "at": "2026-05-19T07:56:33.335Z"
+    },
+    {
+      "id": "9166ad71-c90e-46e2-b293-f5fbf36d56dc",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "De match is gepland op dinsdag 19 om 10:30 in Garrincha Gent! Je hebt de spelers uitgenodigd. 🎾\n\nHier is de link om je maatjes online te beheren: [Maatjes beheren](http://localhost:5173/maatjes/b188f34febd9489d966c0adbf5dc7d5a). \n\nVeel plezier met spelen!",
+      "direction": "out",
+      "at": "2026-05-19T07:56:43.363Z"
+    },
+    {
+      "id": "d7ab6030-b116-4174-bde4-93da454d3d49",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "*WEDSTRIJD IN GARRINCHA GENT THE LOOP*   📅 dinsdag 19, 10:30 (90min)  📍 Gent  📊 Niveau 1.99 - 2.99  ✅ Joris Heyens(2,2)  ⚪ ??  ✅ Christoph (2)  ✅ Bart Bousse (3,1) https://app.playtomic.io/t/OxQY6NI8",
+      "direction": "in",
+      "at": "2026-05-19T08:09:21.987Z"
+    },
+    {
+      "id": "76daecbe-b9b2-4c45-b3b3-8b4c01cef283",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "Sorry, dat begrijp ik niet. Typ HELP voor een overzicht van commando's.",
+      "direction": "out",
+      "at": "2026-05-19T08:09:32.306Z"
+    },
+    {
+      "id": "5bcb4506-fb12-4dad-a653-b7cda3394e80",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "help",
+      "direction": "in",
+      "at": "2026-05-19T08:09:45.128Z"
+    },
+    {
+      "id": "fca2afbc-ceb2-4eca-8111-b36e906a1085",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "Beschikbare commando's:\n• JA — aanmelden / profiel opnieuw starten\n• FRIENDS — vriend toevoegen\n• MATCH — een match plannen (of plak een Playtomic-uitnodiging)\n• STOP — afmelden\n• HELP — dit overzicht",
+      "direction": "out",
+      "at": "2026-05-19T08:09:45.136Z"
+    },
+    {
+      "id": "9bc068fb-2bd4-4ccf-aa78-b6f0bf7a7ac5",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "*WEDSTRIJD IN GARRINCHA GENT THE LOOP*   📅 dinsdag 19, 10:30 (90min)  📍 Gent  📊 Niveau 1.99 - 2.99  ✅ Stefan Berth (2,2)  ⚪ ??  ✅ Christoph (2)  ✅ Bart Bousse (3,1) https://app.playtomic.io/t/OxQY6NI8",
+      "direction": "in",
+      "at": "2026-05-19T08:09:56.328Z"
+    },
+    {
+      "id": "908a8097-4174-41b4-902d-78e79eba263b",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "De match bij Garrincha Gent is bevestigd voor dinsdag 19 oktober om 10:30! Er is 1 open plaats. Uitgenodigd: Pascal Van Hecke, Pieter Van Neste, en Greet de Smet. 🎾\n\nHier is de link om je maatjes online te beheren: [Maatjes beheren](http://localhost:5173/maatjes/b188f34febd9489d966c0adbf5dc7d5a). \n\nVeel plezier met spelen!",
+      "direction": "out",
+      "at": "2026-05-19T08:09:59.172Z"
+    },
+    {
+      "id": "6d6f33e1-9735-4e32-aed2-8ecb56d183f1",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "kan je ook ander personen uitnodigen?",
+      "direction": "in",
+      "at": "2026-05-19T08:10:34.758Z"
+    },
+    {
+      "id": "8a4a15ec-e216-4637-9d1c-e53855e3c52f",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "Ja, ik kan andere personen uitnodigen! Geef me de namen en mobiele nummers van degenen die je wilt uitnodigen. 😊",
+      "direction": "out",
+      "at": "2026-05-19T08:10:38.570Z"
+    },
+    {
+      "id": "456fdcf4-9f57-4cae-95ab-ed5044d5ed05",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "ik wil op niveau uitnodigen kan dat?",
+      "direction": "in",
+      "at": "2026-05-19T08:10:50.437Z"
+    },
+    {
+      "id": "574db9ec-bc03-4e1f-b8ec-45d437b47b43",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "Ja, dat kan! Wil je dat ik de spelers uitnodig op basis van hun niveau? Geef me dan een paar namen en nummers van spelers die op dat niveau zitten. 😊",
+      "direction": "out",
+      "at": "2026-05-19T08:10:52.265Z"
+    },
+    {
+      "id": "7fbaab5e-d63a-43f5-b692-d8f41545463c",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "*WEDSTRIJD IN GARRINCHA GENT THE LOOP*   📅 dinsdag 19, 10:30 (90min)  📍 Gent  📊 Niveau 1.99 - 2.99  ✅ Stefan Berth (2,2)  ⚪ ??  ✅ Christoph (2)  ✅ Bart Bousse (3,1) https://app.playtomic.io/t/OxQY6NI8",
+      "direction": "in",
+      "at": "2026-05-19T08:25:34.665Z"
+    },
+    {
+      "id": "c47861c8-121f-4d03-b958-01d67b0435c7",
+      "userId": "85cf0597-8294-4315-9266-13374b85cb4b",
+      "body": "*WEDSTRIJD IN GARRINCHA GENT THE LOOP*   📅 dinsdag 19, 10:30 (90min)  📍 Gent  📊 Niveau 1.99 - 2.99  ✅ Stefan Berth (2,2)  ⚪ ??  ✅ Christoph (2)  ✅ Bart Bousse (3,1) https://app.playtomic.io/t/OxQY6NI8",
+      "direction": "in",
+      "at": "2026-05-19T08:26:15.487Z"
+    },
+    {
+      "id": "36df43e0-9d6b-44cc-bfb9-2ed15509ef31",
+      "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "body": "Ik zie dat je nog niet de bevestiging hebt gedaan voor de match. Wil je dat ik andere spelers uitnodig op basis van niveau (1.99 - 2.99)? Geef me hun namen en nummers! 😊",
+      "direction": "out",
+      "at": "2026-05-19T08:26:22.543Z"
+    },
+    {
+      "id": "58b441cb-ce10-4c33-bb17-9661f9bbba18",
+      "userId": "85cf0597-8294-4315-9266-13374b85cb4b",
+      "body": "Match aangemaakt — 1 open plaats. Eerst je maatjes; na 30 min ook spelers op je niveau. Wie eerst 'JA' antwoordt krijgt de plek. 🎾  \nhttps://app.playtomic.io/t/OxQY6NI8",
+      "direction": "out",
+      "at": "2026-05-19T08:26:37.399Z"
+    }
+  ],
+  "matches": [
+    {
+      "id": "500d48f4-3a07-4fb9-a9fb-4c81ad661bf4",
+      "organizerId": "6a6adb6c-670e-4e3c-b709-fc4fc9c38bd4",
+      "clubId": "k-t-c-azalea-brugge",
+      "scheduledAt": "2026-05-23T17:00:00.000Z",
+      "durationMinutes": 90,
+      "format": "men_only",
+      "invitedFriendRefs": [
+        "+32497470725",
+        "+32477370586"
+      ],
+      "fallbackToLevelRange": true,
+      "fallbackLevelMin": 300,
+      "fallbackLevelMax": 500,
+      "fallbackToEveryone": true,
+      "status": "open",
+      "createdAt": "2026-05-18T21:11:39.964Z",
+      "updatedAt": "2026-05-18T21:12:21.458Z",
+      "totalSlots": 4,
+      "confirmedSlotNames": [],
+      "acceptedPlayerRefs": [],
+      "fallbackLevelDelayMinutes": 30,
+      "fallbackEveryoneDelayMinutes": 60
+    },
+    {
+      "id": "a4752b6d-e5bf-4434-a6d5-44046a37788f",
+      "organizerId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "clubId": "gantoise-gent",
+      "scheduledAt": "2026-05-23T17:00:00.000Z",
+      "durationMinutes": 90,
+      "format": "men_only",
+      "invitedFriendRefs": [
+        "+32484085782",
+        "+32477370586"
+      ],
+      "fallbackToLevelRange": true,
+      "fallbackLevelMin": 200,
+      "fallbackLevelMax": 200,
+      "fallbackToEveryone": true,
+      "status": "open",
+      "createdAt": "2026-05-18T21:14:48.204Z",
+      "updatedAt": "2026-05-18T21:15:27.525Z",
+      "totalSlots": 4,
+      "confirmedSlotNames": [],
+      "acceptedPlayerRefs": [],
+      "fallbackLevelDelayMinutes": 30,
+      "fallbackEveryoneDelayMinutes": 60
+    },
+    {
+      "id": "99821189-fe87-41b4-ad9d-96eccf84c390",
+      "organizerId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "clubId": "garrincha-gent-gent",
+      "scheduledAt": "2023-10-19T08:30:00.000Z",
+      "durationMinutes": 90,
+      "format": "men_only",
+      "fallbackToLevelRange": true,
+      "fallbackLevelMin": 100,
+      "fallbackLevelMax": 200,
+      "fallbackToEveryone": false,
+      "status": "open",
+      "createdAt": "2026-05-19T06:13:49.434Z",
+      "updatedAt": "2026-05-19T08:09:32.261Z",
+      "invitedFriendRefs": [
+        "+32484085782",
+        "+32477370586",
+        "+32486914514"
+      ],
+      "totalSlots": 4,
+      "confirmedSlotNames": [
+        "Joris Heyens",
+        "Christoph",
+        "Bart Bousse"
+      ],
+      "acceptedPlayerRefs": [],
+      "fallbackLevelDelayMinutes": 30,
+      "fallbackEveryoneDelayMinutes": 60
+    },
+    {
+      "id": "efb3f88b-d653-48bd-8959-22cbb7a5c0a3",
+      "organizerId": "29aa6a21-9951-4d44-b5ec-2475744ba823",
+      "clubId": "gantoise-gent",
+      "scheduledAt": null,
+      "durationMinutes": 90,
+      "format": "men_only",
+      "totalSlots": 4,
+      "confirmedSlotNames": [
+        "Joris Heyens"
+      ],
+      "invitedFriendRefs": [
+        "+32484085782",
+        "+32477370586",
+        "+32486914514"
+      ],
+      "acceptedPlayerRefs": [],
+      "fallbackToLevelRange": false,
+      "fallbackLevelMin": 100,
+      "fallbackLevelMax": 200,
+      "fallbackToEveryone": false,
+      "status": "draft",
+      "createdAt": "2026-05-19T08:11:49.903Z",
+      "updatedAt": "2026-05-19T08:11:49.903Z",
+      "fallbackLevelDelayMinutes": 30,
+      "fallbackEveryoneDelayMinutes": 60
+    },
+    {
+      "id": "ea02685e-d453-4280-91e7-87b417254349",
+      "organizerId": "85cf0597-8294-4315-9266-13374b85cb4b",
+      "clubId": "garrincha-gent-gent",
+      "scheduledAt": "2026-05-19T08:30:00.000Z",
+      "durationMinutes": 90,
+      "format": "mixed",
+      "totalSlots": 4,
+      "confirmedSlotNames": [
+        "Stefan Berth",
+        "Christoph",
+        "Bart Bousse"
+      ],
+      "invitedFriendRefs": [
+        "+324848855"
+      ],
+      "acceptedPlayerRefs": [],
+      "fallbackToLevelRange": false,
+      "fallbackToEveryone": false,
+      "status": "draft",
+      "createdAt": "2026-05-19T08:26:32.085Z",
+      "updatedAt": "2026-05-19T08:26:32.096Z",
+      "fallbackLevelDelayMinutes": 30,
+      "fallbackEveryoneDelayMinutes": 60
     }
   ]
 }

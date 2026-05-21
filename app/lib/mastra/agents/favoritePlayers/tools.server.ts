@@ -10,24 +10,47 @@ import {
   getDatabase,
   updateUserProfile,
 } from "~/lib/db.server";
+import { buildMaatjesPageUrl } from "~/lib/maatjes-url.server";
+import { ALL_PADEL_LEVELS } from "~/types/domain";
+
+const padelLevelSchema = z
+  .number()
+  .refine((v) => (ALL_PADEL_LEVELS as readonly number[]).includes(v), {
+    message:
+      "Padelniveau moet een Tennis Vlaanderen P-klassement zijn (50, 100, 200, 300, 400, 500, 700, 1000).",
+  });
+
+const genderSchema = z.enum(["m", "w"]);
+const sideSchema = z.enum(["left", "right"]);
 
 export const readProfileTool = createTool({
   id: "read-profile",
   description:
-    "Lees het profiel van de actieve gebruiker: niveau, vrienden, clubvoorkeuren (opgeslagen clubs), matchvoorkeur, openstaande vriend-aanvraag. Gebruik search-clubs om clubs te zoeken.",
+    "Lees het profiel van de actieve gebruiker: niveau, vrienden, clubvoorkeuren, matchvoorkeur, openstaande vriend-aanvraag, en de persoonlijke maatjesPageUrl om online te beheren. Gebruik search-clubs om clubs te zoeken.",
   inputSchema: z.object({}),
   outputSchema: z.object({
+    maatjesPageUrl: z
+      .string()
+      .nullable()
+      .describe(
+        "Persoonlijke link om maatjes in de browser te beheren; null als niet beschikbaar",
+      ),
     currentUser: z
       .object({
         id: z.string(),
         profileName: z.string(),
         phone: z.string(),
-        level: z.number().nullable(),
+        gender: genderSchema.nullable(),
+        level: padelLevelSchema.nullable(),
+        preferredSide: sideSchema.nullable(),
+        playsBothSides: z.boolean(),
         favoritePlayerRefs: z.array(z.string()),
         preferredClubIds: z.array(z.string()),
         matchPreference: z
           .enum(["friends_only", "level_only", "open"])
           .nullable(),
+        matchLevelMin: padelLevelSchema.nullable(),
+        matchLevelMax: padelLevelSchema.nullable(),
         onboardingComplete: z.boolean(),
         pendingFriend: z.object({ name: z.string() }).nullable(),
       })
@@ -52,8 +75,15 @@ export const readProfileTool = createTool({
     const userId = context?.requestContext?.get("userId") as
       | string
       | undefined;
+    const appOrigin = context?.requestContext?.get("appOrigin") as
+      | string
+      | undefined;
     const db = await getDatabase();
     const user = userId ? db.users.find((u) => u.id === userId) : null;
+    const maatjesPageUrl =
+      user && appOrigin
+        ? buildMaatjesPageUrl(new Request(`${appOrigin}/`), user.manageToken)
+        : null;
     const favoritePlayers = user
       ? db.players
           .filter((p) => user.favoritePlayerRefs.includes(p.ref))
@@ -68,15 +98,21 @@ export const readProfileTool = createTool({
       : [];
 
     return {
+      maatjesPageUrl,
       currentUser: user
         ? {
             id: user.id,
             profileName: user.profileName,
             phone: user.phone,
+            gender: user.gender,
             level: user.level,
+            preferredSide: user.preferredSide,
+            playsBothSides: user.playsBothSides,
             favoritePlayerRefs: user.favoritePlayerRefs,
             preferredClubIds: user.preferredClubIds,
             matchPreference: user.matchPreference,
+            matchLevelMin: user.matchLevelMin,
+            matchLevelMax: user.matchLevelMax,
             onboardingComplete: user.onboardingComplete,
             pendingFriend: user.pendingFriend,
           }
@@ -211,9 +247,14 @@ export const addFriendTool = createTool({
 export const updateProfileTool = createTool({
   id: "update-profile",
   description:
-    "Werk profielvelden bij: padelniveau (1-7), clubvoorkeuren (club-ids uit search-clubs), matchvoorkeur. Zet onboardingComplete true wanneer het profiel klaar is.",
+    "Werk profielvelden bij: geslacht (m/w), Tennis Vlaanderen padelklassement (heren: P100-P1000, dames: P50-P700; geef de numerieke waarde zonder 'P'), voorkeurszijde (preferredSide: left/right) en of je beide kanten speelt (playsBothSides), match niveau-range (matchLevelMin/Max), clubvoorkeuren (club-ids uit search-clubs), matchvoorkeur. Zet onboardingComplete true wanneer het profiel klaar is.",
   inputSchema: z.object({
-    level: z.number().int().min(1).max(7).optional(),
+    gender: genderSchema.optional(),
+    level: padelLevelSchema.optional(),
+    preferredSide: sideSchema.optional(),
+    playsBothSides: z.boolean().optional(),
+    matchLevelMin: padelLevelSchema.optional(),
+    matchLevelMax: padelLevelSchema.optional(),
     preferredClubIds: z.array(z.string()).optional(),
     matchPreference: z.enum(["friends_only", "level_only", "open"]).optional(),
     onboardingComplete: z.boolean().optional(),
@@ -223,11 +264,16 @@ export const updateProfileTool = createTool({
     error: z.string().optional(),
     user: z
       .object({
-        level: z.number().nullable(),
+        gender: genderSchema.nullable(),
+        level: padelLevelSchema.nullable(),
+        preferredSide: sideSchema.nullable(),
+        playsBothSides: z.boolean(),
         preferredClubIds: z.array(z.string()),
         matchPreference: z
           .enum(["friends_only", "level_only", "open"])
           .nullable(),
+        matchLevelMin: padelLevelSchema.nullable(),
+        matchLevelMax: padelLevelSchema.nullable(),
         onboardingComplete: z.boolean(),
       })
       .optional(),
@@ -256,9 +302,14 @@ export const updateProfileTool = createTool({
       return {
         ok: true,
         user: {
+          gender: user.gender,
           level: user.level,
+          preferredSide: user.preferredSide,
+          playsBothSides: user.playsBothSides,
           preferredClubIds: user.preferredClubIds,
           matchPreference: user.matchPreference,
+          matchLevelMin: user.matchLevelMin,
+          matchLevelMax: user.matchLevelMax,
           onboardingComplete: user.onboardingComplete,
         },
       };

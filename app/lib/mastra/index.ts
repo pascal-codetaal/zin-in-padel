@@ -1,12 +1,12 @@
 import { Mastra } from "@mastra/core";
 import { MASTRA_RESOURCE_ID_KEY } from "@mastra/core/request-context";
 import { getMastraStorage } from "./memory.server";
-import { favoritesAgent } from "./agents/favoritePlayers/agent.server";
+import { padelAssistant } from "./agents/padelAssistant/agent.server";
 
 export const mastra = new Mastra({
   storage: getMastraStorage(),
   agents: {
-    favoritesAgent,
+    padelAssistant,
   },
   server: {
     middleware: [

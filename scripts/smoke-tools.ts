@@ -24,6 +24,7 @@ async function seedTestUser(): Promise<string> {
   raw.users = [
     {
       id: userId,
+      manageToken: "smoketestmanage0001",
       waId: "31000000000",
       phone: "whatsapp:+31000000000",
       profileName: "Smoke Tester",

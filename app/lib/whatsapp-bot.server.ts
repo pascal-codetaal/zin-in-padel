@@ -10,7 +10,13 @@ import { mastra } from "~/lib/mastra";
 import { RequestContext } from "@mastra/core/request-context";
 import type { TwilioInboundMessage } from "~/lib/twilio.server";
 import { sendWhatsAppMessage } from "~/lib/whatsapp-messaging.server";
+import { buildMaatjesPageUrl } from "~/lib/maatjes-url.server";
 import type { User } from "~/types/domain";
+
+export type HandleIncomingOptions = {
+  /** Site origin, e.g. https://padel.example.com — used for personal maatjes links. */
+  appOrigin?: string;
+};
 
 const DONE_MARKER = "[DONE]";
 
@@ -22,33 +28,61 @@ function displayName(profileName: string, waId: string): string {
   return profileName.trim() || waId || "daar";
 }
 
-async function runProfileAgent(
+/**
+ * Single entry point for the merged agent. One thread per user — all
+ * conversations (profile, favourites, match planning) share one memory.
+ *
+ * The agent decides itself when the flow is finished (it emits [DONE]).
+ * onboardingComplete is *not* toggled here; the agent is expected to call
+ * `update-profile` with `onboardingComplete: true` when the profile is done.
+ */
+async function runAssistant(
   user: User,
   inboundBody: string,
+  appOrigin?: string,
 ): Promise<string> {
-  const agent = mastra.getAgent("profileAgent");
+  const agent = mastra.getAgent("padelAssistant");
   const requestContext = new RequestContext();
   requestContext.set("userId", user.id);
+  if (appOrigin) {
+    requestContext.set("appOrigin", appOrigin);
+  }
   const result = await agent.generate(inboundBody, {
     memory: { thread: user.id, resource: user.id },
     requestContext,
   });
 
   let text = result.text ?? "";
-  const isDone = text.includes(DONE_MARKER);
-  if (isDone) {
+  if (text.includes(DONE_MARKER)) {
     text = text.replace(DONE_MARKER, "").trim();
-    await updateUser(user.id, {
-      activeFlow: null,
-      onboardingComplete: true,
-    });
+    await updateUser(user.id, { activeFlow: null });
   }
 
   return text || messages.unknownCommand;
 }
 
+/**
+ * Detect a pasted Playtomic / "WEDSTRIJD" invitation.
+ * The user shouldn't have to type a command — pasting the message is enough.
+ */
+export function isMatchInvitePaste(body: string): boolean {
+  const text = body ?? "";
+  if (/https?:\/\/(app\.|www\.)?playtomic\.io\b/i.test(text)) return true;
+  if (/\*WEDSTRIJD\s+IN\s+/i.test(text)) return true;
+  // Heuristic: presence of the calendar + location emojis used by the format.
+  if (text.includes("📅") && text.includes("📍")) return true;
+  return false;
+}
+
+function maatjesLinkForUser(user: User, appOrigin: string | undefined): string {
+  if (!appOrigin) return "";
+  const request = new Request(`${appOrigin}/`);
+  return buildMaatjesPageUrl(request, user.manageToken);
+}
+
 export async function handleIncomingMessage(
   inbound: TwilioInboundMessage,
+  options: HandleIncomingOptions = {},
 ): Promise<string> {
   const waId = inbound.waId || inbound.from.replace(/^whatsapp:/, "");
   const command = normalizeCommand(inbound.body);
@@ -71,7 +105,10 @@ export async function handleIncomingMessage(
       optedIn: false,
       onboardingComplete: false,
       activeFlow: null,
+      gender: null,
       level: null,
+      preferredSide: null,
+      playsBothSides: false,
       favoritePlayerRefs: [],
       preferredClubIds: [],
       matchPreference: null,
@@ -87,7 +124,10 @@ export async function handleIncomingMessage(
       optedIn: true,
       onboardingComplete: false,
       activeFlow: "onboarding",
+      gender: null,
       level: null,
+      preferredSide: null,
+      playsBothSides: false,
       favoritePlayerRefs: [],
       preferredClubIds: [],
       matchPreference: null,
@@ -95,13 +135,23 @@ export async function handleIncomingMessage(
       matchLevelMax: null,
       pendingFriend: null,
     });
-    replyBody = messages.optInConfirmed;
+    const manageUrl = maatjesLinkForUser(user, options.appOrigin);
+    replyBody = manageUrl
+      ? `${messages.optInConfirmed}\n\nBeheer je maatjes online:\n${manageUrl}`
+      : messages.optInConfirmed;
   } else if (command === "FRIENDS" || command === "MAATJES") {
     if (!user.optedIn) {
       replyBody = messages.optInRequired;
     } else {
       user = await updateUser(user.id, { activeFlow: "favorites" });
       replyBody = messages.friendsStart;
+    }
+  } else if (command === "MATCH" || command === "WEDSTRIJD") {
+    if (!user.optedIn) {
+      replyBody = messages.optInRequired;
+    } else {
+      user = await updateUser(user.id, { activeFlow: "match_creation" });
+      replyBody = messages.matchStartFresh;
     }
   } else if (!user.optedIn) {
     if (isNewUser) {
@@ -111,18 +161,24 @@ export async function handleIncomingMessage(
       replyBody = messages.optInRequired;
     }
   } else {
+    // Auto-activate the match flow when the user pastes an invite, so the
+    // agent's memory + activeFlow hint line up. (The agent will read its own
+    // tools to decide what to do regardless.)
+    if (
+      user.activeFlow !== "match_creation" &&
+      isMatchInvitePaste(inbound.body)
+    ) {
+      user = await updateUser(user.id, { activeFlow: "match_creation" });
+    }
+
     const pending = await tryResolvePendingFriend(user, inbound.body);
     if (pending.handled) {
       user = pending.user;
       replyBody = pending.reply;
-    } else if (
-      user.activeFlow === "onboarding" ||
-      user.activeFlow === "favorites" ||
-      (!user.onboardingComplete && user.optedIn)
-    ) {
-      replyBody = await runProfileAgent(user, inbound.body);
     } else {
-      replyBody = messages.unknownCommand;
+      // Single unified assistant handles everything else: onboarding,
+      // favorites, match planning, and free-text questions.
+      replyBody = await runAssistant(user, inbound.body, options.appOrigin);
     }
   }
 

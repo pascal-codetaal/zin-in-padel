@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { Club } from "~/types/domain";
 
@@ -13,6 +13,8 @@ type RawClub = {
   naam: string;
   locatie: string;
   provincie: string;
+  /** Aliases learned from external sources (e.g. Playtomic). Optional. */
+  playtomicNames?: string[];
 };
 
 let cachedClubs: Club[] | null = null;
@@ -23,14 +25,27 @@ function mapRaw(raw: RawClub): Club {
     name: raw.naam,
     city: raw.locatie,
     province: raw.provincie,
+    playtomicNames: Array.isArray(raw.playtomicNames)
+      ? raw.playtomicNames.filter((n): n is string => typeof n === "string")
+      : undefined,
   };
+}
+
+async function readRawClubs(): Promise<RawClub[]> {
+  const raw = JSON.parse(await readFile(CLUBS_PATH, "utf-8")) as RawClub[];
+  return raw;
 }
 
 export async function loadClubs(): Promise<Club[]> {
   if (cachedClubs) return cachedClubs;
-  const raw = JSON.parse(await readFile(CLUBS_PATH, "utf-8")) as RawClub[];
+  const raw = await readRawClubs();
   cachedClubs = raw.map(mapRaw);
   return cachedClubs;
+}
+
+/** Force the in-memory cache to refresh on the next `loadClubs` call. */
+function invalidateClubsCache(): void {
+  cachedClubs = null;
 }
 
 export async function getClubById(id: string): Promise<Club | undefined> {
@@ -46,11 +61,16 @@ export async function getClubsByIds(ids: string[]): Promise<Club[]> {
 
 const MAX_SEARCH_RESULTS = 15;
 
+function normalize(s: string): string {
+  return s.trim().toLowerCase();
+}
+
 /**
- * Search padel clubs in Vlaanderen by name, city, or province.
+ * Search padel clubs in Vlaanderen by name, city, province, or a previously
+ * learned Playtomic alias. Returns up to 15 results ordered by relevance.
  */
 export async function searchClubs(query: string): Promise<Club[]> {
-  const q = query.trim().toLowerCase();
+  const q = normalize(query);
   if (!q) return [];
 
   const clubs = await loadClubs();
@@ -58,11 +78,19 @@ export async function searchClubs(query: string): Promise<Club[]> {
 
   const scored = clubs
     .map((club) => {
+      const aliasMatches = (club.playtomicNames ?? []).some((alias) => {
+        const a = normalize(alias);
+        return a === q || a.includes(q) || q.includes(a);
+      });
+
       const haystack = `${club.name} ${club.city} ${club.province ?? ""}`.toLowerCase();
       const matchesAll = tokens.every((t) => haystack.includes(t));
-      if (!matchesAll) return null;
+
+      if (!aliasMatches && !matchesAll) return null;
 
       let score = 0;
+      if (aliasMatches) score += 200; // strong signal — beats name match
+
       const nameLower = club.name.toLowerCase();
       const cityLower = club.city.toLowerCase();
 
@@ -80,12 +108,63 @@ export async function searchClubs(query: string): Promise<Club[]> {
     })
     .filter((x): x is { club: Club; score: number } => x !== null);
 
-  scored.sort((a, b) => b.score - a.score || a.club.name.localeCompare(b.club.name));
+  scored.sort(
+    (a, b) => b.score - a.score || a.club.name.localeCompare(b.club.name),
+  );
 
   return scored.slice(0, MAX_SEARCH_RESULTS).map((s) => s.club);
 }
 
 export function formatClubLine(club: Club, index: number): string {
-  const place = club.province ? ` (${club.city}, ${club.province})` : ` (${club.city})`;
+  const place = club.province
+    ? ` (${club.city}, ${club.province})`
+    : ` (${club.city})`;
   return `${index}. ${club.name}${place}`;
+}
+
+/**
+ * Compact list used as a fallback when a fuzzy paste (e.g. Playtomic name)
+ * doesn't match by `searchClubs`. The agent gets the full catalog so it can
+ * propose 2-3 candidates to the user.
+ */
+export async function loadAllClubsCompact(): Promise<
+  { id: string; name: string; city: string; province?: string }[]
+> {
+  const clubs = await loadClubs();
+  return clubs.map((c) => ({
+    id: c.id,
+    name: c.name,
+    city: c.city,
+    province: c.province,
+  }));
+}
+
+/**
+ * Persist an external (e.g. Playtomic) name for a club so that next time the
+ * exact string appears in a paste, `searchClubs` resolves it directly.
+ */
+export async function addPlaytomicAlias(
+  clubId: string,
+  alias: string,
+): Promise<{ ok: true; club: Club } | { ok: false; error: string }> {
+  const trimmed = alias.trim();
+  if (!trimmed) return { ok: false, error: "alias_empty" };
+
+  const raw = await readRawClubs();
+  const idx = raw.findIndex((c) => c.id === clubId);
+  if (idx < 0) return { ok: false, error: "club_not_found" };
+
+  const existing = raw[idx]!.playtomicNames ?? [];
+  if (
+    !existing.some(
+      (n) => normalize(n) === normalize(trimmed),
+    )
+  ) {
+    raw[idx] = { ...raw[idx]!, playtomicNames: [...existing, trimmed] };
+    await writeFile(CLUBS_PATH, `${JSON.stringify(raw, null, 2)}\n`, "utf-8");
+    invalidateClubsCache();
+  }
+
+  const updatedClub = mapRaw(raw[idx]!);
+  return { ok: true, club: updatedClub };
 }

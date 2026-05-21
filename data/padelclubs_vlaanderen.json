@@ -519,7 +519,10 @@
     "id": "garrincha-gent-gent",
     "naam": "Garrincha Gent",
     "locatie": "Gent",
-    "provincie": "Oost-Vlaanderen"
+    "provincie": "Oost-Vlaanderen",
+    "playtomicNames": [
+      "GARRINCHA GENT THE LOOP"
+    ]
   },
   {
     "id": "garrincha-gent-arsenaal-gentbrugge",

@@ -41,6 +41,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     id: u.id,
     profileName: u.profileName,
     waId: u.waId,
+    manageToken: u.manageToken,
     optedIn: u.optedIn,
     activeFlow: u.activeFlow,
   }));
@@ -62,6 +63,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       id: selectedUser.id,
       profileName: selectedUser.profileName,
       waId: selectedUser.waId,
+      manageToken: selectedUser.manageToken,
       optedIn: selectedUser.optedIn,
       activeFlow: selectedUser.activeFlow,
       pendingFriend: selectedUser.pendingFriend,
@@ -96,7 +98,8 @@ export async function action({ request }: Route.ActionArgs) {
     }
 
     const inbound = inboundFromUser(user, body);
-    await handleIncomingMessage(inbound);
+    const appOrigin = new URL(request.url).origin;
+    await handleIncomingMessage(inbound, { appOrigin });
 
     return redirect(`/dev/simulator?userId=${userId}`);
   }
@@ -154,6 +157,14 @@ export default function DevSimulator({ loaderData }: Route.ComponentProps) {
           >
             ← Dashboard
           </Link>
+          {selectedUser?.manageToken && (
+            <Link
+              to={`/maatjes/${selectedUser.manageToken}`}
+              className="mt-1 block text-xs text-emerald-600 hover:underline dark:text-emerald-400"
+            >
+              Mijn maatjes →
+            </Link>
+          )}
           <h1 className="mt-2 text-base font-semibold tracking-tight">
             WhatsApp simulator
           </h1>
