@@ -1,62 +1,42 @@
-import { readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
 import type { Club } from "~/types/domain";
+import { prisma } from "~/lib/prisma.server";
+import type { Prisma } from "@prisma/client";
 
-const CLUBS_PATH = path.join(
-  process.cwd(),
-  "data",
-  "padelclubs_vlaanderen.json",
-);
+type ClubRow = Prisma.ClubGetPayload<{ include: { playtomicAliases: true } }>;
 
-type RawClub = {
-  id: string;
-  naam: string;
-  locatie: string;
-  provincie: string;
-  /** Aliases learned from external sources (e.g. Playtomic). Optional. */
-  playtomicNames?: string[];
-};
-
-let cachedClubs: Club[] | null = null;
-
-function mapRaw(raw: RawClub): Club {
+function clubRowToDomain(row: ClubRow): Club {
+  const aliases = row.playtomicAliases.map((a) => a.alias);
   return {
-    id: raw.id,
-    name: raw.naam,
-    city: raw.locatie,
-    province: raw.provincie,
-    playtomicNames: Array.isArray(raw.playtomicNames)
-      ? raw.playtomicNames.filter((n): n is string => typeof n === "string")
-      : undefined,
+    id: row.id,
+    name: row.name,
+    city: row.city,
+    province: row.province ?? undefined,
+    playtomicNames: aliases.length > 0 ? aliases : undefined,
   };
 }
 
-async function readRawClubs(): Promise<RawClub[]> {
-  const raw = JSON.parse(await readFile(CLUBS_PATH, "utf-8")) as RawClub[];
-  return raw;
-}
-
 export async function loadClubs(): Promise<Club[]> {
-  if (cachedClubs) return cachedClubs;
-  const raw = await readRawClubs();
-  cachedClubs = raw.map(mapRaw);
-  return cachedClubs;
-}
-
-/** Force the in-memory cache to refresh on the next `loadClubs` call. */
-function invalidateClubsCache(): void {
-  cachedClubs = null;
+  const rows = await prisma.club.findMany({
+    include: { playtomicAliases: true },
+  });
+  return rows.map(clubRowToDomain);
 }
 
 export async function getClubById(id: string): Promise<Club | undefined> {
-  const clubs = await loadClubs();
-  return clubs.find((c) => c.id === id);
+  const row = await prisma.club.findUnique({
+    where: { id },
+    include: { playtomicAliases: true },
+  });
+  return row ? clubRowToDomain(row) : undefined;
 }
 
 export async function getClubsByIds(ids: string[]): Promise<Club[]> {
-  const clubs = await loadClubs();
-  const set = new Set(ids);
-  return clubs.filter((c) => set.has(c.id));
+  if (ids.length === 0) return [];
+  const rows = await prisma.club.findMany({
+    where: { id: { in: ids } },
+    include: { playtomicAliases: true },
+  });
+  return rows.map(clubRowToDomain);
 }
 
 const MAX_SEARCH_RESULTS = 15;
@@ -130,12 +110,12 @@ export function formatClubLine(club: Club, index: number): string {
 export async function loadAllClubsCompact(): Promise<
   { id: string; name: string; city: string; province?: string }[]
 > {
-  const clubs = await loadClubs();
-  return clubs.map((c) => ({
+  const rows = await prisma.club.findMany();
+  return rows.map((c) => ({
     id: c.id,
     name: c.name,
     city: c.city,
-    province: c.province,
+    province: c.province ?? undefined,
   }));
 }
 
@@ -150,21 +130,22 @@ export async function addPlaytomicAlias(
   const trimmed = alias.trim();
   if (!trimmed) return { ok: false, error: "alias_empty" };
 
-  const raw = await readRawClubs();
-  const idx = raw.findIndex((c) => c.id === clubId);
-  if (idx < 0) return { ok: false, error: "club_not_found" };
+  const club = await prisma.club.findUnique({ where: { id: clubId } });
+  if (!club) return { ok: false, error: "club_not_found" };
 
-  const existing = raw[idx]!.playtomicNames ?? [];
-  if (
-    !existing.some(
-      (n) => normalize(n) === normalize(trimmed),
-    )
-  ) {
-    raw[idx] = { ...raw[idx]!, playtomicNames: [...existing, trimmed] };
-    await writeFile(CLUBS_PATH, `${JSON.stringify(raw, null, 2)}\n`, "utf-8");
-    invalidateClubsCache();
+  const normalized = normalize(trimmed);
+  const existing = await prisma.clubPlaytomicAlias.findFirst({
+    where: { clubId, aliasNormalized: normalized },
+  });
+  if (!existing) {
+    await prisma.clubPlaytomicAlias.create({
+      data: { clubId, alias: trimmed, aliasNormalized: normalized },
+    });
   }
 
-  const updatedClub = mapRaw(raw[idx]!);
-  return { ok: true, club: updatedClub };
+  const updated = await prisma.club.findUniqueOrThrow({
+    where: { id: clubId },
+    include: { playtomicAliases: true },
+  });
+  return { ok: true, club: clubRowToDomain(updated) };
 }

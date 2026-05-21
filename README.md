@@ -8,19 +8,29 @@ WhatsApp bot voor padel met een React Router v7 admin-dashboard. Backend-endpoin
 - TypeScript
 - [Vercel](https://vercel.com/) deployment via [`@vercel/react-router`](https://vercel.com/docs/frameworks/react-router)
 - [Twilio WhatsApp](https://www.twilio.com/docs/whatsapp) webhook
-- Lokale JSON-opslag (`data/db.json`) voor proof of concept
+- Lokale SQLite-opslag via Prisma (`data/app.db`) voor proof of concept
 
-## Waarschuwing: JSON-opslag op Vercel
+## Waarschuwing: SQLite-opslag op Vercel
 
-**`data/db.json` is alleen geschikt voor lokaal ontwikkelen.**
+**`data/app.db` is alleen geschikt voor lokaal ontwikkelen.**
 
 Op Vercel zijn serverless functions stateless: schrijven naar het bestandssysteem is niet persistent en wordt niet gedeeld tussen requests. Gebruik voor deployed testing en productie een echte database, bijvoorbeeld:
 
-- [Vercel KV](https://vercel.com/docs/storage/vercel-kv)
+- [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres)
 - [Supabase](https://supabase.com/)
 - [Neon](https://neon.tech/) of Postgres
 
-Vervang daarbij de implementatie in `app/lib/db.server.ts` door een store die op je gekozen backend aansluit.
+Wissel daarbij het Prisma-`datasource` om naar `postgresql` en pas
+`prisma.config.ts` aan; de queries in `app/lib/db.server.ts` en
+`app/lib/clubs.server.ts` blijven gelijk.
+
+### Database initialiseren
+
+```bash
+npx prisma migrate dev   # past migrations toe
+```
+
+De DB is de source of truth — er is geen JSON-seed meer.
 
 ## Vereisten
 
@@ -99,7 +109,7 @@ Hardcoded commando's (`JA`/`STOP`/`HELP`/`MAATJES`) bypassen de agent altijd.
 
 ### Agent-geheugen
 
-De agent heeft een persistent geheugen via Mastra Memory + LibSQL (SQLite-bestand op `data/mastra-memory.db`, gitignored). Elke gebruiker krijgt een eigen `thread` (`= user.id`); de laatste 20 turns worden bij elke `generate`-call automatisch meegestuurd. Geen vector recall, geen externe afhankelijkheden — bestand-lokaal en in lijn met de POC-schaal van `data/db.json`. Geconfigureerd in `app/lib/mastra/memory.server.ts`.
+De agent heeft een persistent geheugen via Mastra Memory + LibSQL (SQLite-bestand op `data/mastra-memory.db`, gitignored). Elke gebruiker krijgt een eigen `thread` (`= user.id`); de laatste 20 turns worden bij elke `generate`-call automatisch meegestuurd. Geen vector recall, geen externe afhankelijkheden — bestand-lokaal en in lijn met de POC-schaal van `data/app.db`. Geconfigureerd in `app/lib/mastra/memory.server.ts`.
 
 ### Mastra Studio
 
@@ -117,7 +127,7 @@ Voor end-to-end tests zonder Twilio-sandbox of localtunnel:
 
 1. `npm run dev`
 2. Open [http://localhost:5173/dev/simulator](http://localhost:5173/dev/simulator)
-3. Kies een gebruiker uit `data/db.json` (of maak een testgebruiker)
+3. Kies een gebruiker uit de DB (`data/app.db`) of maak een testgebruiker
 4. Bekijk het WhatsApp-gesprek en stuur berichten — dezelfde `handleIncomingMessage`-pipeline als de webhook
 
 De simulator **emuleert Twilio** (inbound/outbound in `messages[]`); de bot, Mastra-agent en geheugen (`data/mastra-memory.db`, `thread = user.id`) zijn identiek aan productie. Vereist `OPENAI_API_KEY` voor de favorieten-flow.
@@ -158,7 +168,10 @@ app/
       tools.server.ts               # readDb + addFavorite tools
       memory.server.ts              # LibSQL-backed agent memory
 data/
-  db.json                           # Lokale POC-database
+  app.db                            # Lokale SQLite-DB (gitignored)
+prisma/
+  schema.prisma                     # Prisma schema (SQLite)
+  migrations/                       # Versie-historie
 ```
 
 ## Scripts
@@ -170,3 +183,4 @@ data/
 | `npm run build` | Production build |
 | `npm run start` | Serve production build |
 | `npm run typecheck` | Typegen + TypeScript check |
+| `npx prisma migrate dev` | Apply Prisma migrations |

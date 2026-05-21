@@ -1,51 +1,51 @@
 // Smoke test for profile tools — calls execute() directly,
 // no LLM round-trip required. Run with: npx tsx scripts/smoke-tools.ts
-import { readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
+//
+// Persistence: the smoke run inserts a dedicated test user + cleans up
+// everything (user cascades through favorites/messages; the test player
+// is removed at the end). The rest of the DB is untouched.
 import { RequestContext } from "@mastra/core/request-context";
+import { prisma } from "../app/lib/prisma.server";
 import {
   addFriendTool,
   readProfileTool,
 } from "../app/lib/mastra/agents/favoritePlayers/tools.server";
 
-const DB_PATH = path.join(process.cwd(), "data", "db.json");
+const TEST_USER_ID = "smoke-test-user";
+const TEST_USER_WA_ID = "31000000000";
+const TEST_PLAYER_PHONE = "+32470123456";
 
-async function backup(): Promise<string> {
-  return await readFile(DB_PATH, "utf-8");
-}
-
-async function restore(snapshot: string): Promise<void> {
-  await writeFile(DB_PATH, snapshot, "utf-8");
+async function cleanup(): Promise<void> {
+  // User cascade removes favorites + messages.
+  await prisma.user.deleteMany({ where: { id: TEST_USER_ID } });
+  // Player rows are shared — only remove the one this smoke test introduced
+  // (if no other user still references it).
+  const refs = await prisma.userFavorite.count({
+    where: { playerRef: TEST_PLAYER_PHONE },
+  });
+  if (refs === 0) {
+    await prisma.player.deleteMany({ where: { ref: TEST_PLAYER_PHONE } });
+  }
 }
 
 async function seedTestUser(): Promise<string> {
-  const raw = JSON.parse(await readFile(DB_PATH, "utf-8"));
-  const userId = "smoke-test-user";
-  raw.users = [
-    {
-      id: userId,
+  await cleanup();
+  const now = new Date();
+  await prisma.user.create({
+    data: {
+      id: TEST_USER_ID,
       manageToken: "smoketestmanage0001",
-      waId: "31000000000",
-      phone: "whatsapp:+31000000000",
+      waId: TEST_USER_WA_ID,
+      phone: `whatsapp:+${TEST_USER_WA_ID}`,
       profileName: "Smoke Tester",
       optedIn: true,
       onboardingComplete: false,
       activeFlow: "onboarding",
-      pendingFriend: null,
-      level: null,
-      favoritePlayerRefs: [],
-      preferredClubIds: [],
-      matchPreference: null,
-      matchLevelMin: null,
-      matchLevelMax: null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
     },
-  ];
-  raw.players = [];
-  raw.messages = [];
-  await writeFile(DB_PATH, JSON.stringify(raw, null, 2) + "\n", "utf-8");
-  return userId;
+  });
+  return TEST_USER_ID;
 }
 
 function assert(cond: unknown, msg: string): asserts cond {
@@ -59,7 +59,6 @@ function ctxFor(userId: string) {
 }
 
 async function main() {
-  const snap = await backup();
   try {
     const userId = await seedTestUser();
     const ctx = ctxFor(userId);
@@ -88,16 +87,22 @@ async function main() {
 
     const after = await (readProfileTool as any).execute({}, ctx);
     assert(after.favoritePlayers.length === 1, "favorite persisted");
-    assert(after.favoritePlayers[0].phone === "+32470123456", "phone stored");
+    assert(
+      after.favoritePlayers[0].phone === TEST_PLAYER_PHONE,
+      "phone stored",
+    );
     console.log("✓ read-profile: reflects writes");
 
     console.log("\nALL SMOKE TESTS PASSED");
   } finally {
-    await restore(snap);
+    await cleanup();
+    await prisma.$disconnect();
   }
 }
 
-main().catch((err) => {
+main().catch(async (err) => {
   console.error(err);
+  await cleanup().catch(() => {});
+  await prisma.$disconnect().catch(() => {});
   process.exit(1);
 });

@@ -17,13 +17,13 @@ import { LibSQLStore } from "@mastra/libsql";
  * 2. `process.cwd()` differs between `npm run dev` (project root) and
  *    `mastra dev` (somewhere inside `.mastra/`), so we have to walk up.
  *
- * We anchor on the existence of `data/db.json` (our own seed file) which
- * only ever lives at the real project root.
+ * We anchor on the existence of `prisma/schema.prisma` which only ever lives
+ * at the real project root and is not copied into `.mastra/output/`.
  */
 function findProjectRoot(start: string): string {
   let dir = start;
   while (dir !== path.dirname(dir)) {
-    if (fs.existsSync(path.join(dir, "data", "db.json"))) return dir;
+    if (fs.existsSync(path.join(dir, "prisma", "schema.prisma"))) return dir;
     dir = path.dirname(dir);
   }
   return start;

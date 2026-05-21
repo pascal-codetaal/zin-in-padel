@@ -1,0 +1,192 @@
+// Prisma schema for zin-in-padel
+// Replaces data/db.json + data/padelclubs_vlaanderen.json.
+// Values for fields like gender/preferredSide/matchPreference/activeFlow are
+// validated at the app layer — SQLite has no enums.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Users                                                                     */
+/* -------------------------------------------------------------------------- */
+
+model User {
+  id                 String   @id
+  manageToken        String   @unique
+  waId               String   @unique
+  phone              String
+  profileName        String
+  optedIn            Boolean  @default(false)
+  onboardingComplete Boolean  @default(false)
+  onboardingStep     Int?
+  activeFlow         String?
+  pendingFriendName  String?
+  gender             String?
+  level              Int?
+  preferredSide      String?
+  playsBothSides     Boolean  @default(false)
+  matchPreference    String?
+  matchLevelMin      Int?
+  matchLevelMax      Int?
+  createdAt          DateTime
+  updatedAt          DateTime
+
+  favorites        UserFavorite[]
+  preferredClubs   UserPreferredClub[]
+  messages         Message[]
+  organizedMatches Match[]             @relation("MatchOrganizer")
+}
+
+model Player {
+  ref   String @id
+  name  String
+  phone String
+
+  favoritedBy        UserFavorite[]
+  invitedToMatches   MatchInvitedPlayer[]
+  acceptedInMatches  MatchAcceptedPlayer[]
+}
+
+model UserFavorite {
+  userId    String
+  playerRef String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerRef], references: [ref], onDelete: Cascade)
+
+  @@id([userId, playerRef])
+  @@index([playerRef])
+}
+
+model UserPreferredClub {
+  userId String
+  clubId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@id([userId, clubId])
+  @@index([clubId])
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Matches                                                                   */
+/* -------------------------------------------------------------------------- */
+
+model Match {
+  id                           String   @id
+  organizerId                  String
+  clubId                       String?
+  scheduledAt                  DateTime?
+  durationMinutes              Int      @default(90)
+  format                       String
+  totalSlots                   Int      @default(4)
+  fallbackToLevelRange         Boolean  @default(false)
+  fallbackLevelMin             Int?
+  fallbackLevelMax             Int?
+  fallbackLevelDelayMinutes    Int      @default(30)
+  fallbackToEveryone           Boolean  @default(false)
+  fallbackEveryoneDelayMinutes Int      @default(60)
+  status                       String
+  createdAt                    DateTime
+  updatedAt                    DateTime
+
+  organizer       User                  @relation("MatchOrganizer", fields: [organizerId], references: [id], onDelete: Cascade)
+  club            Club?                 @relation(fields: [clubId], references: [id])
+  invitedPlayers  MatchInvitedPlayer[]
+  acceptedPlayers MatchAcceptedPlayer[]
+  confirmedSlots  MatchConfirmedSlot[]
+
+  @@index([organizerId])
+  @@index([clubId])
+}
+
+model MatchInvitedPlayer {
+  matchId   String
+  playerRef String
+
+  match  Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerRef], references: [ref], onDelete: Cascade)
+
+  @@id([matchId, playerRef])
+  @@index([playerRef])
+}
+
+model MatchAcceptedPlayer {
+  matchId   String
+  playerRef String
+
+  match  Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerRef], references: [ref], onDelete: Cascade)
+
+  @@id([matchId, playerRef])
+  @@index([playerRef])
+}
+
+model MatchConfirmedSlot {
+  matchId String
+  idx     Int
+  name    String
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@id([matchId, idx])
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Messages                                                                  */
+/* -------------------------------------------------------------------------- */
+
+model Message {
+  id        String   @id
+  userId    String
+  body      String
+  direction String
+  at        DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, at])
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Games                                                                     */
+/* -------------------------------------------------------------------------- */
+
+model Game {
+  id          String   @id
+  title       String
+  scheduledAt DateTime
+  status      String
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Clubs (catalog — replaces data/padelclubs_vlaanderen.json)                */
+/* -------------------------------------------------------------------------- */
+
+model Club {
+  id       String  @id
+  name     String
+  city     String
+  province String?
+
+  playtomicAliases ClubPlaytomicAlias[]
+  preferredBy      UserPreferredClub[]
+  matches          Match[]
+}
+
+model ClubPlaytomicAlias {
+  clubId         String
+  alias          String
+  aliasNormalized String
+
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@id([clubId, alias])
+  @@index([aliasNormalized])
+}

@@ -47,16 +47,17 @@ reconstructing conversation history for the agent.
 | `HELP`     | Show command list |
 | `MAATJES`  | Re-enter favorites flow |
 
-## Storage shape (`data/db.json`)
+## Storage (SQLite via Prisma)
 
-```jsonc
-{
-  "users": [ /* User[] — gains favoritePlayerPhones + activeFlow */ ],
-  "players": [ /* Player[] — new */ ],
-  "games": [ /* Game[] — unchanged */ ],
-  "messages": [ /* Message[] — gains direction discriminator */ ]
-}
-```
+App data + club catalog live in SQLite at `data/app.db`. Schema is in
+`prisma/schema.prisma`; relational tables for users, players, favorites,
+preferred clubs, matches (with invited/accepted/confirmed-slot join tables),
+messages, games, clubs, and club Playtomic aliases.
+
+- `app/lib/prisma.server.ts` exports a singleton Prisma client (HMR-safe).
+- `app/lib/db.server.ts` and `app/lib/clubs.server.ts` wrap Prisma — call
+  sites still operate on the domain types from `~/types/domain`.
+- DB is the source of truth. Schema changes via `npx prisma migrate dev`.
 
 ## Phone numbers
 
@@ -67,7 +68,7 @@ reconstructing conversation history for the agent.
 
 ## Notes
 
-- `data/db.json` is POC-only (not Vercel-safe). See README.
+- SQLite at `data/app.db` is POC-only (not Vercel-safe). See README.
 - Agent conversation memory lives in Mastra Memory + LibSQL
   (`data/mastra-memory.db`, gitignored), keyed by `thread = user.id`.
   See `app/lib/mastra/memory.server.ts`.

@@ -12,3 +12,6 @@
 
 # Mastra memory store (LibSQL)
 /data/mastra-memory.db*
+
+# Prisma SQLite app database
+/data/app.db*
