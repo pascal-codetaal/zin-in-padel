@@ -51,7 +51,7 @@ PROFIEL CONTEXT:
 - Klassement = Tennis & Padel Vlaanderen Keytrade Bank P-klassement.
   Heren: P100, P200, P300, P400, P500, P700, P1000.
   Dames: P50, P100, P200, P300, P400, P500, P700.
-  Geef numeriek door (100 voor P100), nooit met de letter "P".
+  Geef numeriek door (100 voor P100)
 - Vraag geslacht voor je naar het klassement vraagt.
 - preferredSide is "left" (links) of "right" (rechts); playsBothSides is true/false.
 
