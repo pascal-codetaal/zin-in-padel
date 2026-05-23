@@ -19,7 +19,7 @@ export const favoritesAgent = new Agent({
   id: "favorites-agent",
   name: "Favorites Agent",
   instructions: SYSTEM_PROMPT,
-  model: "openai/gpt-5.4-mini",
+  model: "openai/gpt-5.5",
   tools: { readDb: readDbTool, addFavorite: addFavoriteTool },
   memory: getFavoritesMemory(),
 });

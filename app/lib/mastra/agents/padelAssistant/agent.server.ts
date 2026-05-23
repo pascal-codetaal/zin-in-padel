@@ -160,7 +160,7 @@ export const padelAssistant = new Agent({
   id: "padel-assistant",
   name: "Padel Assistant",
   instructions: SYSTEM_PROMPT,
-  model: "openai/gpt-4o-mini",
+  model: "openai/gpt-5.5",
   tools: {
     readProfile: readProfileTool,
     searchClubs: searchClubsTool,
