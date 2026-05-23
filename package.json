@@ -3,6 +3,9 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.2.2",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "build": "react-router build",

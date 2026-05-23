@@ -47,7 +47,7 @@ De DB is de source of truth — er is geen JSON-seed meer.
 
 ## Vereisten
 
-- Node.js 20+
+- Node.js 22 (zie `.nvmrc`, minimum 22.12)
 - pnpm 11+ (via [Corepack](https://nodejs.org/api/corepack.html): `corepack enable`)
 - Twilio-account met WhatsApp Sandbox (of productie-sender)
 - [localtunnel](https://github.com/localtunnel/localtunnel) voor lokale webhook-tests
