@@ -4,6 +4,7 @@
   "type": "module",
   "packageManager": "pnpm@11.2.2",
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "build": "react-router build",
     "dev": "react-router dev",
     "mastra:dev": "mastra dev --dir app/lib/mastra --env .env --request-context-presets presets.json",
