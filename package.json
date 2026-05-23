@@ -10,7 +10,7 @@
     "preinstall": "npx only-allow pnpm",
     "build": "react-router build",
     "dev": "react-router dev",
-    "mastra:dev": "mastra dev --dir app/lib/mastra --env .env --request-context-presets presets.json",
+    "mastra:dev": "NODE_OPTIONS='--dns-result-order=ipv4first' mastra dev --dir app/lib/mastra --env .env --request-context-presets presets.json",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
     "prisma:generate": "prisma generate",
@@ -20,13 +20,14 @@
     "db:push": "prisma db push",
     "db:copy-sqlite": "tsx scripts/migrate-sqlite-to-supabase.ts",
     "seed:users": "tsx scripts/seed-users.ts",
-    "seed:users:cleanup": "tsx scripts/seed-users.ts --cleanup"
+    "seed:users:cleanup": "tsx scripts/seed-users.ts --cleanup",
+    "presets:sync": "tsx scripts/sync-presets.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.64",
     "@mastra/core": "^1.36.0",
-    "@mastra/libsql": "^1.11.1",
     "@mastra/memory": "^1.19.0",
+    "@mastra/pg": "^1.11.1",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@react-router/node": "7.15.1",
@@ -43,6 +44,7 @@
     "@prisma/adapter-better-sqlite3": "^7.8.0",
     "@react-router/dev": "7.15.1",
     "@tailwindcss/vite": "^4.2.2",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22",
     "@types/pg": "^8.15.4",
     "@types/react": "^19.2.14",

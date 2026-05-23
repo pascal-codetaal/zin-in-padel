@@ -1,8 +1,23 @@
 {
-  "Joris (WhatsApp)": {
+  "+32460256335 (+32460256335)": {
+    "userId": "b56bb0e9-dbc5-4e0b-bf80-b459956ae4eb"
+  },
+  "Joris Heyens (32497470725)": {
     "userId": "29aa6a21-9951-4d44-b5ec-2475744ba823"
   },
-  "Testgebruiker (WhatsApp)": {
+  "Pascal (32484085782)": {
+    "userId": "6a6adb6c-670e-4e3c-b709-fc4fc9c38bd4"
+  },
+  "test (dev-6b0eca8f)": {
+    "userId": "6b0eca8f-8838-4371-88aa-47c09ec28531"
+  },
+  "test (dev-ece47b03)": {
+    "userId": "ece47b03-3941-46fa-944d-db9c93ab0f2c"
+  },
+  "Testgebruiker (dev-5fe6d471)": {
     "userId": "5fe6d471-b9a1-45c1-90a5-cf054f004a6a"
+  },
+  "Testgebruiker (dev-85cf0597)": {
+    "userId": "85cf0597-8294-4315-9266-13374b85cb4b"
   }
 }

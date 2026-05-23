@@ -40,7 +40,11 @@ async function runPadelAssistantAgent(
     requestContext.set("appOrigin", appOrigin);
   }
   const result = await agent.generate(inboundBody, {
-    memory: { thread: user.id, resource: user.id },
+    // Single shared resource so all WhatsApp users' threads live under one
+    // bucket — Mastra Studio lists threads filtered by resource, and we want
+    // an "everyone's chats" view. Per-user scoping happens via `thread`
+    // (= user.id) and tool-side userId from requestContext.
+    memory: { thread: user.id, resource: "padel-assistant" },
     requestContext,
   });
 

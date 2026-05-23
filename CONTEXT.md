@@ -69,6 +69,11 @@ messages, games, clubs, and club Playtomic aliases.
 ## Notes
 
 - Legacy SQLite at `data/app.db` can be copied once via `pnpm db:copy-sqlite`. See README.
-- Agent conversation memory lives in Mastra Memory + LibSQL
-  (`data/mastra-memory.db`, gitignored), keyed by `thread = user.id`.
-  See `app/lib/mastra/memory.server.ts`.
+- Agent conversation memory lives in Mastra Memory + Postgres (same Supabase
+  as the app, via `DATABASE_URL`), keyed by `thread = user.id` under a single
+  shared `resource = "padel-assistant"`. The shared resource lets Mastra
+  Studio show every user's chat in one place, regardless of which environment
+  produced it. See `app/lib/mastra/memory.server.ts` and
+  `app/lib/whatsapp-bot.server.ts`. The legacy LibSQL file at
+  `data/mastra-memory.db` is no longer read — kept around as a backup. One-time
+  migration: `pnpm tsx scripts/migrate-mastra-memory-to-pg.ts`.
