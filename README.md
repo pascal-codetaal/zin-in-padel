@@ -22,11 +22,11 @@ Haal beide strings op in Supabase: **Project Settings → Database → Connectio
 Prisma 7 gebruikt één `DATABASE_URL` per commando. Voor migraties tijdelijk de directe URL gebruiken:
 
 ```bash
-npm run prisma:generate
-DATABASE_URL="$DIRECT_URL" npm run db:migrate:deploy
+pnpm prisma:generate
+DATABASE_URL="$DIRECT_URL" pnpm db:migrate:deploy
 ```
 
-Daarna weer de pooler-URL in `DATABASE_URL` voor `npm run dev` / Vercel.
+Daarna weer de pooler-URL in `DATABASE_URL` voor `pnpm dev` / Vercel.
 
 ### Bestaande SQLite-data importeren (eenmalig)
 
@@ -34,13 +34,13 @@ Als je nog `data/app.db` hebt:
 
 ```bash
 # Zorg dat DATABASE_URL naar Supabase wijst en schema deployed is
-npm run db:copy-sqlite
+pnpm db:copy-sqlite
 ```
 
 ### Lokaal ontwikkelen
 
 ```bash
-npx prisma migrate dev   # nieuwe migrations
+pnpm prisma migrate dev   # nieuwe migrations
 ```
 
 De DB is de source of truth — er is geen JSON-seed meer.
@@ -48,17 +48,17 @@ De DB is de source of truth — er is geen JSON-seed meer.
 ## Vereisten
 
 - Node.js 20+
-- npm
+- pnpm 11+ (via [Corepack](https://nodejs.org/api/corepack.html): `corepack enable`)
 - Twilio-account met WhatsApp Sandbox (of productie-sender)
 - [localtunnel](https://github.com/localtunnel/localtunnel) voor lokale webhook-tests
 
 ## Lokale setup
 
 ```bash
-npm install
+pnpm install
 cp .env.example .env
 # Vul TWILIO_* in .env in
-npm run dev
+pnpm dev
 ```
 
 De app draait op [http://localhost:5173](http://localhost:5173).
@@ -82,7 +82,7 @@ De webhook gebruikt voorlopig vooral TwiML-replies; de variabelen zijn nodig voo
 
 ## localtunnel (lokale webhook)
 
-1. Start de dev-server: `npm run dev`
+1. Start de dev-server: `pnpm dev`
 2. In een tweede terminal:
 
    ```bash
@@ -129,16 +129,16 @@ De agent heeft een persistent geheugen via Mastra Memory + LibSQL (SQLite-bestan
 Voor het iteratief tunen van het system prompt en handmatig testen van de tools:
 
 ```bash
-npm run mastra:dev
+pnpm mastra:dev
 ```
 
-Open [http://localhost:4111](http://localhost:4111). Studio draait naast `npm run dev` en gebruikt dezelfde `.env`.
+Open [http://localhost:4111](http://localhost:4111). Studio draait naast `pnpm dev` en gebruikt dezelfde `.env`.
 
 ## WhatsApp simulator (lokaal)
 
 Voor end-to-end tests zonder Twilio-sandbox of localtunnel:
 
-1. `npm run dev`
+1. `pnpm dev`
 2. Open [http://localhost:5173/dev/simulator](http://localhost:5173/dev/simulator)
 3. Kies een gebruiker uit de DB (`data/app.db`) of maak een testgebruiker
 4. Bekijk het WhatsApp-gesprek en stuur berichten — dezelfde `handleIncomingMessage`-pipeline als de webhook
@@ -155,8 +155,8 @@ De route is niet beschikbaar als `NODE_ENV=production`.
 4. Deploy en werk de Twilio webhook-URL bij naar je productie-URL.
 
 ```bash
-npm run build   # lokaal testen
-npm run start   # productie-build lokaal
+pnpm build   # lokaal testen
+pnpm start   # productie-build lokaal
 ```
 
 ## Projectstructuur
@@ -191,9 +191,9 @@ prisma/
 
 | Script | Beschrijving |
 |--------|--------------|
-| `npm run dev` | Development server |
-| `npm run mastra:dev` | Mastra Studio (http://localhost:4111) |
-| `npm run build` | Production build |
-| `npm run start` | Serve production build |
-| `npm run typecheck` | Typegen + TypeScript check |
-| `npx prisma migrate dev` | Apply Prisma migrations |
+| `pnpm dev` | Development server |
+| `pnpm mastra:dev` | Mastra Studio (http://localhost:4111) |
+| `pnpm build` | Production build |
+| `pnpm start` | Serve production build |
+| `pnpm typecheck` | Typegen + TypeScript check |
+| `pnpm prisma migrate dev` | Apply Prisma migrations |

@@ -14,7 +14,7 @@ import { LibSQLStore } from "@mastra/libsql";
  *    Studio process + the app process would write to *different* DB files —
  *    Studio would never see the WhatsApp conversation memory.
  *
- * 2. `process.cwd()` differs between `npm run dev` (project root) and
+ * 2. `process.cwd()` differs between `pnpm dev` (project root) and
  *    `mastra dev` (somewhere inside `.mastra/`), so we have to walk up.
  *
  * We anchor on the existence of `prisma/schema.prisma` which only ever lives

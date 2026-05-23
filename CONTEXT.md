@@ -68,7 +68,7 @@ messages, games, clubs, and club Playtomic aliases.
 
 ## Notes
 
-- Legacy SQLite at `data/app.db` can be copied once via `npm run db:copy-sqlite`. See README.
+- Legacy SQLite at `data/app.db` can be copied once via `pnpm db:copy-sqlite`. See README.
 - Agent conversation memory lives in Mastra Memory + LibSQL
   (`data/mastra-memory.db`, gitignored), keyed by `thread = user.id`.
   See `app/lib/mastra/memory.server.ts`.
