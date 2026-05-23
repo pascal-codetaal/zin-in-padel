@@ -1,5 +1,5 @@
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 
 /**
  * Singleton PrismaClient. Re-used across Vite/React Router HMR reloads via
@@ -10,13 +10,16 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createClient(): PrismaClient {
-  const adapter = new PrismaBetterSqlite3({
-    url: process.env.DATABASE_URL ?? "file:./data/app.db",
-  });
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error("DATABASE_URL is required");
+  }
+  const adapter = new PrismaPg(url);
   return new PrismaClient({ adapter });
 }
 
-export const prisma: PrismaClient = globalForPrisma.prisma ?? createClient();
+export const prisma: PrismaClient =
+  globalForPrisma.prisma ?? createClient();
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;

@@ -1,5 +1,5 @@
 /**
- * Persistence layer over Prisma/SQLite. Replaces the JSON-file store.
+ * Persistence layer over Prisma/Postgres. Replaces the JSON-file store.
  * Public API preserved — callers still operate on the domain types from
  * `~/types/domain`.
  */

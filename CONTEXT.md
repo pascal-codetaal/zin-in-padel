@@ -47,9 +47,9 @@ reconstructing conversation history for the agent.
 | `HELP`     | Show command list |
 | `MAATJES`  | Re-enter favorites flow |
 
-## Storage (SQLite via Prisma)
+## Storage (Supabase Postgres via Prisma)
 
-App data + club catalog live in SQLite at `data/app.db`. Schema is in
+App data + club catalog live in Supabase Postgres (`DATABASE_URL`). Schema is in
 `prisma/schema.prisma`; relational tables for users, players, favorites,
 preferred clubs, matches (with invited/accepted/confirmed-slot join tables),
 messages, games, clubs, and club Playtomic aliases.
@@ -68,7 +68,7 @@ messages, games, clubs, and club Playtomic aliases.
 
 ## Notes
 
-- SQLite at `data/app.db` is POC-only (not Vercel-safe). See README.
+- Legacy SQLite at `data/app.db` can be copied once via `npm run db:copy-sqlite`. See README.
 - Agent conversation memory lives in Mastra Memory + LibSQL
   (`data/mastra-memory.db`, gitignored), keyed by `thread = user.id`.
   See `app/lib/mastra/memory.server.ts`.

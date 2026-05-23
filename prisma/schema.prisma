@@ -1,14 +1,14 @@
 // Prisma schema for zin-in-padel
 // Replaces data/db.json + data/padelclubs_vlaanderen.json.
 // Values for fields like gender/preferredSide/matchPreference/activeFlow are
-// validated at the app layer — SQLite has no enums.
+// validated at the app layer — Postgres uses TEXT (no DB enums).
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 /* -------------------------------------------------------------------------- */

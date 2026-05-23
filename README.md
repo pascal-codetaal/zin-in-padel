@@ -8,26 +8,39 @@ WhatsApp bot voor padel met een React Router v7 admin-dashboard. Backend-endpoin
 - TypeScript
 - [Vercel](https://vercel.com/) deployment via [`@vercel/react-router`](https://vercel.com/docs/frameworks/react-router)
 - [Twilio WhatsApp](https://www.twilio.com/docs/whatsapp) webhook
-- Lokale SQLite-opslag via Prisma (`data/app.db`) voor proof of concept
+- [Supabase](https://supabase.com/) Postgres via Prisma
 
-## Waarschuwing: SQLite-opslag op Vercel
+## Database (Supabase Postgres)
 
-**`data/app.db` is alleen geschikt voor lokaal ontwikkelen.**
+De app gebruikt **PostgreSQL op Supabase**. Zet in `.env` (zie `.env.example`):
 
-Op Vercel zijn serverless functions stateless: schrijven naar het bestandssysteem is niet persistent en wordt niet gedeeld tussen requests. Gebruik voor deployed testing en productie een echte database, bijvoorbeeld:
+- `DATABASE_URL` — **connection pooler** (poort 6543, `?pgbouncer=true`) voor runtime op Vercel
+- `DIRECT_URL` — directe verbinding (poort 5432) voor Prisma-migraties
 
-- [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres)
-- [Supabase](https://supabase.com/)
-- [Neon](https://neon.tech/) of Postgres
+Haal beide strings op in Supabase: **Project Settings → Database → Connection string**.
 
-Wissel daarbij het Prisma-`datasource` om naar `postgresql` en pas
-`prisma.config.ts` aan; de queries in `app/lib/db.server.ts` en
-`app/lib/clubs.server.ts` blijven gelijk.
-
-### Database initialiseren
+Prisma 7 gebruikt één `DATABASE_URL` per commando. Voor migraties tijdelijk de directe URL gebruiken:
 
 ```bash
-npx prisma migrate dev   # past migrations toe
+npm run prisma:generate
+DATABASE_URL="$DIRECT_URL" npm run db:migrate:deploy
+```
+
+Daarna weer de pooler-URL in `DATABASE_URL` voor `npm run dev` / Vercel.
+
+### Bestaande SQLite-data importeren (eenmalig)
+
+Als je nog `data/app.db` hebt:
+
+```bash
+# Zorg dat DATABASE_URL naar Supabase wijst en schema deployed is
+npm run db:copy-sqlite
+```
+
+### Lokaal ontwikkelen
+
+```bash
+npx prisma migrate dev   # nieuwe migrations
 ```
 
 De DB is de source of truth — er is geen JSON-seed meer.
