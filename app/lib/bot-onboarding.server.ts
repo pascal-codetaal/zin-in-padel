@@ -7,7 +7,7 @@ function whatsAppNumberFromEnv(from: string | undefined): string | null {
 }
 
 /** wa.me link that opens a chat with the bot and pre-fills the opt-in command. */
-export function buildWhatsAppInviteUrl(
+export function buildBotOnboardingUrl(
   twilioWhatsAppFrom: string | undefined,
 ): string | null {
   const number = whatsAppNumberFromEnv(twilioWhatsAppFrom);
@@ -17,6 +17,6 @@ export function buildWhatsAppInviteUrl(
   return `https://wa.me/${number}?text=${text}`;
 }
 
-export function invitePrefillMessage(): string {
+export function botOnboardingPrefillMessage(): string {
   return OPT_IN_PREFILL;
 }

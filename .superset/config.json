@@ -1,6 +1,7 @@
 {
   "setup": [
-    "cp \"$SUPERSET_ROOT_PATH/.env\" .env"
+    "cp \"$SUPERSET_ROOT_PATH/.env\" .env",
+    "pnpm prisma generate"
   ],
   "teardown": [],
   "run": [

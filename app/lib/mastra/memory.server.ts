@@ -40,6 +40,7 @@ export function getMastraStorage(): PostgresStore {
     storage = new PostgresStore({
       id: "padel-memory",
       connectionString: resolveConnectionString(),
+      max: 5,
     });
   }
   return storage;

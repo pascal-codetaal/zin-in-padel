@@ -13,12 +13,13 @@
     "mastra:dev": "NODE_OPTIONS='--dns-result-order=ipv4first' mastra dev --dir app/lib/mastra --env .env --request-context-presets presets.json",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:migrate:deploy:direct": "sh -c 'DATABASE_URL=\"$DIRECT_URL\" prisma migrate deploy'",
     "db:push": "prisma db push",
-    "db:copy-sqlite": "tsx scripts/migrate-sqlite-to-supabase.ts",
     "seed:users": "tsx scripts/seed-users.ts",
     "seed:users:cleanup": "tsx scripts/seed-users.ts --cleanup",
     "presets:sync": "tsx scripts/sync-presets.ts"
@@ -56,6 +57,7 @@
     "tailwindcss": "^4.2.2",
     "tsx": "^4.22.3",
     "typescript": "^5.9.3",
-    "vite": "^8.0.3"
+    "vite": "^8.0.3",
+    "vitest": "^4.1.7"
   }
 }

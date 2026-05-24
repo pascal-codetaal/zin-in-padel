@@ -17,6 +17,7 @@ import {
   getMessagesForUser,
 } from "~/lib/db.server";
 import { handleIncomingMessage } from "~/lib/whatsapp-bot.server";
+import { runCascadeTick, type TickTrace } from "~/lib/cascade/runner.server";
 
 const QUICK_COMMANDS = ["JA", "FRIENDS", "HELP", "STOP"] as const;
 
@@ -84,6 +85,16 @@ export async function action({ request }: Route.ActionArgs) {
     return redirect(`/dev/simulator?userId=${user.id}`);
   }
 
+  if (intent === "cron-tick") {
+    const atParam = form.get("at")?.toString();
+    const now = atParam ? new Date(atParam) : new Date();
+    if (Number.isNaN(now.getTime())) {
+      return { ok: false as const, error: "invalid_at" };
+    }
+    const trace = await runCascadeTick(now);
+    return { ok: true as const, intent: "cron-tick" as const, trace };
+  }
+
   if (intent === "send") {
     const userId = form.get("userId")?.toString();
     const body = form.get("body")?.toString() ?? "";
@@ -120,7 +131,14 @@ export default function DevSimulator({ loaderData }: Route.ComponentProps) {
   const { users, selectedUser, messages } = loaderData;
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const fetcher = useFetcher<{ ok: false; error: string }>();
+  const fetcher = useFetcher<
+    | { ok: false; error: string }
+    | { ok: true; intent: "cron-tick"; trace: TickTrace }
+  >();
+  const cronFetcher = useFetcher<
+    | { ok: false; error: string }
+    | { ok: true; intent: "cron-tick"; trace: TickTrace }
+  >();
   const threadEndRef = useRef<HTMLDivElement>(null);
   const userId = searchParams.get("userId") ?? "";
 
@@ -238,6 +256,8 @@ export default function DevSimulator({ loaderData }: Route.ComponentProps) {
               </code>
             </div>
           )}
+
+          <CronTickPanel fetcher={cronFetcher} />
         </div>
       </aside>
 
@@ -344,6 +364,79 @@ export default function DevSimulator({ loaderData }: Route.ComponentProps) {
       </main>
     </div>
   );
+}
+
+type CronFetcherData =
+  | { ok: false; error: string }
+  | { ok: true; intent: "cron-tick"; trace: TickTrace }
+  | undefined;
+
+function CronTickPanel({
+  fetcher,
+}: {
+  fetcher: ReturnType<typeof useFetcher<CronFetcherData>>;
+}) {
+  const data = fetcher.data;
+  const isTicking = fetcher.state !== "idle";
+  return (
+    <div className="flex flex-col gap-2 border-t border-gray-200 pt-4 dark:border-gray-800">
+      <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
+        Cascade cron
+      </p>
+      <fetcher.Form method="post" className="flex flex-col gap-1.5">
+        <input type="hidden" name="intent" value="cron-tick" />
+        <input
+          type="datetime-local"
+          name="at"
+          className="w-full rounded-lg border border-gray-300 px-2 py-1.5 text-xs dark:border-gray-700 dark:bg-gray-950"
+          title="Optioneel: tijdreis naar deze instant. Leeg = nu."
+        />
+        <button
+          type="submit"
+          disabled={isTicking}
+          className="w-full rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-900 hover:bg-emerald-100 disabled:opacity-50 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200 dark:hover:bg-emerald-900/50"
+        >
+          {isTicking ? "Tikken…" : "⏱ Tick cron"}
+        </button>
+      </fetcher.Form>
+      {data && data.ok === false && (
+        <p className="text-xs text-rose-600 dark:text-rose-400">{data.error}</p>
+      )}
+      {data && data.ok === true && (
+        <div className="rounded-lg bg-gray-100 p-2 text-[10px] text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+          <p>
+            <strong>{data.trace.matchesConsidered}</strong> match
+            {data.trace.matchesConsidered === 1 ? "" : "es"} bekeken
+          </p>
+          {data.trace.perMatch.length === 0 ? (
+            <p className="mt-1 italic text-gray-500">geen plannen</p>
+          ) : (
+            <ul className="mt-1 space-y-1">
+              {data.trace.perMatch.map((entry) => (
+                <li key={entry.matchId} className="break-all">
+                  <code>{entry.matchId.slice(0, 8)}</code>:{" "}
+                  {summarisePlan(entry.plan)}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function summarisePlan(plan: TickTrace["perMatch"][number]["plan"]): string {
+  switch (plan.kind) {
+    case "idle":
+      return `idle (${plan.reason})`;
+    case "fire-phase":
+      return `fire phase ${plan.phase} (+${plan.invitesInserted} invites)`;
+    case "mark-full":
+      return "mark-full (stale schedule opgeruimd)";
+    case "mark-exhausted":
+      return "mark-exhausted";
+  }
 }
 
 function StatusPill({

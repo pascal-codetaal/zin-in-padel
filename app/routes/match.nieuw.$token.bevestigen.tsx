@@ -13,6 +13,7 @@ import { formatScheduledAt } from "~/lib/match-defaults";
 import {
   formatMatchFormat,
   formatPadelLevel,
+  openSlotsOf,
   type PadelLevel,
 } from "~/types/domain";
 import { StepFooter } from "~/components/step-footer";
@@ -33,12 +34,7 @@ export async function loader({ params }: Route.LoaderArgs) {
       ? { ref: p.ref, name: p.name }
       : { ref, name: "Onbekende speler" };
   });
-  const openSlots = Math.max(
-    0,
-    draft.totalSlots -
-      draft.confirmedSlotNames.length -
-      draft.acceptedPlayerRefs.length,
-  );
+  const openSlots = openSlotsOf(draft);
 
   return {
     draft: {

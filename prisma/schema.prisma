@@ -47,9 +47,8 @@ model Player {
   name  String
   phone String
 
-  favoritedBy        UserFavorite[]
-  invitedToMatches   MatchInvitedPlayer[]
-  acceptedInMatches  MatchAcceptedPlayer[]
+  favoritedBy      UserFavorite[]
+  invitedToMatches MatchInvitedPlayer[]
 }
 
 model UserFavorite {
@@ -92,40 +91,37 @@ model Match {
   fallbackLevelDelayMinutes    Int      @default(30)
   fallbackToEveryone           Boolean  @default(false)
   fallbackEveryoneDelayMinutes Int      @default(60)
+  currentCascadePhase          Int      @default(0)
+  nextCascadeAt                DateTime?
   status                       String
   createdAt                    DateTime
   updatedAt                    DateTime
 
-  organizer       User                  @relation("MatchOrganizer", fields: [organizerId], references: [id], onDelete: Cascade)
-  club            Club?                 @relation(fields: [clubId], references: [id])
-  invitedPlayers  MatchInvitedPlayer[]
-  acceptedPlayers MatchAcceptedPlayer[]
-  confirmedSlots  MatchConfirmedSlot[]
+  organizer      User                 @relation("MatchOrganizer", fields: [organizerId], references: [id], onDelete: Cascade)
+  club           Club?                @relation(fields: [clubId], references: [id])
+  invitedPlayers MatchInvitedPlayer[]
+  confirmedSlots MatchConfirmedSlot[]
 
   @@index([organizerId])
   @@index([clubId])
+  @@index([nextCascadeAt])
 }
 
 model MatchInvitedPlayer {
-  matchId   String
-  playerRef String
+  matchId      String
+  playerRef    String
+  token        String   @unique
+  status       String   @default("pending")
+  cascadePhase Int      @default(1)
+  sentAt       DateTime?
+  respondedAt  DateTime?
 
   match  Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
   player Player @relation(fields: [playerRef], references: [ref], onDelete: Cascade)
 
   @@id([matchId, playerRef])
   @@index([playerRef])
-}
-
-model MatchAcceptedPlayer {
-  matchId   String
-  playerRef String
-
-  match  Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  player Player @relation(fields: [playerRef], references: [ref], onDelete: Cascade)
-
-  @@id([matchId, playerRef])
-  @@index([playerRef])
+  @@index([matchId, status])
 }
 
 model MatchConfirmedSlot {

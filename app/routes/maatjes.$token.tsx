@@ -17,7 +17,7 @@ import {
   getFavoritePlayersForUser,
   type FavoritePlayerView,
 } from "~/lib/favorites-page.server";
-import { invitePrefillMessage } from "~/lib/invite.server";
+import { botOnboardingPrefillMessage } from "~/lib/bot-onboarding.server";
 
 export function meta({ loaderData }: Route.MetaArgs) {
   const name = loaderData?.user.profileName;
@@ -64,7 +64,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     },
     players: favorites.ok ? favorites.players : [],
     inviteConfigured: Boolean(twilioFrom),
-    prefillMessage: invitePrefillMessage(),
+    prefillMessage: botOnboardingPrefillMessage(),
     batchFeedback:
       batchAdded !== null && !Number.isNaN(batchAdded)
         ? { added: batchAdded, skipped: batchSkipped ?? 0 }

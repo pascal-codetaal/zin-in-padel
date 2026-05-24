@@ -17,7 +17,9 @@ import {
 import { buildMaatjesPageUrl } from "~/lib/maatjes-url.server";
 import {
   ALL_PADEL_LEVELS,
+  acceptedPlayerRefsOf,
   formatMatchFormat,
+  openSlotsOf,
   type PadelLevel,
 } from "~/types/domain";
 
@@ -276,12 +278,6 @@ export const readMatchDraftTool = createTool({
     if (!userId) return { draft: null };
     const draft = await findDraftMatch(userId);
     if (!draft) return { draft: null };
-    const openSlots = Math.max(
-      0,
-      draft.totalSlots -
-        draft.confirmedSlotNames.length -
-        draft.acceptedPlayerRefs.length,
-    );
     return {
       draft: {
         id: draft.id,
@@ -292,8 +288,8 @@ export const readMatchDraftTool = createTool({
         totalSlots: draft.totalSlots,
         confirmedSlotNames: draft.confirmedSlotNames,
         invitedFriendRefs: draft.invitedFriendRefs,
-        acceptedPlayerRefs: draft.acceptedPlayerRefs,
-        openSlots,
+        acceptedPlayerRefs: acceptedPlayerRefsOf(draft),
+        openSlots: openSlotsOf(draft),
         fallbackToLevelRange: draft.fallbackToLevelRange,
         fallbackLevelMin: draft.fallbackLevelMin,
         fallbackLevelMax: draft.fallbackLevelMax,
@@ -393,13 +389,7 @@ export const upsertMatchDraftTool = createTool({
         fallbackToEveryone: input.fallbackToEveryone,
         fallbackEveryoneDelayMinutes: input.fallbackEveryoneDelayMinutes,
       });
-      const openSlots = Math.max(
-        0,
-        updated.totalSlots -
-          updated.confirmedSlotNames.length -
-          updated.acceptedPlayerRefs.length,
-      );
-      return { ok: true, draftId: draft.id, openSlots };
+      return { ok: true, draftId: draft.id, openSlots: openSlotsOf(updated) };
     } catch (err) {
       return {
         ok: false,
@@ -446,12 +436,7 @@ export const finalizeMatchTool = createTool({
       .map((ref) => db.players.find((p) => p.ref === ref)?.name ?? ref)
       .join(", ");
 
-    const openSlots = Math.max(
-      0,
-      finalized.totalSlots -
-        finalized.confirmedSlotNames.length -
-        finalized.acceptedPlayerRefs.length,
-    );
+    const openSlots = openSlotsOf(finalized);
 
     const summaryParts = [
       `${formatMatchFormat(finalized.format)} match`,
