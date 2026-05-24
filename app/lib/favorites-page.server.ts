@@ -3,7 +3,7 @@ import {
   findUserById,
   getDatabase,
 } from "~/lib/db.server";
-import { buildWhatsAppInviteUrl } from "~/lib/invite.server";
+import { buildBotOnboardingUrl } from "~/lib/bot-onboarding.server";
 import { phonesEquivalent } from "~/lib/phone-match.server";
 import type { Player, User } from "~/types/domain";
 
@@ -38,7 +38,7 @@ export async function getFavoritePlayersForUser(
   if (!user) return { ok: false, error: "user_not_found" };
 
   const db = await getDatabase();
-  const botInviteUrl = buildWhatsAppInviteUrl(twilioWhatsAppFrom);
+  const botInviteUrl = buildBotOnboardingUrl(twilioWhatsAppFrom);
 
   const players: FavoritePlayerView[] = [];
 

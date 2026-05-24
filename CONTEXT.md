@@ -57,9 +57,8 @@ are silently skipped in cascade and surfaced to the organiser in the match
 detail UI ("Tom kreeg geen uitnodiging — niet ingeschreven bij PadelMatch").
 
 Not to be confused with the wa.me bot-join link in
-`app/lib/invite.server.ts` — that recruits a User to the bot, not to a Match.
-Will be renamed (e.g. `bot-join-link.server.ts`) to free up the "invite"
-namespace.
+`app/lib/bot-onboarding.server.ts` — that recruits a User to the bot, not
+to a Match.
 
 ### Cascade
 The phased fan-out of Match Invites driven by a hybrid scheduler
