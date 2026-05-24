@@ -138,11 +138,11 @@ export type Match = {
   /** Friend refs invited explicitly (subset of organizer.favoritePlayerRefs). */
   invitedFriendRefs: string[];
   /**
-   * Player refs that explicitly accepted the invite — first-come-first-served.
-   * Once `confirmedSlotNames.length + acceptedPlayerRefs.length >= totalSlots`,
-   * the match is full and later "yes" replies must be rejected.
+   * Full invite lifecycle for this match — single source of truth for who was
+   * invited, in which cascade phase, and how they responded. The set of
+   * accepted player refs is derived via {@link acceptedPlayerRefsOf}.
    */
-  acceptedPlayerRefs: string[];
+  invitedPlayers: MatchInvite[];
   /** Cascade phase 2: fall back to players matching the P-range. */
   fallbackToLevelRange: boolean;
   fallbackLevelMin: PadelLevel | null;
@@ -153,10 +153,32 @@ export type Match = {
   fallbackToEveryone: boolean;
   /** Minutes after the initial invite send before phase 3 kicks in. */
   fallbackEveryoneDelayMinutes: number;
+  /** 0 = not started, 1 = friends fired, 2 = level fired, 3 = everyone fired. */
+  currentCascadePhase: 0 | 1 | 2 | 3;
+  /** When the next cascade tick should consider this match (null = done). */
+  nextCascadeAt: string | null;
   status: MatchStatus;
   createdAt: string;
   updatedAt: string;
 };
+
+export type MatchInviteStatus = "pending" | "accepted" | "declined" | "expired";
+
+export type MatchInvite = {
+  playerRef: string;
+  token: string;
+  status: MatchInviteStatus;
+  cascadePhase: 1 | 2 | 3;
+  sentAt: string | null;
+  respondedAt: string | null;
+};
+
+/** Player refs that explicitly accepted the invite (FCFS-confirmed). */
+export function acceptedPlayerRefsOf(match: Match): string[] {
+  return match.invitedPlayers
+    .filter((i) => i.status === "accepted")
+    .map((i) => i.playerRef);
+}
 
 /** How many open spots remain on a match (confirmed + accepted count as filled). */
 export function openSlotsOf(match: Match): number {
@@ -164,7 +186,7 @@ export function openSlotsOf(match: Match): number {
     0,
     match.totalSlots -
       match.confirmedSlotNames.length -
-      match.acceptedPlayerRefs.length,
+      acceptedPlayerRefsOf(match).length,
   );
 }
 

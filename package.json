@@ -18,7 +18,6 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:migrate:deploy:direct": "sh -c 'DATABASE_URL=\"$DIRECT_URL\" prisma migrate deploy'",
     "db:push": "prisma db push",
-    "db:copy-sqlite": "tsx scripts/migrate-sqlite-to-supabase.ts",
     "seed:users": "tsx scripts/seed-users.ts",
     "seed:users:cleanup": "tsx scripts/seed-users.ts --cleanup",
     "presets:sync": "tsx scripts/sync-presets.ts"

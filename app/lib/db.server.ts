@@ -9,6 +9,8 @@ import type {
   Gender,
   Match,
   MatchFormat,
+  MatchInvite,
+  MatchInviteStatus,
   MatchPreference,
   MatchStatus,
   Message,
@@ -27,6 +29,7 @@ import {
   stepLevel,
 } from "~/types/domain";
 import { createManageToken } from "~/lib/maatjes-url.server";
+import { createInviteToken } from "~/lib/invite-token.server";
 import { prisma } from "~/lib/prisma.server";
 import type { Prisma } from "@prisma/client";
 
@@ -41,7 +44,6 @@ type UserRow = Prisma.UserGetPayload<{
 type MatchRow = Prisma.MatchGetPayload<{
   include: {
     invitedPlayers: true;
-    acceptedPlayers: true;
     confirmedSlots: true;
   };
 }>;
@@ -56,7 +58,6 @@ const USER_INCLUDE = {
 
 const MATCH_INCLUDE = {
   invitedPlayers: true,
-  acceptedPlayers: true,
   confirmedSlots: true,
 } satisfies Prisma.MatchInclude;
 
@@ -148,16 +149,47 @@ function matchRowToDomain(row: MatchRow): Match {
     totalSlots: row.totalSlots,
     confirmedSlotNames: confirmed,
     invitedFriendRefs: row.invitedPlayers.map((p) => p.playerRef),
-    acceptedPlayerRefs: row.acceptedPlayers.map((p) => p.playerRef),
+    invitedPlayers: row.invitedPlayers.map(invitedRowToDomain),
     fallbackToLevelRange: row.fallbackToLevelRange,
     fallbackLevelMin: asLevel(row.fallbackLevelMin),
     fallbackLevelMax: asLevel(row.fallbackLevelMax),
     fallbackLevelDelayMinutes: row.fallbackLevelDelayMinutes,
     fallbackToEveryone: row.fallbackToEveryone,
     fallbackEveryoneDelayMinutes: row.fallbackEveryoneDelayMinutes,
+    currentCascadePhase: asCascadePhase(row.currentCascadePhase),
+    nextCascadeAt: row.nextCascadeAt ? row.nextCascadeAt.toISOString() : null,
     status: asMatchStatus(row.status),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+function asCascadePhase(value: number): 0 | 1 | 2 | 3 {
+  return value === 1 || value === 2 || value === 3 ? value : 0;
+}
+
+function asInviteStatus(value: string): MatchInviteStatus {
+  return value === "accepted" ||
+    value === "declined" ||
+    value === "expired"
+    ? value
+    : "pending";
+}
+
+function asInviteCascadePhase(value: number): 1 | 2 | 3 {
+  return value === 2 || value === 3 ? value : 1;
+}
+
+function invitedRowToDomain(
+  row: Prisma.MatchInvitedPlayerGetPayload<{}>,
+): MatchInvite {
+  return {
+    playerRef: row.playerRef,
+    token: row.token,
+    status: asInviteStatus(row.status),
+    cascadePhase: asInviteCascadePhase(row.cascadePhase),
+    sentAt: row.sentAt ? row.sentAt.toISOString() : null,
+    respondedAt: row.respondedAt ? row.respondedAt.toISOString() : null,
   };
 }
 
@@ -715,7 +747,6 @@ export type MatchDraftPatch = Partial<
     | "totalSlots"
     | "confirmedSlotNames"
     | "invitedFriendRefs"
-    | "acceptedPlayerRefs"
     | "fallbackToLevelRange"
     | "fallbackLevelMin"
     | "fallbackLevelMax"
@@ -774,23 +805,21 @@ export async function updateMatchDraft(
     }
 
     if (patch.invitedFriendRefs !== undefined) {
+      // Draft-stage: rewrite the invited set. The cascade engine assigns
+      // real tokens/sentAt/cascadePhase when phase 1 actually fires; draft
+      // rows are placeholders so the picker UI can list selections.
       await tx.matchInvitedPlayer.deleteMany({ where: { matchId } });
       for (const ref of patch.invitedFriendRefs) {
         const exists = await tx.player.findUnique({ where: { ref } });
         if (!exists) continue;
         await tx.matchInvitedPlayer.create({
-          data: { matchId, playerRef: ref },
-        });
-      }
-    }
-
-    if (patch.acceptedPlayerRefs !== undefined) {
-      await tx.matchAcceptedPlayer.deleteMany({ where: { matchId } });
-      for (const ref of patch.acceptedPlayerRefs) {
-        const exists = await tx.player.findUnique({ where: { ref } });
-        if (!exists) continue;
-        await tx.matchAcceptedPlayer.create({
-          data: { matchId, playerRef: ref },
+          data: {
+            matchId,
+            playerRef: ref,
+            token: createInviteToken(),
+            status: "pending",
+            cascadePhase: 1,
+          },
         });
       }
     }
