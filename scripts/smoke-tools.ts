@@ -9,7 +9,7 @@ import { prisma } from "../app/lib/prisma.server";
 import {
   addFriendTool,
   readProfileTool,
-} from "../app/lib/mastra/agents/favoritePlayers/tools.server";
+} from "../app/lib/mastra/agents/padelAssistant/tools.server";
 
 const TEST_USER_ID = "smoke-test-user";
 const TEST_USER_WA_ID = "31000000000";

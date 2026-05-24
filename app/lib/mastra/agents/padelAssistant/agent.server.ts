@@ -4,7 +4,7 @@ import {
   readProfileTool,
   searchClubsTool,
   updateProfileTool,
-} from "../favoritePlayers/tools.server";
+} from "./tools.server";
 import {
   finalizeMatchTool,
   linkPlaytomicNameTool,
