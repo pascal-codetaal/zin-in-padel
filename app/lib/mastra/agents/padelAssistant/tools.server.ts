@@ -322,5 +322,3 @@ export const updateProfileTool = createTool({
   },
 });
 
-export const readDbTool = readProfileTool;
-export const addFavoriteTool = addFriendTool;
