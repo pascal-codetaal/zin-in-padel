@@ -30,6 +30,7 @@ import {
 } from "~/types/domain";
 import { createManageToken } from "~/lib/maatjes-url.server";
 import { createInviteToken } from "~/lib/cascade/token";
+import { computeInitialCascadeState } from "~/lib/cascade/finalize";
 import { prisma } from "~/lib/prisma.server";
 import type { Prisma } from "@prisma/client";
 
@@ -108,7 +109,7 @@ function asMessageDirection(value: string): MessageDirection {
   return value === "out" ? "out" : "in";
 }
 
-function userRowToDomain(row: UserRow): User {
+export function userRowToDomain(row: UserRow): User {
   return {
     id: row.id,
     manageToken: row.manageToken,
@@ -135,7 +136,7 @@ function userRowToDomain(row: UserRow): User {
   };
 }
 
-function matchRowToDomain(row: MatchRow): Match {
+export function matchRowToDomain(row: MatchRow): Match {
   const confirmed = [...row.confirmedSlots]
     .sort((a, b) => a.idx - b.idx)
     .map((s) => s.name);
@@ -836,9 +837,25 @@ export async function finalizeMatchDraft(
   matchId: string,
   status: MatchStatus = "open",
 ): Promise<Match> {
+  const now = new Date();
+
+  // Load the draft so the cascade helper can decide the initial schedule
+  // (phase 1 is implicit at finalize; nextCascadeAt depends on which
+  // fallbacks are enabled).
+  const draftRow = await prisma.match.findUniqueOrThrow({
+    where: { id: matchId },
+    include: MATCH_INCLUDE,
+  });
+  const cascade = computeInitialCascadeState(matchRowToDomain(draftRow), now);
+
   const row = await prisma.match.update({
     where: { id: matchId },
-    data: { status, updatedAt: new Date() },
+    data: {
+      status,
+      currentCascadePhase: cascade.currentCascadePhase,
+      nextCascadeAt: cascade.nextCascadeAt,
+      updatedAt: now,
+    },
     include: MATCH_INCLUDE,
   });
   return matchRowToDomain(row);

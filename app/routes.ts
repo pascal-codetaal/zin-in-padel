@@ -22,5 +22,6 @@ export default [
   ]),
   route("match/:token", "routes/match.$token.tsx"),
   route("dev/simulator", "routes/dev.simulator.tsx"),
+  route("dev/cron-tick", "routes/dev.cron-tick.tsx"),
   route("webhooks/twilio/whatsapp", "routes/webhooks.twilio.whatsapp.ts"),
 ] satisfies RouteConfig;

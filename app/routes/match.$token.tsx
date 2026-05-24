@@ -35,6 +35,8 @@ type MatchCardData = {
   fallbackLevelDelayMinutes: number;
   fallbackToEveryone: boolean;
   fallbackEveryoneDelayMinutes: number;
+  currentCascadePhase: 0 | 1 | 2 | 3;
+  nextCascadeAt: string | null;
 };
 
 export function meta({ loaderData }: Route.MetaArgs) {
@@ -88,6 +90,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       fallbackLevelDelayMinutes: m.fallbackLevelDelayMinutes,
       fallbackToEveryone: m.fallbackToEveryone,
       fallbackEveryoneDelayMinutes: m.fallbackEveryoneDelayMinutes,
+      currentCascadePhase: m.currentCascadePhase,
+      nextCascadeAt: m.nextCascadeAt,
     };
   });
 
@@ -280,7 +284,7 @@ function Detail({
   colSpan = false,
 }: {
   label: string;
-  value: string;
+  value: React.ReactNode;
   colSpan?: boolean;
 }) {
   return (
@@ -331,8 +335,13 @@ function StatusBadge({ status }: { status: MatchStatus }) {
   );
 }
 
-function renderCascade(match: MatchCardData): string {
-  const parts: string[] = ["Maatjes (nu)"];
+function renderCascade(match: MatchCardData): React.ReactNode {
+  if (match.openSlots === 0) {
+    return "Match vol — cascade gestopt";
+  }
+  const segments: { phase: 1 | 2 | 3; text: string }[] = [
+    { phase: 1, text: "Maatjes (nu)" },
+  ];
   if (match.fallbackToLevelRange) {
     const min = match.fallbackLevelMin
       ? formatPadelLevel(match.fallbackLevelMin)
@@ -340,14 +349,31 @@ function renderCascade(match: MatchCardData): string {
     const max = match.fallbackLevelMax
       ? formatPadelLevel(match.fallbackLevelMax)
       : "?";
-    parts.push(
-      `P ${min}–${max} (+${match.fallbackLevelDelayMinutes} min)`,
-    );
+    segments.push({
+      phase: 2,
+      text: `P ${min}–${max} (+${match.fallbackLevelDelayMinutes} min)`,
+    });
   }
   if (match.fallbackToEveryone) {
-    parts.push(`Iedereen (+${match.fallbackEveryoneDelayMinutes} min)`);
+    segments.push({
+      phase: 3,
+      text: `Iedereen (+${match.fallbackEveryoneDelayMinutes} min)`,
+    });
   }
-  return parts.join(" → ");
+  return (
+    <>
+      {segments.map((seg, i) => (
+        <span key={seg.phase}>
+          {i > 0 && " → "}
+          {seg.phase === match.currentCascadePhase ? (
+            <strong className="font-semibold">{seg.text}</strong>
+          ) : (
+            seg.text
+          )}
+        </span>
+      ))}
+    </>
+  );
 }
 
 function FixedNewMatchFooter({ token }: { token: string }) {
