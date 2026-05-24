@@ -13,6 +13,8 @@
     "mastra:dev": "NODE_OPTIONS='--dns-result-order=ipv4first' mastra dev --dir app/lib/mastra --env .env --request-context-presets presets.json",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
@@ -55,6 +57,7 @@
     "tailwindcss": "^4.2.2",
     "tsx": "^4.22.3",
     "typescript": "^5.9.3",
-    "vite": "^8.0.3"
+    "vite": "^8.0.3",
+    "vitest": "^4.1.7"
   }
 }

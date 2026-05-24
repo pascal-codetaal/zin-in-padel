@@ -29,7 +29,7 @@ import {
   stepLevel,
 } from "~/types/domain";
 import { createManageToken } from "~/lib/maatjes-url.server";
-import { createInviteToken } from "~/lib/invite-token.server";
+import { createInviteToken } from "~/lib/cascade/token";
 import { prisma } from "~/lib/prisma.server";
 import type { Prisma } from "@prisma/client";
 
