@@ -22,7 +22,7 @@ export async function loader({ params }: Route.LoaderArgs) {
     draft: {
       scheduledAt: draft.scheduledAt,
       durationMinutes: draft.durationMinutes,
-      clubId: draft.clubId,
+      clubIds: draft.clubIds,
     },
     clubs: preferredClubs.map((c) => ({
       id: c.id,
@@ -33,7 +33,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 }
 
 export async function action({ request, params }: Route.ActionArgs) {
-  const { draft } = await requireDraftFor(params.token);
+  const { user, draft } = await requireDraftFor(params.token);
   const form = await request.formData();
 
   const scheduledAt = fromDatetimeLocalValue(
@@ -44,19 +44,27 @@ export async function action({ request, params }: Route.ActionArgs) {
   const durationMinutes = Number.isFinite(durationParsed)
     ? durationParsed
     : draft.durationMinutes;
-  const clubId = form.get("clubId")?.toString().trim() || null;
+  const allowed = new Set(user.preferredClubIds);
+  const clubIds = [
+    ...new Set(
+      form
+        .getAll("clubIds")
+        .map((v) => v.toString().trim())
+        .filter((id) => id.length > 0 && allowed.has(id)),
+    ),
+  ];
 
   if (!scheduledAt) {
     return { ok: false as const, error: "schedule_required" };
   }
-  if (!clubId) {
+  if (clubIds.length === 0) {
     return { ok: false as const, error: "club_required" };
   }
 
   await updateMatchDraft(draft.id, {
     scheduledAt,
     durationMinutes,
-    clubId,
+    clubIds,
   });
   return redirect(`/match/nieuw/${params.token}/${NEXT_SLUG}`);
 }
@@ -115,7 +123,10 @@ export default function WanneerStep({
 
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Club
+            Locaties
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Kies één of meerdere van jouw locaties.
           </p>
           {clubs.length === 0 ? (
             <p className="mt-2 rounded-2xl border border-dashed border-border bg-secondary/30 px-4 py-3 text-xs text-muted-foreground">
@@ -123,19 +134,18 @@ export default function WanneerStep({
             </p>
           ) : (
             <fieldset className="mt-2 space-y-2">
-              <legend className="sr-only">Club</legend>
+              <legend className="sr-only">Locaties</legend>
               {clubs.map((club) => (
                 <label
                   key={club.id}
                   className="flex cursor-pointer items-center gap-3 rounded-2xl border border-input bg-background p-3 transition hover:bg-secondary/40 has-[:checked]:border-accent has-[:checked]:bg-accent/10"
                 >
                   <input
-                    type="radio"
-                    name="clubId"
+                    type="checkbox"
+                    name="clubIds"
                     value={club.id}
-                    defaultChecked={draft.clubId === club.id}
-                    required
-                    className="h-4 w-4 accent-[color:var(--accent)]"
+                    defaultChecked={draft.clubIds.includes(club.id)}
+                    className="h-4 w-4 rounded accent-[color:var(--accent)]"
                   />
                   <span>
                     <span className="block text-sm font-medium">
@@ -156,7 +166,7 @@ export default function WanneerStep({
             {actionData.error === "schedule_required"
               ? "Kies een datum en uur."
               : actionData.error === "club_required"
-                ? "Kies een club."
+                ? "Kies minstens één locatie."
                 : "Er ging iets mis."}
           </p>
         )}

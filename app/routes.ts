@@ -5,6 +5,8 @@ export default [
   route("maatjes/:token", "routes/maatjes.$token.tsx"),
   route("profiel/:token", "routes/profiel.$token.tsx", [
     index("routes/profiel.$token._index.tsx"),
+    route("basis", "routes/profiel.$token.basis.tsx"),
+    route("naam", "routes/profiel.$token.naam.tsx"),
     route("geslacht", "routes/profiel.$token.geslacht.tsx"),
     route("klassement", "routes/profiel.$token.klassement.tsx"),
     route("kant", "routes/profiel.$token.kant.tsx"),

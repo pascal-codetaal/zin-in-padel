@@ -44,10 +44,15 @@ export function makeInvite(overrides: Partial<MatchInvite> = {}): MatchInvite {
 }
 
 export function makeMatch(overrides: Partial<Match> = {}): Match {
+  const clubIds =
+    overrides.clubIds ??
+    (overrides.clubId ? [overrides.clubId] : ["club_1"]);
+  const clubId = overrides.clubId ?? clubIds[0] ?? null;
   return {
     id: "match_1",
     organizerId: "user_organizer",
-    clubId: "club_1",
+    clubId,
+    clubIds,
     scheduledAt: "2026-06-01T19:00:00.000Z",
     durationMinutes: 90,
     format: "mixed",

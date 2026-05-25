@@ -139,6 +139,7 @@ describe("excludeReason — phase 2 (level)", () => {
   it("excludes refs whose preferredClubIds doesn't include the match club", () => {
     const match = makeMatch({
       clubId: "club_42",
+      clubIds: ["club_42"],
       fallbackLevelMin: 200,
       fallbackLevelMax: 500,
     });
@@ -146,6 +147,17 @@ describe("excludeReason — phase 2 (level)", () => {
     expect(excludeReason(match, 2, user, "+32470000001", emptyIndex)).toBe(
       "club-not-preferred",
     );
+  });
+
+  it("accepts refs who prefer any of the match locations", () => {
+    const match = makeMatch({
+      clubId: "club_1",
+      clubIds: ["club_1", "club_42"],
+      fallbackLevelMin: 200,
+      fallbackLevelMax: 500,
+    });
+    const user = makeUser({ preferredClubIds: ["club_42"] });
+    expect(excludeReason(match, 2, user, "+32470000001", emptyIndex)).toBeNull();
   });
 
   it("excludes refs with a time conflict", () => {

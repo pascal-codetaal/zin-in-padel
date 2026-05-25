@@ -1,5 +1,5 @@
 import { redirect } from "react-router";
-import type { Route } from "./+types/profiel.$token.klassement";
+import type { Route } from "./+types/profiel.$token.naam";
 
 export function loader({ params }: Route.LoaderArgs) {
   const token = params.token?.trim();
@@ -7,6 +7,6 @@ export function loader({ params }: Route.LoaderArgs) {
   throw redirect(`/profiel/${token}/basis`);
 }
 
-export default function KlassementRedirect() {
+export default function NaamRedirect() {
   return null;
 }

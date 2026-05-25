@@ -149,7 +149,7 @@ export function MatchCourtPicker({
                   >
                     <PlayerAvatar name={player.name} variant="confirmed" />
                     <span className="w-full truncate text-center text-sm font-medium">
-                      {player.name.split(" ")[0]}
+                      {player.name}
                     </span>
                     {player.level !== null && (
                       <LevelBadge level={player.level} />
@@ -199,7 +199,7 @@ function CourtSlotDisplay({
     <div className="flex flex-col items-center gap-1.5">
       <PlayerAvatar name={name} variant={fixed ? "confirmed" : "default"} />
       <span className="w-full truncate text-center text-xs font-medium">
-        {name.split(" ")[0]}
+        {name}
       </span>
       {level !== null && <LevelBadge level={level} />}
     </div>
@@ -243,7 +243,7 @@ function CourtSlotButton({
       {filled && name ? (
         <>
           <span className="w-full truncate text-center text-xs font-medium">
-            {name.split(" ")[0]}
+            {name}
           </span>
           {level !== null && <LevelBadge level={level} />}
           <button

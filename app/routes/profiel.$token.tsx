@@ -7,6 +7,7 @@ import {
 } from "react-router";
 import type { Route } from "./+types/profiel.$token";
 import { findUserByManageToken } from "~/lib/db.server";
+import { formatPersonName } from "~/lib/person-name";
 import type {
   Gender,
   MatchPreference,
@@ -17,8 +18,7 @@ import type {
 /* ---------- Steps ---------- */
 
 export type ProfielStepSlug =
-  | "geslacht"
-  | "klassement"
+  | "basis"
   | "kant"
   | "speelvoorkeur"
   | "clubs";
@@ -27,8 +27,7 @@ export const PROFIEL_STEPS: {
   slug: ProfielStepSlug;
   shortTitle: string;
 }[] = [
-  { slug: "geslacht", shortTitle: "Geslacht" },
-  { slug: "klassement", shortTitle: "Niveau" },
+  { slug: "basis", shortTitle: "Basis" },
   { slug: "kant", shortTitle: "Kant" },
   { slug: "speelvoorkeur", shortTitle: "Match" },
   { slug: "clubs", shortTitle: "Clubs" },
@@ -54,9 +53,14 @@ export function isStepComplete(
   slug: ProfielStepSlug,
   user: ProfielUser,
 ): boolean {
-  if (slug === "geslacht") return user.gender !== null;
-  if (slug === "klassement") return user.level !== null;
-  if (slug === "kant") return user.preferredSide !== null;
+  if (slug === "basis")
+    return (
+      Boolean(user.firstName?.trim() && user.lastName?.trim()) &&
+      user.gender !== null &&
+      user.level !== null
+    );
+  if (slug === "kant")
+    return user.preferredSide !== null || user.playsBothSides;
   if (slug === "speelvoorkeur") return user.matchPreference !== null;
   if (slug === "clubs") return user.preferredClubIds.length > 0;
   return false;
@@ -80,6 +84,8 @@ export function countCompletedSteps(user: ProfielUser): number {
 export type ProfielUser = {
   id: string;
   profileName: string;
+  firstName: string | null;
+  lastName: string | null;
   gender: Gender | null;
   level: PadelLevel | null;
   preferredSide: PreferredSide | null;
@@ -100,6 +106,8 @@ export async function loader({ params }: Route.LoaderArgs) {
     user: {
       id: user.id,
       profileName: user.profileName,
+      firstName: user.firstName,
+      lastName: user.lastName,
       gender: user.gender,
       level: user.level,
       preferredSide: user.preferredSide,
@@ -129,7 +137,14 @@ export function useProfielData() {
 }
 
 export function meta({ loaderData }: Route.MetaArgs) {
-  const name = loaderData?.user.profileName;
+  const name = loaderData
+    ? formatPersonName({
+        firstName: loaderData.user.firstName,
+        lastName: loaderData.user.lastName,
+        profileName: loaderData.user.profileName,
+        fallback: "speler",
+      })
+    : undefined;
   return [
     {
       title: name
@@ -204,7 +219,7 @@ function Stepper({
   token: string;
 }) {
   return (
-    <ol className="grid grid-cols-5 gap-1">
+    <ol className="grid grid-cols-4 gap-1">
       {PROFIEL_STEPS.map((step, i) => {
         const isActive = step.slug === currentSlug;
         const isDone = isStepComplete(step.slug, user);

@@ -6,6 +6,7 @@ import {
   findUserByManageToken,
 } from "~/lib/db.server";
 import { MATCH_STEPS, useMatchWizardData } from "./match.nieuw.$token";
+import { formatPersonName } from "~/lib/person-name";
 import { formatScheduledAt } from "~/lib/match-defaults";
 import type { Route } from "./+types/match.nieuw.$token._index";
 
@@ -55,6 +56,12 @@ export async function action({ request, params }: Route.ActionArgs) {
 
 export default function MatchWelcome({ loaderData }: Route.ComponentProps) {
   const { token, organizer } = useMatchWizardData();
+  const organizerName = formatPersonName({
+    firstName: organizer.firstName,
+    lastName: organizer.lastName,
+    profileName: organizer.profileName,
+    fallback: "speler",
+  });
   const { draft } = loaderData;
   const hasDraft = draft !== null;
 
@@ -69,7 +76,7 @@ export default function MatchWelcome({ loaderData }: Route.ComponentProps) {
             Plan een potje 🎾
           </h1>
           <p className="mt-2 text-base text-muted-foreground">
-            Hoi {organizer.profileName || "speler"}! Eerst wie er al meespeelt,
+            Hoi {organizerName}! Eerst wie er al meespeelt,
             dan wie je nog uitnodigt.
           </p>
         </div>

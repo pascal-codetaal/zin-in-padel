@@ -18,9 +18,16 @@ import {
   type FavoritePlayerView,
 } from "~/lib/favorites-page.server";
 import { botOnboardingPrefillMessage } from "~/lib/bot-onboarding.server";
+import { formatPersonName } from "~/lib/person-name";
 
 export function meta({ loaderData }: Route.MetaArgs) {
-  const name = loaderData?.user.profileName;
+  const name = loaderData
+    ? formatPersonName({
+        firstName: loaderData.user.firstName,
+        lastName: loaderData.user.lastName,
+        profileName: loaderData.user.profileName,
+      })
+    : undefined;
   return [
     {
       title: name
@@ -61,6 +68,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     user: {
       id: user.id,
       profileName: user.profileName,
+      firstName: user.firstName,
+      lastName: user.lastName,
     },
     players: favorites.ok ? favorites.players : [],
     inviteConfigured: Boolean(twilioFrom),

@@ -81,7 +81,7 @@ phase per schedule).
 - `matchPreference = 'friends_only'`
 - Gender does not match Match `format` (men_only / women_only)
 - Has an accepted slot in another Match overlapping this time window
-- `preferredClubIds` does not contain this Match's `clubId`
+- `preferredClubIds` does not overlap with any of this Match's `clubIds`
 - Is the organiser
 - Already invited in an earlier phase of this Match
 - `optedIn = false`

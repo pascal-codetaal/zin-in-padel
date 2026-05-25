@@ -113,7 +113,16 @@ export function excludeReason(
   if (!genderMatchesFormat(user.gender, match.format)) {
     return "gender-mismatch";
   }
-  if (match.clubId && !user.preferredClubIds.includes(match.clubId)) {
+  const matchClubIds =
+    match.clubIds.length > 0
+      ? match.clubIds
+      : match.clubId
+        ? [match.clubId]
+        : [];
+  if (
+    matchClubIds.length > 0 &&
+    !matchClubIds.some((id) => user.preferredClubIds.includes(id))
+  ) {
     return "club-not-preferred";
   }
   if (index.conflictingRefs.has(ref)) {

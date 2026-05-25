@@ -1,5 +1,6 @@
 import type { Route } from "./+types/_index";
 import { getDatabase } from "~/lib/db.server";
+import { resolveUserNameParts } from "~/lib/person-name";
 import { formatPadelLevel } from "~/types/domain";
 
 export function meta({}: Route.MetaArgs) {
@@ -116,7 +117,8 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
                 <thead className="bg-gray-50 dark:bg-gray-950/50">
                   <tr>
-                    <Th>Naam</Th>
+                    <Th>Voornaam</Th>
+                    <Th>Familienaam</Th>
                     <Th>WaId</Th>
                     <Th>Onboarding</Th>
                     <Th>Opt-in</Th>
@@ -128,9 +130,12 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                  {users.map((user) => (
+                  {users.map((user) => {
+                    const { firstName, lastName } = resolveUserNameParts(user);
+                    return (
                     <tr key={user.id}>
-                      <Td>{user.profileName || "—"}</Td>
+                      <Td>{firstName}</Td>
+                      <Td>{lastName}</Td>
                       <Td>
                         <code className="text-xs">{user.waId}</code>
                       </Td>
@@ -191,7 +196,8 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
                         {formatDate(user.updatedAt)}
                       </Td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

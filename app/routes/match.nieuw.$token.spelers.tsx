@@ -12,6 +12,7 @@ import {
   maatjeSlotsFromDraft,
   parseMaatjeSlotsForm,
 } from "~/lib/match-picker.server";
+import { formatPersonName } from "~/lib/person-name";
 import { StepFooter } from "~/components/step-footer";
 import type { Route } from "./+types/match.nieuw.$token.spelers";
 
@@ -22,14 +23,21 @@ const NEXT_SLUG = nextMatchStep(STEP_SLUG)!;
 export async function loader({ params }: Route.LoaderArgs) {
   const { user, draft } = await requireDraftFor(params.token);
   const players = await getMatchPickerPlayers(user.id);
+  const organizerName = formatPersonName({
+    firstName: user.firstName,
+    lastName: user.lastName,
+    profileName: user.profileName,
+    fallback: "Jij",
+  });
   return {
     players,
     defaultSlots: maatjeSlotsFromDraft(
-      user.profileName,
+      organizerName,
       draft.confirmedSlotNames,
       players,
     ),
     organizerLevel: user.level,
+    organizerName,
   };
 }
 
@@ -38,7 +46,13 @@ export async function action({ request, params }: Route.ActionArgs) {
   const form = await request.formData();
   const players = await getMatchPickerPlayers(user.id);
   const slots = parseMaatjeSlotsForm(form, user.favoritePlayerRefs);
-  await applyConfirmedSlots(draft.id, user.profileName, players, slots);
+  const organizerName = formatPersonName({
+    firstName: user.firstName,
+    lastName: user.lastName,
+    profileName: user.profileName,
+    fallback: "Jij",
+  });
+  await applyConfirmedSlots(draft.id, organizerName, players, slots);
   return redirect(`/match/nieuw/${params.token}/${NEXT_SLUG}`);
 }
 
@@ -46,7 +60,7 @@ const FORM_ID = "step-spelers";
 
 export default function SpelersStep({ loaderData }: Route.ComponentProps) {
   const { token, organizer } = useMatchWizardData();
-  const { players, defaultSlots, organizerLevel } = loaderData;
+  const { players, defaultSlots, organizerLevel, organizerName } = loaderData;
   const navigation = useNavigation();
   const isSubmitting = navigation.state !== "idle";
 
@@ -73,7 +87,7 @@ export default function SpelersStep({ loaderData }: Route.ComponentProps) {
           </p>
         ) : (
           <MatchCourtPicker
-            organizerName={organizer.profileName || "Jij"}
+            organizerName={organizerName}
             organizerLevel={organizerLevel}
             players={players}
             defaultSlots={defaultSlots}

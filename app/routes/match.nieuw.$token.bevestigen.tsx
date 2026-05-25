@@ -8,7 +8,7 @@ import {
   finalizeMatchDraft,
   getDatabase,
 } from "~/lib/db.server";
-import { getClubById } from "~/lib/clubs.server";
+import { getClubsByIds } from "~/lib/clubs.server";
 import { formatScheduledAt } from "~/lib/match-defaults";
 import {
   formatMatchFormat,
@@ -24,8 +24,8 @@ const PREV_SLUG = prevMatchStep(STEP_SLUG)!;
 
 export async function loader({ params }: Route.LoaderArgs) {
   const { draft } = await requireDraftFor(params.token);
-  const [club, db] = await Promise.all([
-    draft.clubId ? getClubById(draft.clubId) : null,
+  const [clubs, db] = await Promise.all([
+    getClubsByIds(draft.clubIds),
     getDatabase(),
   ]);
   const invitedPlayers = draft.invitedFriendRefs.map((ref) => {
@@ -51,7 +51,7 @@ export async function loader({ params }: Route.LoaderArgs) {
       fallbackToEveryone: draft.fallbackToEveryone,
       fallbackEveryoneDelayMinutes: draft.fallbackEveryoneDelayMinutes,
     },
-    club: club ? { id: club.id, name: club.name, city: club.city } : null,
+    clubs: clubs.map((c) => ({ id: c.id, name: c.name, city: c.city })),
     invitedPlayers,
   };
 }
@@ -59,7 +59,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 export async function action({ request, params }: Route.ActionArgs) {
   const { draft } = await requireDraftFor(params.token);
 
-  if (!draft.scheduledAt || !draft.clubId) {
+  if (!draft.scheduledAt || draft.clubIds.length === 0) {
     return redirect(`/match/nieuw/${params.token}/wanneer`);
   }
 
@@ -80,7 +80,7 @@ export default function BevestigenStep({
   loaderData,
 }: Route.ComponentProps) {
   const { token } = useMatchWizardData();
-  const { draft, club, invitedPlayers } = loaderData;
+  const { draft, clubs, invitedPlayers } = loaderData;
   const navigation = useNavigation();
   const isSubmitting = navigation.state !== "idle";
 
@@ -102,7 +102,11 @@ export default function BevestigenStep({
           />
           <SummaryRow
             label="Waar"
-            value={club ? `${club.name} · ${club.city}` : "—"}
+            value={
+              clubs.length === 0
+                ? "—"
+                : clubs.map((c) => `${c.name} · ${c.city}`).join(" · ")
+            }
             editTo={`/match/nieuw/${token}/wanneer`}
           />
           <SummaryRow

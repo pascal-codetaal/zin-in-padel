@@ -15,6 +15,7 @@ import {
   type MatchStatus,
   type PadelLevel,
 } from "~/types/domain";
+import { formatPersonName } from "~/lib/person-name";
 import type { Route } from "./+types/match.$token";
 
 type MatchCardData = {
@@ -40,7 +41,13 @@ type MatchCardData = {
 };
 
 export function meta({ loaderData }: Route.MetaArgs) {
-  const name = loaderData?.profileName;
+  const name = loaderData
+    ? formatPersonName({
+        firstName: loaderData.firstName,
+        lastName: loaderData.lastName,
+        profileName: loaderData.profileName,
+      })
+    : undefined;
   return [
     {
       title: name
@@ -58,7 +65,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
   const matches = await findMatchesByOrganizer(user.id);
   const clubIds = Array.from(
-    new Set(matches.map((m) => m.clubId).filter((c): c is string => !!c)),
+    new Set(matches.flatMap((m) => m.clubIds)),
   );
   const friendRefs = Array.from(
     new Set(matches.flatMap((m) => m.invitedFriendRefs)),
@@ -69,15 +76,23 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const playersByRef = new Map(db.players.map((p) => [p.ref, p]));
 
   const cards: MatchCardData[] = matches.map((m) => {
-    const club = m.clubId ? clubsById.get(m.clubId) : undefined;
+    const matchClubs = m.clubIds
+      .map((id) => clubsById.get(id))
+      .filter((c): c is NonNullable<typeof c> => Boolean(c));
     return {
       id: m.id,
       scheduledAt: m.scheduledAt,
       durationMinutes: m.durationMinutes,
       format: m.format,
       status: m.status,
-      clubName: club?.name ?? "—",
-      clubCity: club?.city ?? "",
+      clubName:
+        matchClubs.length === 0
+          ? "—"
+          : matchClubs.map((c) => c.name).join(" · "),
+      clubCity:
+        matchClubs.length === 0
+          ? ""
+          : [...new Set(matchClubs.map((c) => c.city))].join(" · "),
       invitedNames: m.invitedFriendRefs.map(
         (ref) => playersByRef.get(ref)?.name ?? ref,
       ),
@@ -101,6 +116,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   return {
     token,
     profileName: user.profileName,
+    firstName: user.firstName,
+    lastName: user.lastName,
     matches: cards,
     createdId,
   };

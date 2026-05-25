@@ -22,8 +22,10 @@ Vertel gerust over jezelf: je padelniveau (1–7), met wie je speelt (naam + mob
 • STOP — afmelden
 • HELP — dit overzicht`,
 
-  matchStartFresh:
-    "Top, laten we een match plannen. Geef datum, uur en club, of plak een Playtomic-bericht.",
+  matchStartFresh: (newMatchUrl?: string) =>
+    newMatchUrl
+      ? `Top! Plan je match online:\n${newMatchUrl}\n\nOf geef hier datum, uur en club (of plak een Playtomic-bericht) — dan doen we het via WhatsApp.`
+      : "Top, laten we een match plannen. Geef datum, uur en club, of plak een Playtomic-bericht.",
 
   unknownCommand:
     "Sorry, dat begrijp ik niet. Typ HELP voor een overzicht van commando's.",

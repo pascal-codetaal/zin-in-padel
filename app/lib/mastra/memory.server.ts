@@ -19,10 +19,14 @@ let storage: PostgresStore | null = null;
 let memory: Memory | null = null;
 
 function resolveConnectionString(): string {
+  // Prefer MASTRA_MEMORY_DB_URL, then DATABASE_URL, then DIRECT_URL.
+  // Many local setups use a direct db.*.supabase.co URL in DATABASE_URL; a
+  // misconfigured DIRECT_URL (pooler host + user "postgres" instead of
+  // "postgres.<project-ref>") causes Supabase "Tenant or user not found".
   const url =
     process.env.MASTRA_MEMORY_DB_URL ??
-    process.env.DIRECT_URL ??
-    process.env.DATABASE_URL;
+    process.env.DATABASE_URL ??
+    process.env.DIRECT_URL;
   if (!url) {
     throw new Error(
       "Mastra memory storage: set DATABASE_URL (or MASTRA_MEMORY_DB_URL) — no Postgres connection string found.",

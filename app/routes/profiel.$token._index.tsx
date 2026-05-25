@@ -5,13 +5,13 @@ import {
   PROFIEL_STEPS,
   useProfielData,
 } from "./profiel.$token";
+import { formatPersonName } from "~/lib/person-name";
 
 const STEP_BULLETS: Record<
   (typeof PROFIEL_STEPS)[number]["slug"],
   { title: string; sub: string }
 > = {
-  geslacht: { title: "Geslacht", sub: "Heren of dames" },
-  klassement: { title: "Klassement", sub: "Tennis Vlaanderen P-niveau" },
+  basis: { title: "Over jou", sub: "Naam, man/vrouw en niveau" },
   kant: { title: "Kant", sub: "Links of rechts, eventueel beide" },
   speelvoorkeur: { title: "Voorkeur", sub: "Met wie je wil spelen" },
   clubs: { title: "Clubs", sub: "Waar je beschikbaar bent" },
@@ -22,6 +22,12 @@ export default function ProfielWelcome() {
   const completed = countCompletedSteps(user);
   const firstIncomplete = findFirstIncompleteStep(user);
   const startSlug = firstIncomplete ?? PROFIEL_STEPS[0]!.slug;
+  const displayName = formatPersonName({
+    firstName: user.firstName,
+    lastName: user.lastName,
+    profileName: user.profileName,
+    fallback: "speler",
+  });
 
   const ctaLabel =
     completed === 0
@@ -38,10 +44,10 @@ export default function ProfielWelcome() {
             Welkom
           </p>
           <h1 className="mt-1 text-3xl font-bold leading-tight">
-            Hoi {user.profileName || "speler"} 👋
+            Hoi {displayName} 👋
           </h1>
           <p className="mt-2 text-base text-muted-foreground">
-            Vijf korte vragen, dan vinden we maatjes die bij je passen.
+            Vier korte vragen, dan vinden we maatjes die bij je passen.
           </p>
         </div>
 

@@ -10,7 +10,11 @@ import {
   getDatabase,
   updateUserProfile,
 } from "~/lib/db.server";
-import { buildMaatjesPageUrl } from "~/lib/maatjes-url.server";
+import {
+  buildMaatjesPageUrl,
+  buildNewMatchPageUrl,
+} from "~/lib/maatjes-url.server";
+import { resolveAppOrigin } from "~/lib/app-origin.server";
 import { ALL_PADEL_LEVELS } from "~/types/domain";
 
 const padelLevelSchema = z
@@ -26,7 +30,7 @@ const sideSchema = z.enum(["left", "right"]);
 export const readProfileTool = createTool({
   id: "read-profile",
   description:
-    "Lees het profiel van de actieve gebruiker: niveau, vrienden, clubvoorkeuren, matchvoorkeur, openstaande vriend-aanvraag, en de persoonlijke maatjesPageUrl om online te beheren. Gebruik search-clubs om clubs te zoeken.",
+    "Lees het profiel van de actieve gebruiker: niveau, vrienden, clubvoorkeuren, matchvoorkeur, openstaande vriend-aanvraag en persoonlijke maatjes-link (maatjesPageUrl). Gebruik search-clubs om clubs te zoeken.",
   inputSchema: z.object({}),
   outputSchema: z.object({
     maatjesPageUrl: z
@@ -39,6 +43,8 @@ export const readProfileTool = createTool({
       .object({
         id: z.string(),
         profileName: z.string(),
+        firstName: z.string().nullable(),
+        lastName: z.string().nullable(),
         phone: z.string(),
         gender: genderSchema.nullable(),
         level: padelLevelSchema.nullable(),
@@ -52,6 +58,10 @@ export const readProfileTool = createTool({
         matchLevelMin: padelLevelSchema.nullable(),
         matchLevelMax: padelLevelSchema.nullable(),
         onboardingComplete: z.boolean(),
+        optedIn: z.boolean(),
+        activeFlow: z
+          .enum(["onboarding", "favorites", "match_creation"])
+          .nullable(),
         pendingFriend: z.object({ name: z.string() }).nullable(),
       })
       .nullable(),
@@ -75,14 +85,13 @@ export const readProfileTool = createTool({
     const userId = context?.requestContext?.get("userId") as
       | string
       | undefined;
-    const appOrigin = context?.requestContext?.get("appOrigin") as
-      | string
-      | undefined;
     const db = await getDatabase();
     const user = userId ? db.users.find((u) => u.id === userId) : null;
+    const appOrigin = resolveAppOrigin(context);
+    const request = user ? new Request(`${appOrigin}/`) : null;
     const maatjesPageUrl =
-      user && appOrigin
-        ? buildMaatjesPageUrl(new Request(`${appOrigin}/`), user.manageToken)
+      user && request
+        ? buildMaatjesPageUrl(request, user.manageToken)
         : null;
     const favoritePlayers = user
       ? db.players
@@ -103,6 +112,8 @@ export const readProfileTool = createTool({
         ? {
             id: user.id,
             profileName: user.profileName,
+            firstName: user.firstName,
+            lastName: user.lastName,
             phone: user.phone,
             gender: user.gender,
             level: user.level,
@@ -114,12 +125,58 @@ export const readProfileTool = createTool({
             matchLevelMin: user.matchLevelMin,
             matchLevelMax: user.matchLevelMax,
             onboardingComplete: user.onboardingComplete,
+            optedIn: user.optedIn,
+            activeFlow: user.activeFlow,
             pendingFriend: user.pendingFriend,
           }
         : null,
       favoritePlayers,
       preferredClubs,
     };
+  },
+});
+
+export const getNewMatchLinkTool = createTool({
+  id: "get-new-match-link",
+  description:
+    "Geef de persoonlijke link waar de gebruiker een nieuwe match online kan configureren (datum, club, spelers, uitnodigingen). Roep dit aan zodra de gebruiker een match wil plannen en je de link moet delen.",
+  inputSchema: z.object({}),
+  outputSchema: z.object({
+    ok: z.boolean(),
+    url: z
+      .string()
+      .nullable()
+      .describe("Link naar /match/nieuw/:token; null als niet beschikbaar"),
+    message: z.string().optional(),
+  }),
+  execute: async (_input, context) => {
+    const userId = context?.requestContext?.get("userId") as
+      | string
+      | undefined;
+
+    if (!userId) {
+      return {
+        ok: false,
+        url: null,
+        message: "Geen gebruiker in context.",
+      };
+    }
+
+    const user = await findUserById(userId);
+    if (!user) {
+      return {
+        ok: false,
+        url: null,
+        message: "Gebruiker niet gevonden.",
+      };
+    }
+
+    const appOrigin = resolveAppOrigin(context);
+    const url = buildNewMatchPageUrl(
+      new Request(`${appOrigin}/`),
+      user.manageToken,
+    );
+    return { ok: true, url };
   },
 });
 
@@ -249,6 +306,8 @@ export const updateProfileTool = createTool({
   description:
     "Werk profielvelden bij: geslacht (m/w), Tennis Vlaanderen padelklassement (heren: P100-P1000, dames: P50-P700; geef de numerieke waarde zonder 'P'), voorkeurszijde (preferredSide: left/right) en of je beide kanten speelt (playsBothSides), match niveau-range (matchLevelMin/Max), clubvoorkeuren (club-ids uit search-clubs), matchvoorkeur. Zet onboardingComplete true wanneer het profiel klaar is.",
   inputSchema: z.object({
+    firstName: z.string().min(1).optional().describe("Voornaam"),
+    lastName: z.string().min(1).optional().describe("Familienaam"),
     gender: genderSchema.optional(),
     level: padelLevelSchema.optional(),
     preferredSide: sideSchema.optional(),
@@ -266,6 +325,8 @@ export const updateProfileTool = createTool({
       .object({
         gender: genderSchema.nullable(),
         level: padelLevelSchema.nullable(),
+        firstName: z.string().nullable(),
+        lastName: z.string().nullable(),
         preferredSide: sideSchema.nullable(),
         playsBothSides: z.boolean(),
         preferredClubIds: z.array(z.string()),
@@ -304,6 +365,8 @@ export const updateProfileTool = createTool({
         user: {
           gender: user.gender,
           level: user.level,
+          firstName: user.firstName,
+          lastName: user.lastName,
           preferredSide: user.preferredSide,
           playsBothSides: user.playsBothSides,
           preferredClubIds: user.preferredClubIds,
