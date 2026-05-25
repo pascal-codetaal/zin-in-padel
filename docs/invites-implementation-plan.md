@@ -112,6 +112,31 @@ verifiable in isolation and PR-able independently.
 
 ## Phase E — Twilio send path (queue worker)
 
+### E0. Mock send via dev simulator (no Twilio, no pgmq)
+- Goal: end-to-end invite flow visible in local simulator before any
+  Twilio/pgmq wiring. Receiver sees the invite as a Message in their
+  WhatsApp inbox, can tap the `/i/{token}` / `/i/{token}/nee` links.
+- Add `TWILIO_MOCK=true` env flag (default in dev, off in prod).
+- Create thin `sendInviteMessage(invite, match, organiser, recipient)`
+  in `app/lib/twilio.server.ts` that, when `TWILIO_MOCK=true`:
+  - Renders body via existing `formatInviteMessage()` (Phase B3).
+  - Inserts a `Message` row into recipient's inbox (direction=inbound
+    from bot, body=rendered text + clickable links).
+  - Sets `MatchInvitedPlayer.sentAt = now()` synchronously.
+  - Returns `{ ok: true, messageId: <db-id> }`.
+- Wire call sites:
+  - `finalizeMatchDraft` (Phase C3): after phase-1 rows exist, loop
+    over them and call `sendInviteMessage` synchronously.
+  - `runCascadeTick` (Phase C1b): after inserting phase-2/3 rows in
+    `applyPlan`, loop and call `sendInviteMessage` synchronously.
+- Simulator UI: existing message list automatically shows the mock
+  invites because they're real `Message` rows. No extra UI needed.
+- **Verify**: dev simulator script — create match as User A, switch to
+  User B (invited friend), see invite message in B's inbox with clickable
+  accept/decline links; tap accept → Phase D action runs → match fills.
+- **Out of scope here**: pgmq, retries, dead-letter, real Twilio. All
+  deferred to E1–E3. E0 is purely the local-dev send path.
+
 ### E1. pgmq queue + migration
 - Migration: enable `pg_cron`, `pgmq`, `pg_net` extensions; create queue
   `invite-sends`.

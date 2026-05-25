@@ -12,6 +12,8 @@ export function makeUser(overrides: Partial<User> = {}): User {
     waId: "+32470000001",
     phone: "whatsapp:+32470000001",
     profileName: "Candidate",
+    firstName: null,
+    lastName: null,
     optedIn: true,
     onboardingComplete: true,
     activeFlow: null,

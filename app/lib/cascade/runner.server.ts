@@ -16,6 +16,7 @@ import {
 import type { Match } from "~/types/domain";
 import type { AudienceCandidate, AudienceIndex } from "./audience";
 import { planCascadeTick, type CascadePlan } from "./plan";
+import { dispatchPendingInvites } from "./send.server";
 
 type TxClient = Prisma.TransactionClient;
 
@@ -62,12 +63,19 @@ async function tickOneMatch(
   matchId: string,
   now: Date,
 ): Promise<CascadePlanSummary> {
-  return prisma.$transaction(async (tx) => {
+  const summary = await prisma.$transaction(async (tx) => {
     const { match, candidates, index } = await loadCascadeContext(tx, matchId);
     const plan = planCascadeTick(match, candidates, index, now);
     await applyPlan(tx, matchId, plan);
     return summarisePlan(plan);
   });
+  // Phase E.0: fire freshly-inserted invites for this match. Done outside
+  // the cascade transaction so the cascade state advances even if a single
+  // recipient lookup blips.
+  if (summary.kind === "fire-phase" && summary.invitesInserted > 0) {
+    await dispatchPendingInvites(matchId, now);
+  }
+  return summary;
 }
 
 function summarisePlan(plan: CascadePlan): CascadePlanSummary {
@@ -97,7 +105,7 @@ async function loadCascadeContext(
 }> {
   const matchRow = await tx.match.findUniqueOrThrow({
     where: { id: matchId },
-    include: { invitedPlayers: true, confirmedSlots: true },
+    include: { invitedPlayers: true, confirmedSlots: true, clubs: true },
   });
   const match = matchRowToDomain(matchRow);
 
