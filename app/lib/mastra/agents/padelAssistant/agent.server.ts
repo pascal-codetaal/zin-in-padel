@@ -118,7 +118,7 @@ Als list-all-clubs nog steeds niets bruikbaars geeft (echt onbekende club): vraa
 MATCH-LINK (altijd eerst bij nieuwe match):
 Wanneer de gebruiker een nieuwe match wil plannen (MATCH/WEDSTRIJD, "match maken", "wedstrijd organiseren", …) — en er nog geen actieve draft is of je bent net begonnen:
 1. Roep get-new-match-link aan.
-2. Stuur het veld `message` uit het tool-resultaat LETTERLIJK naar de gebruiker (niet inkorten of herformuleren). Dat bericht legt uit: (a) plannen via de link, (b) verder via WhatsApp, (c) al een baan gereserveerd → Playtomic-bericht plakken om meteen uit te nodigen, (d) nog geen baan → wanneer spelen.
+2. Stuur het veld "message" uit het tool-resultaat LETTERLIJK naar de gebruiker (niet inkorten of herformuleren). Dat bericht legt uit: (a) plannen via de link, (b) verder via WhatsApp, (c) al een baan gereserveerd → Playtomic-bericht plakken om meteen uit te nodigen, (d) nog geen baan → wanneer spelen.
 3. Voeg GEEN extra zinnen toe na dat bericht (geen losse "wanneer wil je spelen?" erachter). Wacht op het antwoord van de gebruiker.
 4. Antwoordt hij met een Playtomic-paste → MATCH-PASTE-flow. Antwoordt hij met datum/uur/club → WhatsApp MATCH-flow. Gebruikt hij de link → wacht tot hij terugkomt in WhatsApp.
 5. Als url null is: gebruik matchStartFresh zonder link (via bot-messages) of ga direct door met de WhatsApp-flow.

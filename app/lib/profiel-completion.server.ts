@@ -52,6 +52,7 @@ export async function finishProfielFromWeb(
     await sendWhatsAppMessage(
       userId,
       messages.profileCompleteFromWeb(firstName, newMatchUrl),
+      { deliverViaApi: true },
     );
     whatsAppSent = true;
   }

@@ -18,6 +18,11 @@ import type { User } from "~/types/domain";
 export type HandleIncomingOptions = {
   /** Site origin, e.g. https://padel.example.com — used for personal links in tools. */
   appOrigin?: string;
+  /**
+   * When false (default for webhooks), the reply is only stored in DB and sent
+   * via TwiML — not duplicated on the Twilio REST API.
+   */
+  deliverReplyViaApi?: boolean;
 };
 
 const DONE_MARKER = "[DONE]";
@@ -89,6 +94,7 @@ export function isMatchInvitePaste(body: string): boolean {
 export type ProcessInboundReplyOptions = {
   isNewUser?: boolean;
   appOrigin?: string;
+  deliverReplyViaApi?: boolean;
 };
 
 /**
@@ -105,7 +111,9 @@ export async function processInboundReply(
   if (inbound.body.trim().toUpperCase() === "STOP") {
     await optOutUser(user.id);
     const outbound = messages.optOutConfirmed;
-    await sendWhatsAppMessage(user.id, outbound);
+    await sendWhatsAppMessage(user.id, outbound, {
+      deliverViaApi: options.deliverReplyViaApi ?? false,
+    });
     return outbound;
   }
 
@@ -127,7 +135,9 @@ export async function processInboundReply(
   );
 
   const outbound = replyBody ?? messages.unknownCommand;
-  await sendWhatsAppMessage(activeUser.id, outbound);
+  await sendWhatsAppMessage(activeUser.id, outbound, {
+    deliverViaApi: options.deliverReplyViaApi ?? false,
+  });
   return outbound;
 }
 
@@ -150,5 +160,6 @@ export async function handleIncomingMessage(
   return processInboundReply(user, inbound, {
     isNewUser,
     appOrigin: options.appOrigin,
+    deliverReplyViaApi: options.deliverReplyViaApi,
   });
 }
