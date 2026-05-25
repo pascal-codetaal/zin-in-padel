@@ -257,8 +257,13 @@ export async function findUserById(userId: string): Promise<User | undefined> {
 export async function findUserByPhone(
   phone: string,
 ): Promise<User | undefined> {
+  // Players store bare phones (+32...), Users store the WhatsApp-prefixed
+  // form (whatsapp:+32...). Try both so cascade dispatch can resolve an
+  // invitee Player to its User row regardless of how the caller passes it.
+  const bare = phone.replace(/^whatsapp:/, "");
+  const prefixed = bare.startsWith("whatsapp:") ? bare : `whatsapp:${bare}`;
   const row = await prisma.user.findFirst({
-    where: { phone },
+    where: { phone: { in: [phone, bare, prefixed] } },
     include: USER_INCLUDE,
   });
   return row ? userRowToDomain(row) : undefined;
