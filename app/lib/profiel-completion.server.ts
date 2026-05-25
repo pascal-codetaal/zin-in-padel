@@ -5,7 +5,10 @@ import { firstNameFromDisplayName, formatPersonName } from "~/lib/person-name";
 import { isProfielFormComplete } from "~/lib/profiel-completion";
 import { sendWhatsAppMessage } from "~/lib/whatsapp-messaging.server";
 
-export type { ProfielFormUser, ProfielStepSlug };
+export type {
+  ProfielFormUser,
+  ProfielStepSlug,
+} from "~/lib/profiel-completion";
 export {
   isProfielFormComplete,
   isProfielStepComplete,
