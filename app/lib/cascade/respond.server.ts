@@ -19,6 +19,8 @@ import {
   type InviteResponseDecision,
 } from "./respond";
 import { decideEarlyAdvance } from "./early-advance";
+import { decideAcceptNotices } from "./organiser-notify";
+import { notifyOrganiser } from "./organiser-notify.server";
 
 const MATCH_INCLUDE = {
   invitedPlayers: true,
@@ -86,7 +88,7 @@ export async function respondToInvite(input: {
 }): Promise<RespondResult | null> {
   const { token, action, now } = input;
 
-  return prisma.$transaction(async (tx) => {
+  const txResult = await prisma.$transaction(async (tx) => {
     const inviteRow = await tx.matchInvitedPlayer.findUnique({
       where: { token },
     });
@@ -146,9 +148,38 @@ export async function respondToInvite(input: {
 
       const updatedInvite =
         updatedMatch.invitedPlayers.find((i) => i.token === token) ?? invite;
-      return { decision, match: updatedMatch, invite: updatedInvite };
+      return {
+        decision,
+        match: updatedMatch,
+        invite: updatedInvite,
+        prev: match,
+      };
     }
 
-    return { decision, match, invite };
+    return { decision, match, invite, prev: match };
   });
+
+  if (!txResult) return null;
+
+  // Side-effect: organiser notification on a successful accept. Fired
+  // outside the transaction so a slow Twilio call can't hold the row lock.
+  if (
+    txResult.decision.kind === "apply" &&
+    txResult.decision.newStatus === "accepted"
+  ) {
+    const notices = decideAcceptNotices({
+      prev: txResult.prev,
+      next: txResult.match,
+      acceptedPlayerRef: txResult.invite.playerRef,
+    });
+    if (notices.length > 0) {
+      await notifyOrganiser({ match: txResult.match, notices });
+    }
+  }
+
+  return {
+    decision: txResult.decision,
+    match: txResult.match,
+    invite: txResult.invite,
+  };
 }

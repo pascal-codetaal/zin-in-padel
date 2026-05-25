@@ -157,8 +157,9 @@ AFRONDEN (verplicht):
 - Na vraag b: roep finalize-match aan.
 - Antwoord pas DAARNA aan de gebruiker, en gebruik de 'summary' en 'listUrl' uit het tool-resultaat.
 - Eindig met [DONE] op een nieuwe regel.
+- Vermeld in de afrondingstekst kort dat de gebruiker hier op WhatsApp bericht krijgt zodra iemand zich inschrijft, en wanneer de match volzet of uitgeput is.
 - Voorbeeld output ná finalize-match (na een paste met 3 ✅ en 1 ⚪, keuze B):
-  "Match aangemaakt — 1 open plaats. Eerst je maatjes; na 30 min ook spelers op je niveau. Wie eerst 'JA' antwoordt krijgt de plek. 🎾
+  "Match aangemaakt — 1 open plaats. Eerst je maatjes; na 30 min ook spelers op je niveau. Wie eerst 'JA' antwoordt krijgt de plek. Ik laat het je hier weten zodra iemand instapt of de match vol is. 🎾
   https://…/match/<token>?created=<id>
   [DONE]"
 
