@@ -245,6 +245,40 @@ function formatTime(iso: string) {
   });
 }
 
+/**
+ * Detect the two cascade invite CTA URLs (accept + decline) in a Message body
+ * and split them out so the simulator can render them as WhatsApp-style CTA
+ * buttons. The body text returned has the URL lines stripped so they aren't
+ * shown twice. Button labels mirror what we'll register as the real Meta
+ * WhatsApp template — plain text, ≤20 chars, no emoji (Meta constraint).
+ */
+function extractInviteButtons(body: string): {
+  body: string;
+  buttons: Array<{ label: string; url: string }> | null;
+} {
+  // Match `✅ Ja, ik doe mee: <url>` and `❌ Nee, andere keer: <url>`
+  const acceptRe = /^✅ Ja, ik doe mee:\s+(\S+)\s*$/m;
+  const declineRe = /^❌ Nee, andere keer:\s+(\S+)\s*$/m;
+  const acceptMatch = body.match(acceptRe);
+  const declineMatch = body.match(declineRe);
+  if (!acceptMatch || !declineMatch) {
+    return { body, buttons: null };
+  }
+  const stripped = body
+    .replace(acceptRe, "")
+    .replace(declineRe, "")
+    // collapse the 3+ blank lines that strip leaves behind
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  return {
+    body: stripped,
+    buttons: [
+      { label: "Ja, ik doe mee", url: acceptMatch[1] },
+      { label: "Nee, andere keer", url: declineMatch[1] },
+    ],
+  };
+}
+
 export default function DevSimulator({ loaderData }: Route.ComponentProps) {
   const { users, selectedUser, messages } = loaderData;
   const [searchParams] = useSearchParams();
@@ -525,33 +559,53 @@ export default function DevSimulator({ loaderData }: Route.ComponentProps) {
                     Nog geen berichten voor deze gebruiker.
                   </p>
                 ) : (
-                  displayMessages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`flex ${msg.direction === "in" ? "justify-end" : "justify-start"}`}
-                    >
+                  displayMessages.map((msg) => {
+                    const { body: bubbleBody, buttons } = extractInviteButtons(
+                      msg.body ?? "",
+                    );
+                    return (
                       <div
-                        className={`max-w-[85%] rounded-lg px-3 py-2 text-sm shadow ${
-                          msg.direction === "in"
-                            ? "bg-[#d9fdd3] text-gray-900 dark:bg-emerald-900/50 dark:text-gray-100"
-                            : "bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100"
-                        } ${msg.id === "__pending_in" ? "opacity-80" : ""}`}
+                        key={msg.id}
+                        className={`flex ${msg.direction === "in" ? "justify-end" : "justify-start"}`}
                       >
-                        <p className="whitespace-pre-wrap break-words">
-                          {msg.body || (
-                            <span className="italic text-gray-400">
-                              (leeg bericht)
-                            </span>
+                        <div
+                          className={`max-w-[85%] overflow-hidden rounded-lg text-sm shadow ${
+                            msg.direction === "in"
+                              ? "bg-[#d9fdd3] text-gray-900 dark:bg-emerald-900/50 dark:text-gray-100"
+                              : "bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100"
+                          } ${msg.id === "__pending_in" ? "opacity-80" : ""}`}
+                        >
+                          <div className="px-3 py-2">
+                            <p className="whitespace-pre-wrap break-words">
+                              {bubbleBody || (
+                                <span className="italic text-gray-400">
+                                  (leeg bericht)
+                                </span>
+                              )}
+                            </p>
+                            <p className="mt-1 text-right text-[10px] text-gray-500 dark:text-gray-400">
+                              {msg.id === "__pending_in"
+                                ? "Nu"
+                                : formatTime(msg.at)}
+                            </p>
+                          </div>
+                          {buttons && (
+                            <div className="flex flex-col border-t border-black/10 dark:border-white/10">
+                              {buttons.map((btn) => (
+                                <a
+                                  key={btn.url}
+                                  href={btn.url}
+                                  className="border-t border-black/10 px-3 py-2.5 text-center text-sm font-medium text-[#00a884] first:border-t-0 hover:bg-black/5 dark:border-white/10 dark:text-emerald-300 dark:hover:bg-white/5"
+                                >
+                                  {btn.label}
+                                </a>
+                              ))}
+                            </div>
                           )}
-                        </p>
-                        <p className="mt-1 text-right text-[10px] text-gray-500 dark:text-gray-400">
-                          {msg.id === "__pending_in"
-                            ? "Nu"
-                            : formatTime(msg.at)}
-                        </p>
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
                 {isAwaitingReply && (
                   <div className="flex justify-start">
