@@ -78,7 +78,7 @@ Kopieer `.env.example` naar `.env`:
 | `TWILIO_WHATSAPP_FROM` | WhatsApp-sender, bijv. `whatsapp:+14155238886` |
 | `OPENAI_API_KEY` | OpenAI API key voor de Mastra-agent (favorieten-flow) |
 
-De webhook gebruikt voorlopig vooral TwiML-replies; de variabelen zijn nodig voor toekomstige outbound API-calls en optionele signature-validatie.
+Inbound antwoorden gaan via **TwiML** op de webhook; proactieve berichten (bv. profiel klaar) via de **Twilio REST API**. Zet `TWILIO_WEBHOOK_URL` op je publieke tunnel-URL als signature-validatie faalt lokaal.
 
 ## localtunnel (lokale webhook)
 
