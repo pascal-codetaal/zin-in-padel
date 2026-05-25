@@ -17,6 +17,8 @@ import type { Match } from "~/types/domain";
 import type { AudienceCandidate, AudienceIndex } from "./audience";
 import { planCascadeTick, type CascadePlan } from "./plan";
 import { dispatchPendingInvites } from "./send.server";
+import { decideRunnerNotices } from "./organiser-notify";
+import { notifyOrganiser } from "./organiser-notify.server";
 
 type TxClient = Prisma.TransactionClient;
 
@@ -74,6 +76,22 @@ async function tickOneMatch(
   // recipient lookup blips.
   if (summary.kind === "fire-phase" && summary.invitesInserted > 0) {
     await dispatchPendingInvites(matchId, now);
+  }
+  // Phase H: notify organiser on cascade-terminal outcomes (match-full /
+  // cascade-exhausted with open slots). In-app surfaces still cover everything
+  // else; organiser WhatsApp stays low-noise.
+  if (summary.kind === "mark-full" || summary.kind === "mark-exhausted") {
+    const matchRow = await prisma.match.findUnique({
+      where: { id: matchId },
+      include: { invitedPlayers: true, confirmedSlots: true, clubs: true },
+    });
+    if (matchRow) {
+      const match = matchRowToDomain(matchRow);
+      const notices = decideRunnerNotices({ match, planKind: summary.kind });
+      if (notices.length > 0) {
+        await notifyOrganiser({ match, notices });
+      }
+    }
   }
   return summary;
 }

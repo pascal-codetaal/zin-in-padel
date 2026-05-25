@@ -16,7 +16,7 @@ import {
 import { sendWhatsAppMessage } from "~/lib/whatsapp-messaging.server";
 import { getClubsByIds } from "~/lib/clubs.server";
 import { formatScheduledAt } from "~/lib/match-defaults";
-import type { Match } from "~/types/domain";
+import { isMatchFull, type Match } from "~/types/domain";
 import {
   planAddConfirmedSlot,
   planCancelMatch,
@@ -28,6 +28,8 @@ import {
   type RemovePlayerPlan,
   type SkipPhasePlan,
 } from "./organiser";
+import { decideRunnerNotices } from "./organiser-notify";
+import { notifyOrganiser } from "./organiser-notify.server";
 
 const MATCH_INCLUDE = {
   invitedPlayers: true,
@@ -177,18 +179,18 @@ export async function addConfirmedSlotToMatch(input: {
 }): Promise<AddConfirmedSlotResult | null> {
   const { matchId, name, now } = input;
 
-  return prisma.$transaction(async (tx) => {
+  const txResult = await prisma.$transaction(async (tx) => {
     await tx.$queryRaw`SELECT id FROM "Match" WHERE id = ${matchId} FOR UPDATE`;
     const row = await tx.match.findUnique({
       where: { id: matchId },
       include: MATCH_INCLUDE,
     });
     if (!row) return null;
-    const match = matchRowToDomain(row);
+    const prev = matchRowToDomain(row);
 
-    const plan = planAddConfirmedSlot({ match, name });
+    const plan = planAddConfirmedSlot({ match: prev, name });
     if (plan.kind !== "add") {
-      return { plan, match };
+      return { plan, match: prev, prev };
     }
 
     await tx.matchConfirmedSlot.deleteMany({ where: { matchId } });
@@ -197,17 +199,41 @@ export async function addConfirmedSlotToMatch(input: {
         data: { matchId, idx: i, name: plan.confirmedSlotNames[i]! },
       });
     }
-    await tx.match.update({
-      where: { id: matchId },
-      data: { updatedAt: now },
-    });
 
-    const fresh = await tx.match.findUniqueOrThrow({
+    // If this add tipped the match to full, stop the cascade immediately so
+    // the next cron tick doesn't fire another phase. Same end-state the
+    // runner would converge to on its own.
+    const freshAfter = await tx.match.findUniqueOrThrow({
       where: { id: matchId },
       include: MATCH_INCLUDE,
     });
-    return { plan, match: matchRowToDomain(fresh) };
+    const next = matchRowToDomain(freshAfter);
+    const tippedFull = !isMatchFull(prev) && isMatchFull(next);
+
+    await tx.match.update({
+      where: { id: matchId },
+      data: {
+        updatedAt: now,
+        ...(tippedFull ? { nextCascadeAt: null } : {}),
+      },
+    });
+
+    const final = await tx.match.findUniqueOrThrow({
+      where: { id: matchId },
+      include: MATCH_INCLUDE,
+    });
+    return { plan, match: matchRowToDomain(final), prev };
   });
+
+  if (!txResult) return null;
+  const { plan, match, prev } = txResult;
+  if (plan.kind === "add" && !isMatchFull(prev) && isMatchFull(match)) {
+    const notices = decideRunnerNotices({ match, planKind: "mark-full" });
+    if (notices.length > 0) {
+      await notifyOrganiser({ match, notices });
+    }
+  }
+  return { plan, match };
 }
 
 /* -------------------------------------------------------------------------- */
