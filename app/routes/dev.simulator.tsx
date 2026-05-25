@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import {
+  data,
   Form,
   Link,
   redirect,
@@ -12,15 +13,60 @@ import type { Route } from "./+types/dev.simulator";
 import { assertDevOnly } from "~/lib/dev-guard.server";
 import { inboundFromUser } from "~/lib/dev-inbound.server";
 import {
+  appendMessage,
   createDevTestUser,
   findUserById,
   getDatabase,
   getMessagesForUser,
 } from "~/lib/db.server";
-import { handleIncomingMessage } from "~/lib/whatsapp-bot.server";
+import { resetDevSimulatorUser } from "~/lib/dev-reset-user.server";
+import { processInboundReply } from "~/lib/whatsapp-bot.server";
 import { runCascadeTick, type TickTrace } from "~/lib/cascade/runner.server";
+import type { ActiveFlow, Message, User } from "~/types/domain";
 
 const QUICK_COMMANDS = ["JA", "FRIENDS", "HELP", "STOP"] as const;
+
+type SimulatorUserSnapshot = {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  profileName: string;
+  waId: string;
+  manageToken: string;
+  optedIn: boolean;
+  activeFlow: ActiveFlow;
+  pendingFriend: { name: string } | null;
+};
+
+export type SimulatorSendResponse =
+  | { ok: false; error: string }
+  | {
+      ok: true;
+      intent: "send-inbound";
+      messages: Message[];
+      user: SimulatorUserSnapshot;
+      body: string;
+    }
+  | {
+      ok: true;
+      intent: "send-reply";
+      messages: Message[];
+      user: SimulatorUserSnapshot;
+    };
+
+function simulatorUserSnapshot(user: User): SimulatorUserSnapshot {
+  return {
+    id: user.id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    profileName: user.profileName,
+    waId: user.waId,
+    manageToken: user.manageToken,
+    optedIn: user.optedIn,
+    activeFlow: user.activeFlow,
+    pendingFriend: user.pendingFriend,
+  };
+}
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -41,6 +87,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const users = db.users.map((u) => ({
     id: u.id,
+    firstName: u.firstName,
+    lastName: u.lastName,
     profileName: u.profileName,
     waId: u.waId,
     manageToken: u.manageToken,
@@ -63,6 +111,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     users,
     selectedUser: {
       id: selectedUser.id,
+      firstName: selectedUser.firstName,
+      lastName: selectedUser.lastName,
       profileName: selectedUser.profileName,
       waId: selectedUser.waId,
       manageToken: selectedUser.manageToken,
@@ -96,10 +146,78 @@ export async function action({ request }: Route.ActionArgs) {
     return { ok: true as const, intent: "cron-tick" as const, trace };
   }
 
-  if (intent === "send") {
+  if (intent === "send-inbound") {
     const userId = form.get("userId")?.toString();
     const body = form.get("body")?.toString() ?? "";
 
+    if (!userId) {
+      return data({ ok: false, error: "missing_user" } satisfies SimulatorSendResponse);
+    }
+
+    const user = await findUserById(userId);
+    if (!user) {
+      return data({ ok: false, error: "user_not_found" } satisfies SimulatorSendResponse);
+    }
+
+    const trimmed = body.trim();
+    if (!trimmed) {
+      return data({ ok: false, error: "empty_body" } satisfies SimulatorSendResponse);
+    }
+
+    await appendMessage(userId, trimmed, "in");
+    const messages = await getMessagesForUser(userId);
+    const updated = await findUserById(userId);
+    if (!updated) {
+      return data({ ok: false, error: "user_not_found" } satisfies SimulatorSendResponse);
+    }
+
+    return data({
+      ok: true,
+      intent: "send-inbound",
+      messages,
+      user: simulatorUserSnapshot(updated),
+      body: trimmed,
+    } satisfies SimulatorSendResponse);
+  }
+
+  if (intent === "send-reply") {
+    const userId = form.get("userId")?.toString();
+    const body = form.get("body")?.toString() ?? "";
+
+    if (!userId) {
+      return data({ ok: false, error: "missing_user" } satisfies SimulatorSendResponse);
+    }
+
+    const user = await findUserById(userId);
+    if (!user) {
+      return data({ ok: false, error: "user_not_found" } satisfies SimulatorSendResponse);
+    }
+
+    const trimmed = body.trim();
+    if (!trimmed) {
+      return data({ ok: false, error: "empty_body" } satisfies SimulatorSendResponse);
+    }
+
+    const inbound = inboundFromUser(user, trimmed);
+    const appOrigin = new URL(request.url).origin;
+    await processInboundReply(user, inbound, { appOrigin });
+
+    const messages = await getMessagesForUser(userId);
+    const updated = await findUserById(userId);
+    if (!updated) {
+      return data({ ok: false, error: "user_not_found" } satisfies SimulatorSendResponse);
+    }
+
+    return data({
+      ok: true,
+      intent: "send-reply",
+      messages,
+      user: simulatorUserSnapshot(updated),
+    } satisfies SimulatorSendResponse);
+  }
+
+  if (intent === "reset-user") {
+    const userId = form.get("userId")?.toString();
     if (!userId) {
       return { ok: false as const, error: "missing_user" };
     }
@@ -109,11 +227,10 @@ export async function action({ request }: Route.ActionArgs) {
       return { ok: false as const, error: "user_not_found" };
     }
 
-    const inbound = inboundFromUser(user, body);
-    const appOrigin = new URL(request.url).origin;
-    await handleIncomingMessage(inbound, { appOrigin });
-
-    return redirect(`/dev/simulator?userId=${userId}`);
+    const result = await resetDevSimulatorUser(userId);
+    return redirect(
+      `/dev/simulator?userId=${userId}&reset=${result.messagesDeleted}`,
+    );
   }
 
   return { ok: false as const, error: "unknown_intent" };
@@ -132,22 +249,136 @@ export default function DevSimulator({ loaderData }: Route.ComponentProps) {
   const { users, selectedUser, messages } = loaderData;
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const fetcher = useFetcher<
-    | { ok: false; error: string }
-    | { ok: true; intent: "cron-tick"; trace: TickTrace }
-  >();
+  const fetcher = useFetcher<SimulatorSendResponse>();
+  const replyFetcher = useFetcher<SimulatorSendResponse>();
   const cronFetcher = useFetcher<
     | { ok: false; error: string }
     | { ok: true; intent: "cron-tick"; trace: TickTrace }
   >();
   const threadEndRef = useRef<HTMLDivElement>(null);
+  const messageInputRef = useRef<HTMLInputElement>(null);
+  const wasSendingRef = useRef(false);
+  const sendPhaseRef = useRef<"idle" | "inbound" | "reply">("idle");
+  const inboundHandledRef = useRef(false);
+  const [messageBody, setMessageBody] = useState("");
+  const [threadMessages, setThreadMessages] = useState(messages);
+  const [liveUser, setLiveUser] = useState(selectedUser);
+  const [pendingInbound, setPendingInbound] = useState<string | null>(null);
   const userId = searchParams.get("userId") ?? "";
+  const resetCount = searchParams.get("reset");
+  const selectedUserId = selectedUser?.id;
 
-  const isSending = fetcher.state !== "idle";
+  const isSending =
+    fetcher.state !== "idle" || replyFetcher.state !== "idle";
+  const isAwaitingReply = replyFetcher.state !== "idle";
+
+  function focusMessageInput() {
+    messageInputRef.current?.focus();
+  }
+
+  useEffect(() => {
+    if (selectedUserId) {
+      messageInputRef.current?.focus();
+    }
+  }, [selectedUserId]);
+
+  useEffect(() => {
+    const sending = fetcher.state !== "idle";
+    if (wasSendingRef.current && !sending) {
+      setMessageBody("");
+      messageInputRef.current?.focus();
+    }
+    wasSendingRef.current = sending;
+  }, [fetcher.state]);
+
+  // Switching users — abort any in-flight send choreography.
+  useEffect(() => {
+    sendPhaseRef.current = "idle";
+    inboundHandledRef.current = false;
+    setPendingInbound(null);
+    setThreadMessages(messages);
+    setLiveUser(selectedUser);
+  }, [selectedUserId]);
+
+  // Loader revalidated (e.g. after reset) while idle — sync thread from server.
+  useEffect(() => {
+    if (
+      sendPhaseRef.current !== "idle" ||
+      fetcher.state !== "idle" ||
+      replyFetcher.state !== "idle"
+    ) {
+      return;
+    }
+    setThreadMessages(messages);
+    setLiveUser(selectedUser);
+  }, [messages, selectedUser, fetcher.state, replyFetcher.state]);
+
+  useEffect(() => {
+    if (fetcher.state !== "idle" || sendPhaseRef.current !== "inbound") return;
+    const payload = fetcher.data;
+    if (!payload) return;
+    if (inboundHandledRef.current) return;
+
+    if (payload.ok === false) {
+      sendPhaseRef.current = "idle";
+      inboundHandledRef.current = false;
+      setPendingInbound(null);
+      return;
+    }
+
+    if (payload.intent !== "send-inbound") return;
+
+    inboundHandledRef.current = true;
+    sendPhaseRef.current = "reply";
+    setPendingInbound(null);
+    setThreadMessages(payload.messages);
+    setLiveUser(payload.user);
+
+    const replyForm = new FormData();
+    replyForm.set("intent", "send-reply");
+    replyForm.set("userId", payload.user.id);
+    replyForm.set("body", payload.body);
+    replyFetcher.submit(replyForm, { method: "post" });
+  }, [fetcher.state, fetcher.data]);
+
+  useEffect(() => {
+    if (replyFetcher.state !== "idle" || sendPhaseRef.current !== "reply") {
+      return;
+    }
+    const payload = replyFetcher.data;
+    if (!payload) return;
+
+    if (payload.ok === false) {
+      sendPhaseRef.current = "idle";
+      inboundHandledRef.current = false;
+      return;
+    }
+
+    if (payload.intent !== "send-reply") return;
+
+    sendPhaseRef.current = "idle";
+    inboundHandledRef.current = false;
+    setThreadMessages(payload.messages);
+    setLiveUser(payload.user);
+  }, [replyFetcher.state, replyFetcher.data]);
+
+  const displayMessages = useMemo(() => {
+    if (!pendingInbound || !selectedUserId) return threadMessages;
+    return [
+      ...threadMessages,
+      {
+        id: "__pending_in",
+        userId: selectedUserId,
+        body: pendingInbound,
+        direction: "in" as const,
+        at: new Date().toISOString(),
+      },
+    ];
+  }, [threadMessages, pendingInbound, selectedUserId]);
 
   useEffect(() => {
     threadEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length]);
+  }, [displayMessages.length, isAwaitingReply]);
 
   function handleUserChange(nextUserId: string) {
     if (nextUserId) {
@@ -157,13 +388,31 @@ export default function DevSimulator({ loaderData }: Route.ComponentProps) {
     }
   }
 
-  function sendCommand(command: string) {
+  function submitMessage(body: string) {
     if (!selectedUser) return;
+    const trimmed = body.trim();
+    if (!trimmed || isSending) return;
+
+    setPendingInbound(trimmed);
+    sendPhaseRef.current = "inbound";
+    inboundHandledRef.current = false;
+
     const formData = new FormData();
-    formData.set("intent", "send");
+    formData.set("intent", "send-inbound");
     formData.set("userId", selectedUser.id);
-    formData.set("body", command);
+    formData.set("body", trimmed);
     fetcher.submit(formData, { method: "post" });
+    setMessageBody("");
+    focusMessageInput();
+  }
+
+  function sendCommand(command: string) {
+    submitMessage(command);
+  }
+
+  function handleSend(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    submitMessage(messageBody);
   }
 
   return (
@@ -193,34 +442,11 @@ export default function DevSimulator({ loaderData }: Route.ComponentProps) {
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
-          <div>
-            <label
-              htmlFor="user-select"
-              className="block text-xs font-medium text-gray-700 dark:text-gray-300"
-            >
-              Gebruiker
-            </label>
-            <select
-              id="user-select"
-              value={userId}
-              onChange={(e) => handleUserChange(e.target.value)}
-              className="mt-1.5 w-full rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-sm dark:border-gray-700 dark:bg-gray-950"
-            >
-              <option value="">— Kies —</option>
-              {users.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {formatPersonName({
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    profileName: user.profileName,
-                    fallback: user.waId,
-                  })}
-                  {user.optedIn ? " · opt-in" : ""}
-                  {user.activeFlow ? ` · ${user.activeFlow}` : ""}
-                </option>
-              ))}
-            </select>
-          </div>
+          <UserSearchSelect
+            users={users}
+            selectedUserId={userId}
+            onSelect={handleUserChange}
+          />
 
           <Form method="post" className="flex flex-col gap-2">
             <input type="hidden" name="intent" value="create-user" />
@@ -238,28 +464,29 @@ export default function DevSimulator({ loaderData }: Route.ComponentProps) {
             </button>
           </Form>
 
-          {selectedUser && (
+          {liveUser && (
             <div className="flex flex-col gap-1.5 border-t border-gray-200 pt-4 text-xs dark:border-gray-800">
               <StatusPill
-                label={selectedUser.optedIn ? "Opt-in" : "Geen opt-in"}
-                active={selectedUser.optedIn}
+                label={liveUser.optedIn ? "Opt-in" : "Geen opt-in"}
+                active={liveUser.optedIn}
               />
               <StatusPill
                 label={
-                  selectedUser.activeFlow
-                    ? `Flow: ${selectedUser.activeFlow}`
+                  liveUser.activeFlow
+                    ? `Flow: ${liveUser.activeFlow}`
                     : "Geen actieve flow"
                 }
-                active={Boolean(selectedUser.activeFlow)}
+                active={Boolean(liveUser.activeFlow)}
               />
-              {selectedUser.pendingFriend && (
+              {liveUser.pendingFriend && (
                 <span className="text-amber-700 dark:text-amber-400">
-                  Wacht op tel.: {selectedUser.pendingFriend.name}
+                  Wacht op tel.: {liveUser.pendingFriend.name}
                 </span>
               )}
               <code className="break-all rounded bg-gray-100 px-1.5 py-1 text-[10px] text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-                {selectedUser.waId}
+                {liveUser.waId}
               </code>
+              <ResetUserForm userId={liveUser.id} />
             </div>
           )}
 
@@ -273,9 +500,9 @@ export default function DevSimulator({ loaderData }: Route.ComponentProps) {
             <header className="shrink-0 border-b border-gray-300/60 bg-[#f0f2f5] px-4 py-3 dark:border-gray-700 dark:bg-gray-950">
               <p className="font-medium">
                 {formatPersonName({
-                  firstName: selectedUser.firstName,
-                  lastName: selectedUser.lastName,
-                  profileName: selectedUser.profileName,
+                  firstName: liveUser?.firstName ?? selectedUser.firstName,
+                  lastName: liveUser?.lastName ?? selectedUser.lastName,
+                  profileName: liveUser?.profileName ?? selectedUser.profileName,
                   fallback: selectedUser.waId,
                 })}
               </p>
@@ -286,12 +513,19 @@ export default function DevSimulator({ loaderData }: Route.ComponentProps) {
 
             <div className="min-h-0 flex-1 overflow-y-auto p-4">
               <div className="mx-auto max-w-3xl space-y-2">
-                {messages.length === 0 ? (
+                {resetCount !== null && (
+                  <p className="rounded-lg bg-emerald-100 px-3 py-2 text-center text-xs text-emerald-900 dark:bg-emerald-900/40 dark:text-emerald-200">
+                    Gebruiker gereset
+                    {resetCount !== "" ? ` (${resetCount} berichten gewist)` : ""}.
+                    Stuur JA om opnieuw te starten.
+                  </p>
+                )}
+                {displayMessages.length === 0 && !isAwaitingReply ? (
                   <p className="py-8 text-center text-sm text-gray-600 dark:text-gray-400">
                     Nog geen berichten voor deze gebruiker.
                   </p>
                 ) : (
-                  messages.map((msg) => (
+                  displayMessages.map((msg) => (
                     <div
                       key={msg.id}
                       className={`flex ${msg.direction === "in" ? "justify-end" : "justify-start"}`}
@@ -301,7 +535,7 @@ export default function DevSimulator({ loaderData }: Route.ComponentProps) {
                           msg.direction === "in"
                             ? "bg-[#d9fdd3] text-gray-900 dark:bg-emerald-900/50 dark:text-gray-100"
                             : "bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100"
-                        }`}
+                        } ${msg.id === "__pending_in" ? "opacity-80" : ""}`}
                       >
                         <p className="whitespace-pre-wrap break-words">
                           {msg.body || (
@@ -311,11 +545,20 @@ export default function DevSimulator({ loaderData }: Route.ComponentProps) {
                           )}
                         </p>
                         <p className="mt-1 text-right text-[10px] text-gray-500 dark:text-gray-400">
-                          {formatTime(msg.at)}
+                          {msg.id === "__pending_in"
+                            ? "Nu"
+                            : formatTime(msg.at)}
                         </p>
                       </div>
                     </div>
                   ))
+                )}
+                {isAwaitingReply && (
+                  <div className="flex justify-start">
+                    <div className="rounded-lg bg-white px-3 py-2 text-sm text-gray-500 shadow dark:bg-gray-800 dark:text-gray-400">
+                      Assistent typt…
+                    </div>
+                  </div>
                 )}
                 <div ref={threadEndRef} />
               </div>
@@ -336,13 +579,13 @@ export default function DevSimulator({ loaderData }: Route.ComponentProps) {
                     </button>
                   ))}
                 </div>
-                <fetcher.Form method="post" className="flex gap-2">
-                  <input type="hidden" name="intent" value="send" />
-                  <input type="hidden" name="userId" value={selectedUser.id} />
+                <form onSubmit={handleSend} className="flex gap-2">
                   <input
+                    ref={messageInputRef}
                     name="body"
                     type="text"
-                    required
+                    value={messageBody}
+                    onChange={(e) => setMessageBody(e.target.value)}
                     disabled={isSending}
                     placeholder="Typ een WhatsApp-bericht…"
                     className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm dark:border-gray-700 dark:bg-gray-900"
@@ -350,15 +593,21 @@ export default function DevSimulator({ loaderData }: Route.ComponentProps) {
                   />
                   <button
                     type="submit"
-                    disabled={isSending}
+                    disabled={isSending || !messageBody.trim()}
                     className="shrink-0 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
                   >
                     {isSending ? "…" : "Verstuur"}
                   </button>
-                </fetcher.Form>
-                {fetcher.data?.ok === false && (
+                </form>
+                {(fetcher.data?.ok === false ||
+                  replyFetcher.data?.ok === false) && (
                   <p className="mt-2 text-xs text-red-600">
-                    Fout: {fetcher.data.error}
+                    Fout:{" "}
+                    {fetcher.data?.ok === false
+                      ? fetcher.data.error
+                      : replyFetcher.data?.ok === false
+                        ? replyFetcher.data.error
+                        : "onbekend"}
                   </p>
                 )}
               </div>
@@ -448,6 +697,166 @@ function summarisePlan(plan: TickTrace["perMatch"][number]["plan"]): string {
     case "mark-exhausted":
       return "mark-exhausted";
   }
+}
+
+type SimulatorUser = {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  profileName: string;
+  waId: string;
+  optedIn: boolean;
+  activeFlow: string | null;
+};
+
+function userSearchLabel(user: SimulatorUser): string {
+  return formatPersonName({
+    firstName: user.firstName,
+    lastName: user.lastName,
+    profileName: user.profileName,
+    fallback: user.waId,
+  });
+}
+
+function userSearchHaystack(user: SimulatorUser): string {
+  return [
+    user.firstName,
+    user.lastName,
+    user.profileName,
+    user.waId,
+    user.activeFlow,
+    user.optedIn ? "opt-in" : "",
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+}
+
+function ResetUserForm({ userId }: { userId: string }) {
+  return (
+    <Form
+      method="post"
+      className="mt-2"
+      onSubmit={(e) => {
+        const ok = confirm(
+          "Chatgeschiedenis, agentgeheugen, profiel en onboarding wissen? De gebruiker moet opnieuw met JA starten.",
+        );
+        if (!ok) e.preventDefault();
+      }}
+    >
+      <input type="hidden" name="intent" value="reset-user" />
+      <input type="hidden" name="userId" value={userId} />
+      <button
+        type="submit"
+        className="w-full rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-900 hover:bg-rose-100 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-200 dark:hover:bg-rose-950/60"
+      >
+        Reset chat & onboarding
+      </button>
+    </Form>
+  );
+}
+
+function UserSearchSelect({
+  users,
+  selectedUserId,
+  onSelect,
+}: {
+  users: SimulatorUser[];
+  selectedUserId: string;
+  onSelect: (userId: string) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const selectedUser = users.find((u) => u.id === selectedUserId);
+
+  const matches = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (q.length < 2) return [];
+    return users
+      .filter((user) => userSearchHaystack(user).includes(q))
+      .slice(0, 20);
+  }, [query, users]);
+
+  const showResults = query.trim().length >= 2;
+
+  return (
+    <div>
+      <label
+        htmlFor="user-search"
+        className="block text-xs font-medium text-gray-700 dark:text-gray-300"
+      >
+        Gebruiker
+      </label>
+      {selectedUser && (
+        <p className="mt-1.5 truncate text-xs text-gray-600 dark:text-gray-400">
+          Actief:{" "}
+          <span className="font-medium text-gray-900 dark:text-gray-200">
+            {userSearchLabel(selectedUser)}
+          </span>
+        </p>
+      )}
+      <input
+        id="user-search"
+        type="text"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        autoComplete="off"
+        placeholder="Zoek op naam of nummer…"
+        className="mt-1.5 w-full rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 dark:border-gray-700 dark:bg-gray-950"
+      />
+      {selectedUserId && (
+        <button
+          type="button"
+          onClick={() => {
+            setQuery("");
+            onSelect("");
+          }}
+          className="mt-1 text-xs text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+        >
+          Deselecteer
+        </button>
+      )}
+      {showResults && (
+        <div className="mt-2 max-h-48 overflow-auto rounded-lg border border-gray-300 bg-white dark:border-gray-700 dark:bg-gray-950">
+          {matches.length === 0 ? (
+            <p className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+              Geen gebruikers voor "{query.trim()}".
+            </p>
+          ) : (
+            <ul className="divide-y divide-gray-200 dark:divide-gray-800">
+              {matches.map((user) => {
+                const isSelected = user.id === selectedUserId;
+                return (
+                  <li key={user.id}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSelect(user.id);
+                        setQuery("");
+                      }}
+                      className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                        isSelected
+                          ? "bg-emerald-50 font-medium text-emerald-900 dark:bg-emerald-900/30 dark:text-emerald-200"
+                          : ""
+                      }`}
+                    >
+                      <span className="block truncate">
+                        {userSearchLabel(user)}
+                      </span>
+                      <span className="block truncate text-[10px] text-gray-500 dark:text-gray-400">
+                        {user.waId}
+                        {user.optedIn ? " · opt-in" : ""}
+                        {user.activeFlow ? ` · ${user.activeFlow}` : ""}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function StatusPill({

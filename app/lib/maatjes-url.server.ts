@@ -8,6 +8,11 @@ export function buildMaatjesPageUrl(request: Request, manageToken: string): stri
   return `${url.origin}/maatjes/${manageToken}`;
 }
 
+export function buildProfielPageUrl(request: Request, manageToken: string): string {
+  const url = new URL(request.url);
+  return `${url.origin}/profiel/${manageToken}`;
+}
+
 export function buildNewMatchPageUrl(request: Request, manageToken: string): string {
   const url = new URL(request.url);
   return `${url.origin}/match/nieuw/${manageToken}`;

@@ -74,3 +74,15 @@ export function getFavoritesMemory(): Memory {
   }
   return memory;
 }
+
+/** Delete the Mastra thread for a user (`thread = user.id`). Returns false if none. */
+export async function deleteAgentThread(threadId: string): Promise<boolean> {
+  const mem = getFavoritesMemory();
+  mem.setStorage(getMastraStorage());
+  try {
+    await mem.deleteThread(threadId);
+    return true;
+  } catch {
+    return false;
+  }
+}

@@ -13,8 +13,10 @@ import {
 import {
   buildMaatjesPageUrl,
   buildNewMatchPageUrl,
+  buildProfielPageUrl,
 } from "~/lib/maatjes-url.server";
 import { resolveAppOrigin } from "~/lib/app-origin.server";
+import { messages } from "~/lib/bot-messages.nl";
 import { ALL_PADEL_LEVELS } from "~/types/domain";
 
 const padelLevelSchema = z
@@ -30,9 +32,15 @@ const sideSchema = z.enum(["left", "right"]);
 export const readProfileTool = createTool({
   id: "read-profile",
   description:
-    "Lees het profiel van de actieve gebruiker: niveau, vrienden, clubvoorkeuren, matchvoorkeur, openstaande vriend-aanvraag en persoonlijke maatjes-link (maatjesPageUrl). Gebruik search-clubs om clubs te zoeken.",
+    "Lees het profiel van de actieve gebruiker: niveau, vrienden, clubvoorkeuren, matchvoorkeur, openstaande vriend-aanvraag en persoonlijke links (profielPageUrl, maatjesPageUrl). Gebruik search-clubs om clubs te zoeken.",
   inputSchema: z.object({}),
   outputSchema: z.object({
+    profielPageUrl: z
+      .string()
+      .nullable()
+      .describe(
+        "Persoonlijke link om profiel in de browser in te richten; null als niet beschikbaar",
+      ),
     maatjesPageUrl: z
       .string()
       .nullable()
@@ -89,6 +97,10 @@ export const readProfileTool = createTool({
     const user = userId ? db.users.find((u) => u.id === userId) : null;
     const appOrigin = resolveAppOrigin(context);
     const request = user ? new Request(`${appOrigin}/`) : null;
+    const profielPageUrl =
+      user && request
+        ? buildProfielPageUrl(request, user.manageToken)
+        : null;
     const maatjesPageUrl =
       user && request
         ? buildMaatjesPageUrl(request, user.manageToken)
@@ -107,6 +119,7 @@ export const readProfileTool = createTool({
       : [];
 
     return {
+      profielPageUrl,
       maatjesPageUrl,
       currentUser: user
         ? {
@@ -147,7 +160,12 @@ export const getNewMatchLinkTool = createTool({
       .string()
       .nullable()
       .describe("Link naar /match/nieuw/:token; null als niet beschikbaar"),
-    message: z.string().optional(),
+    message: z
+      .string()
+      .optional()
+      .describe(
+        "Kant-en-klaar WhatsApp-bericht om aan de gebruiker te sturen; gebruik dit letterlijk",
+      ),
   }),
   execute: async (_input, context) => {
     const userId = context?.requestContext?.get("userId") as
@@ -176,7 +194,11 @@ export const getNewMatchLinkTool = createTool({
       new Request(`${appOrigin}/`),
       user.manageToken,
     );
-    return { ok: true, url };
+    return {
+      ok: true,
+      url,
+      message: url ? messages.matchStartFresh(url) : messages.matchStartFresh(),
+    };
   },
 });
 
