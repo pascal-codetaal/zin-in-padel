@@ -7,6 +7,7 @@ import {
 } from "react-router";
 import type { Route } from "./+types/profiel.$token";
 import { findUserByManageToken } from "~/lib/db.server";
+import { isProfielStepComplete } from "~/lib/profiel-completion";
 import { formatPersonName } from "~/lib/person-name";
 import type {
   Gender,
@@ -53,17 +54,7 @@ export function isStepComplete(
   slug: ProfielStepSlug,
   user: ProfielUser,
 ): boolean {
-  if (slug === "basis")
-    return (
-      Boolean(user.firstName?.trim() && user.lastName?.trim()) &&
-      user.gender !== null &&
-      user.level !== null
-    );
-  if (slug === "kant")
-    return user.preferredSide !== null || user.playsBothSides;
-  if (slug === "speelvoorkeur") return user.matchPreference !== null;
-  if (slug === "clubs") return user.preferredClubIds.length > 0;
-  return false;
+  return isProfielStepComplete(slug, user);
 }
 
 export function findFirstIncompleteStep(

@@ -86,6 +86,51 @@ export function isMatchInvitePaste(body: string): boolean {
   return false;
 }
 
+export type ProcessInboundReplyOptions = {
+  isNewUser?: boolean;
+  appOrigin?: string;
+};
+
+/**
+ * Generate and send the bot reply for an inbound message that is already
+ * stored (or about to be handled without persisting inbound again).
+ */
+export async function processInboundReply(
+  user: User,
+  inbound: TwilioInboundMessage,
+  options: ProcessInboundReplyOptions = {},
+): Promise<string> {
+  const isNewUser = options.isNewUser ?? false;
+
+  if (inbound.body.trim().toUpperCase() === "STOP") {
+    await optOutUser(user.id);
+    const outbound = messages.optOutConfirmed;
+    await sendWhatsAppMessage(user.id, outbound);
+    return outbound;
+  }
+
+  let activeUser = user;
+  if (
+    activeUser.optedIn &&
+    activeUser.activeFlow !== "match_creation" &&
+    isMatchInvitePaste(inbound.body)
+  ) {
+    activeUser = await updateUser(activeUser.id, { activeFlow: "match_creation" });
+  }
+
+  await tryResolvePendingFriend(activeUser, inbound.body);
+
+  const replyBody = await runPadelAssistantAgent(
+    activeUser,
+    buildAgentMessage(inbound, activeUser, isNewUser),
+    options.appOrigin,
+  );
+
+  const outbound = replyBody ?? messages.unknownCommand;
+  await sendWhatsAppMessage(activeUser.id, outbound);
+  return outbound;
+}
+
 export async function handleIncomingMessage(
   inbound: TwilioInboundMessage,
   options: HandleIncomingOptions = {},
@@ -94,7 +139,7 @@ export async function handleIncomingMessage(
   const existingUser = await findUserByWaId(waId);
   const isNewUser = !existingUser;
 
-  let user = await upsertUser({
+  const user = await upsertUser({
     waId,
     phone: inbound.from,
     profileName: inbound.profileName,
@@ -102,31 +147,8 @@ export async function handleIncomingMessage(
 
   await appendMessage(user.id, inbound.body, "in");
 
-  // Deterministic opt-out — reliable without LLM (compliance + latency).
-  if (inbound.body.trim().toUpperCase() === "STOP") {
-    await optOutUser(user.id);
-    const outbound = messages.optOutConfirmed;
-    await sendWhatsAppMessage(user.id, outbound);
-    return outbound;
-  }
-
-  if (
-    user.optedIn &&
-    user.activeFlow !== "match_creation" &&
-    isMatchInvitePaste(inbound.body)
-  ) {
-    user = await updateUser(user.id, { activeFlow: "match_creation" });
-  }
-
-  await tryResolvePendingFriend(user, inbound.body);
-
-  const replyBody = await runPadelAssistantAgent(
-    user,
-    buildAgentMessage(inbound, user, isNewUser),
-    options.appOrigin,
-  );
-
-  const outbound = replyBody ?? messages.unknownCommand;
-  await sendWhatsAppMessage(user.id, outbound);
-  return outbound;
+  return processInboundReply(user, inbound, {
+    isNewUser,
+    appOrigin: options.appOrigin,
+  });
 }

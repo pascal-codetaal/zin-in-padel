@@ -484,6 +484,11 @@ export async function appendMessage(
   return messageRowToDomain(row);
 }
 
+export async function deleteMessagesForUser(userId: string): Promise<number> {
+  const result = await prisma.message.deleteMany({ where: { userId } });
+  return result.count;
+}
+
 /* -------------------------------------------------------------------------- */
 /*  Players & favorites                                                       */
 /* -------------------------------------------------------------------------- */

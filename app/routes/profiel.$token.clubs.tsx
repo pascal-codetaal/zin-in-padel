@@ -9,6 +9,8 @@ import {
 } from "react-router";
 import { prevStepSlug, useProfielData } from "./profiel.$token";
 import { findUserByManageToken, updateUserProfile } from "~/lib/db.server";
+import { isProfielFormComplete } from "~/lib/profiel-completion";
+import { finishProfielFromWeb } from "~/lib/profiel-completion.server";
 import { loadClubs } from "~/lib/clubs.server";
 import { StepFooter } from "~/components/step-footer";
 import type { Route } from "./+types/profiel.$token.clubs";
@@ -76,6 +78,10 @@ export async function action({
   }
 
   if (intent === "finish") {
+    const result = await finishProfielFromWeb(user.id, request);
+    if (!result.ok) {
+      return { ok: false, error: result.error };
+    }
     return redirect(`/profiel/${token}`);
   }
 
@@ -84,13 +90,17 @@ export async function action({
 
 const FORM_ID = "step-clubs-finish";
 
-export default function ClubsStep({ loaderData }: Route.ComponentProps) {
+export default function ClubsStep({
+  loaderData,
+  actionData,
+}: Route.ComponentProps) {
   const { token, user } = useProfielData();
   const { clubs } = loaderData;
   const navigation = useNavigation();
   const finishing =
     navigation.state !== "idle" &&
     navigation.formData?.get("intent") === "finish";
+  const canFinish = isProfielFormComplete(user);
 
   const preferredClubs = useMemo(
     () =>
@@ -118,6 +128,13 @@ export default function ClubsStep({ loaderData }: Route.ComponentProps) {
         />
 
         <SelectedClubs preferredClubs={preferredClubs} />
+
+        {actionData?.ok === false && actionData.error === "profiel_incomplete" && (
+          <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            Vul eerst alle stappen in (basis, kant, voorkeur en minstens één
+            club).
+          </p>
+        )}
       </section>
 
       {/* Finish form holds only the intent and the submit button (in the footer). */}
@@ -132,6 +149,7 @@ export default function ClubsStep({ loaderData }: Route.ComponentProps) {
           label: "Profiel afronden ✓",
           busyLabel: "Bezig…",
           busy: finishing,
+          disabled: !canFinish,
         }}
         secondary={{
           kind: "link",

@@ -6,8 +6,9 @@
  * Run: npx tsx scripts/clear-user-history.ts <userId>
  */
 import "dotenv/config";
+import { deleteMessagesForUser } from "../app/lib/db.server";
+import { deleteAgentThread } from "../app/lib/mastra/memory.server";
 import { prisma } from "../app/lib/prisma.server";
-import { getFavoritesMemory, getMastraStorage } from "../app/lib/mastra/memory.server";
 
 async function main() {
   const userId = process.argv[2];
@@ -26,17 +27,13 @@ async function main() {
   }
   console.log(`Clearing history for ${user.profileName} (${user.waId})`);
 
-  const deleted = await prisma.message.deleteMany({ where: { userId } });
-  console.log(`  Postgres: deleted ${deleted.count} Message row(s)`);
+  const count = await deleteMessagesForUser(userId);
+  console.log(`  Postgres: deleted ${count} Message row(s)`);
 
-  // Memory.deleteThread() needs the Mastra storage wired up; do it explicitly.
-  const memory = getFavoritesMemory();
-  memory.setStorage(getMastraStorage());
-  try {
-    await memory.deleteThread(userId);
+  if (await deleteAgentThread(userId)) {
     console.log(`  Mastra Memory: deleted thread "${userId}"`);
-  } catch (err) {
-    console.log(`  Mastra Memory: no thread or already gone (${(err as Error).message})`);
+  } else {
+    console.log(`  Mastra Memory: no thread or already gone`);
   }
 }
 

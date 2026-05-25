@@ -1,7 +1,10 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { findUserById } from "~/lib/db.server";
-import { buildMaatjesPageUrl } from "~/lib/maatjes-url.server";
+import {
+  buildMaatjesPageUrl,
+  buildProfielPageUrl,
+} from "~/lib/maatjes-url.server";
 import { resolveAppOrigin } from "~/lib/app-origin.server";
 import {
   optInUser,
@@ -21,11 +24,12 @@ function requireUserId(context: { requestContext?: { get(key: string): unknown }
 export const optInTool = createTool({
   id: "opt-in",
   description:
-    "Meld de gebruiker aan (JA): zet optedIn=true, start onboarding, reset profiel. Gebruik bij JA of wanneer iemand zich wil registreren. Geeft maatjesPageUrl terug om te delen.",
+    "Meld de gebruiker aan (JA): zet optedIn=true, start onboarding, reset profiel. Gebruik bij JA of wanneer iemand zich wil registreren. Geeft profielPageUrl en maatjesPageUrl terug om te delen.",
   inputSchema: z.object({}),
   outputSchema: z.object({
     ok: z.boolean(),
     error: z.string().optional(),
+    profielPageUrl: z.string().nullable().optional(),
     maatjesPageUrl: z.string().nullable().optional(),
     activeFlow: activeFlowSchema.optional(),
   }),
@@ -35,13 +39,13 @@ export const optInTool = createTool({
 
     const user = await optInUser(auth.userId);
     const appOrigin = resolveAppOrigin(context);
-    const maatjesPageUrl = buildMaatjesPageUrl(
-      new Request(`${appOrigin}/`),
-      user.manageToken,
-    );
+    const request = new Request(`${appOrigin}/`);
+    const profielPageUrl = buildProfielPageUrl(request, user.manageToken);
+    const maatjesPageUrl = buildMaatjesPageUrl(request, user.manageToken);
 
     return {
       ok: true,
+      profielPageUrl,
       maatjesPageUrl,
       activeFlow: user.activeFlow as "onboarding",
     };
