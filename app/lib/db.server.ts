@@ -238,6 +238,16 @@ export async function findUserById(userId: string): Promise<User | undefined> {
   return row ? userRowToDomain(row) : undefined;
 }
 
+export async function findUserByPhone(
+  phone: string,
+): Promise<User | undefined> {
+  const row = await prisma.user.findFirst({
+    where: { phone },
+    include: USER_INCLUDE,
+  });
+  return row ? userRowToDomain(row) : undefined;
+}
+
 export async function upsertUser(
   input: Pick<User, "waId" | "phone" | "profileName">,
 ): Promise<User> {

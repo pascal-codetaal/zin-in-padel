@@ -21,6 +21,8 @@ export default [
     route("bevestigen", "routes/match.nieuw.$token.bevestigen.tsx"),
   ]),
   route("match/:token", "routes/match.$token.tsx"),
+  route("i/:token", "routes/i.$token.tsx"),
+  route("i/:token/nee", "routes/i.$token.nee.tsx"),
   route("dev/simulator", "routes/dev.simulator.tsx"),
   route("dev/cron-tick", "routes/dev.cron-tick.tsx"),
   route("webhooks/twilio/whatsapp", "routes/webhooks.twilio.whatsapp.ts"),

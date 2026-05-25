@@ -15,6 +15,7 @@ import {
   updateMatchDraft,
 } from "~/lib/db.server";
 import { buildMaatjesPageUrl } from "~/lib/maatjes-url.server";
+import { dispatchPendingInvites } from "~/lib/cascade/send.server";
 import {
   ALL_PADEL_LEVELS,
   acceptedPlayerRefsOf,
@@ -428,6 +429,10 @@ export const finalizeMatchTool = createTool({
     }
 
     const finalized = await finalizeMatchDraft(draft.id, "open");
+    // Phase E.0: fire phase-1 invite messages now that the match is live.
+    // Safe to await — POC scale, and surfacing failures to the agent turn
+    // is better than silently dropping invites.
+    await dispatchPendingInvites(finalized.id, new Date());
     const club = draft.clubId
       ? (await getClubsByIds([draft.clubId]))[0]
       : undefined;
