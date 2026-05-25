@@ -7,6 +7,7 @@ import {
 } from "react-router";
 import type { Route } from "./+types/match.nieuw.$token";
 import { findUserByManageToken } from "~/lib/db.server";
+import { formatPersonName } from "~/lib/person-name";
 import type { Match, User } from "~/types/domain";
 
 /* ---------- Steps ---------- */
@@ -52,7 +53,7 @@ export function isMatchStepComplete(
   if (slug === "spelers") return true;
   if (slug === "maatjes") return true;
   if (slug === "wanneer")
-    return draft.scheduledAt !== null && draft.clubId !== null;
+    return draft.scheduledAt !== null && draft.clubIds.length > 0;
   if (slug === "formaat") return true; // always has a value
   if (slug === "uitnodigingen") return true;
   if (slug === "bevestigen") return draft.status !== "draft";
@@ -65,6 +66,8 @@ export type MatchOrganizer = Pick<
   User,
   | "id"
   | "profileName"
+  | "firstName"
+  | "lastName"
   | "gender"
   | "level"
   | "matchLevelMin"
@@ -82,6 +85,8 @@ export async function loader({ params }: Route.LoaderArgs) {
   const organizer: MatchOrganizer = {
     id: user.id,
     profileName: user.profileName,
+    firstName: user.firstName,
+    lastName: user.lastName,
     gender: user.gender,
     level: user.level,
     matchLevelMin: user.matchLevelMin,
@@ -107,7 +112,14 @@ export function useMatchWizardData() {
 }
 
 export function meta({ loaderData }: Route.MetaArgs) {
-  const name = loaderData?.organizer.profileName;
+  const name = loaderData
+    ? formatPersonName({
+        firstName: loaderData.organizer.firstName,
+        lastName: loaderData.organizer.lastName,
+        profileName: loaderData.organizer.profileName,
+        fallback: "speler",
+      })
+    : undefined;
   return [
     {
       title: name

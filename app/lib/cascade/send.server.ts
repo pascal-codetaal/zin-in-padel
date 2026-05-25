@@ -59,7 +59,7 @@ export async function dispatchPendingInvites(
 ): Promise<DispatchOutcome> {
   const matchRow = await prisma.match.findUnique({
     where: { id: matchId },
-    include: { invitedPlayers: true, confirmedSlots: true },
+    include: { invitedPlayers: true, confirmedSlots: true, clubs: true },
   });
   if (!matchRow) {
     return { matchId, attempted: 0, sent: 0, skipped: [] };
@@ -69,9 +69,12 @@ export async function dispatchPendingInvites(
   if (!organiser) {
     return { matchId, attempted: 0, sent: 0, skipped: [] };
   }
-  const clubName = match.clubId
-    ? ((await getClubsByIds([match.clubId]))[0]?.name ?? "Onbekende club")
-    : "Onbekende club";
+  const clubs =
+    match.clubIds.length > 0 ? await getClubsByIds(match.clubIds) : [];
+  const clubName =
+    clubs.length > 0
+      ? clubs.map((c) => c.name).join(" / ")
+      : "Onbekende club";
 
   const pending = match.invitedPlayers.filter(
     (i) => i.sentAt === null && i.status === "pending",

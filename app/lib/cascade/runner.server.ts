@@ -105,7 +105,7 @@ async function loadCascadeContext(
 }> {
   const matchRow = await tx.match.findUniqueOrThrow({
     where: { id: matchId },
-    include: { invitedPlayers: true, confirmedSlots: true },
+    include: { invitedPlayers: true, confirmedSlots: true, clubs: true },
   });
   const match = matchRowToDomain(matchRow);
 

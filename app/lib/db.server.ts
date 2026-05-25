@@ -28,6 +28,11 @@ import {
   isPadelLevel,
   stepLevel,
 } from "~/types/domain";
+import {
+  formatPersonName,
+  parsePersonName,
+  syncProfileNameFromParts,
+} from "~/lib/person-name";
 import { createManageToken } from "~/lib/maatjes-url.server";
 import { createInviteToken } from "~/lib/cascade/token";
 import { computeInitialCascadeState } from "~/lib/cascade/finalize";
@@ -46,6 +51,7 @@ type MatchRow = Prisma.MatchGetPayload<{
   include: {
     invitedPlayers: true;
     confirmedSlots: true;
+    clubs: true;
   };
 }>;
 
@@ -60,6 +66,7 @@ const USER_INCLUDE = {
 const MATCH_INCLUDE = {
   invitedPlayers: true,
   confirmedSlots: true,
+  clubs: true,
 } satisfies Prisma.MatchInclude;
 
 function asGender(value: string | null): Gender | null {
@@ -116,6 +123,8 @@ export function userRowToDomain(row: UserRow): User {
     waId: row.waId,
     phone: row.phone,
     profileName: row.profileName,
+    firstName: row.firstName,
+    lastName: row.lastName,
     optedIn: row.optedIn,
     onboardingComplete: row.onboardingComplete,
     activeFlow: asActiveFlow(row.activeFlow),
@@ -140,10 +149,17 @@ export function matchRowToDomain(row: MatchRow): Match {
   const confirmed = [...row.confirmedSlots]
     .sort((a, b) => a.idx - b.idx)
     .map((s) => s.name);
+  const clubIds =
+    row.clubs.length > 0
+      ? row.clubs.map((c) => c.clubId)
+      : row.clubId
+        ? [row.clubId]
+        : [];
   return {
     id: row.id,
     organizerId: row.organizerId,
-    clubId: row.clubId,
+    clubId: clubIds[0] ?? row.clubId,
+    clubIds,
     scheduledAt: row.scheduledAt ? row.scheduledAt.toISOString() : null,
     durationMinutes: row.durationMinutes,
     format: asMatchFormat(row.format),
@@ -255,11 +271,22 @@ export async function upsertUser(
   const existing = await prisma.user.findUnique({ where: { waId: input.waId } });
 
   if (existing) {
+    const parsed = parsePersonName(input.profileName);
+    const nameData: { firstName?: string | null; lastName?: string | null } =
+      {};
+    if (parsed.lastName) {
+      nameData.firstName = parsed.firstName;
+      nameData.lastName = parsed.lastName;
+    } else if (parsed.firstName && !existing.firstName) {
+      nameData.firstName = parsed.firstName;
+    }
+
     const updated = await prisma.user.update({
       where: { waId: input.waId },
       data: {
         phone: input.phone,
         profileName: input.profileName,
+        ...nameData,
         updatedAt: now,
         manageToken: existing.manageToken || createManageToken(),
       },
@@ -268,6 +295,7 @@ export async function upsertUser(
     return userRowToDomain(updated);
   }
 
+  const parsed = parsePersonName(input.profileName);
   const created = await prisma.user.create({
     data: {
       id: crypto.randomUUID(),
@@ -275,6 +303,8 @@ export async function upsertUser(
       waId: input.waId,
       phone: input.phone,
       profileName: input.profileName,
+      firstName: parsed.firstName || null,
+      lastName: parsed.lastName,
       optedIn: false,
       onboardingComplete: false,
       activeFlow: null,
@@ -302,6 +332,8 @@ export async function updateUser(
       | "optedIn"
       | "onboardingComplete"
       | "profileName"
+      | "firstName"
+      | "lastName"
       | "activeFlow"
       | "favoritePlayerRefs"
       | "gender"
@@ -327,6 +359,8 @@ export async function updateUser(
     if (patch.onboardingComplete !== undefined)
       data.onboardingComplete = patch.onboardingComplete;
     if (patch.profileName !== undefined) data.profileName = patch.profileName;
+    if (patch.firstName !== undefined) data.firstName = patch.firstName;
+    if (patch.lastName !== undefined) data.lastName = patch.lastName;
     if (patch.activeFlow !== undefined) data.activeFlow = patch.activeFlow;
     if (patch.gender !== undefined) data.gender = patch.gender;
     if (patch.level !== undefined) data.level = patch.level;
@@ -387,13 +421,16 @@ export async function createDevTestUser(profileName: string): Promise<User> {
   const id = crypto.randomUUID();
   const waId = `dev-${id.slice(0, 8)}`;
 
+  const parsed = parsePersonName(profileName.trim() || "Testgebruiker");
   const created = await prisma.user.create({
     data: {
       id,
       manageToken: createManageToken(),
       waId,
       phone: `whatsapp:+${waId}`,
-      profileName: profileName.trim() || "Testgebruiker",
+      profileName: syncProfileNameFromParts(parsed) || "Testgebruiker",
+      firstName: parsed.firstName || null,
+      lastName: parsed.lastName,
       optedIn: false,
       onboardingComplete: false,
       activeFlow: null,
@@ -531,6 +568,8 @@ function validateLevelInput(value: number | null): PadelLevel | null {
 export async function updateUserProfile(
   userId: string,
   patch: {
+    firstName?: string | null;
+    lastName?: string | null;
     gender?: Gender | null;
     level?: number | null;
     preferredSide?: PreferredSide | null;
@@ -550,6 +589,12 @@ export async function updateUserProfile(
     if (!existing) throw new Error(`User not found: ${userId}`);
     let user = userRowToDomain(existing);
 
+    if (patch.firstName !== undefined) user.firstName = patch.firstName?.trim() || null;
+    if (patch.lastName !== undefined) user.lastName = patch.lastName?.trim() || null;
+    if (patch.firstName !== undefined || patch.lastName !== undefined) {
+      user.profileName = syncProfileNameFromParts(user) || user.profileName;
+    }
+
     if (patch.gender !== undefined) {
       user.gender = patch.gender;
       user.level = clampLevelToGender(user.level, user.gender);
@@ -561,14 +606,14 @@ export async function updateUserProfile(
       user.level = validateLevelInput(patch.level);
     }
 
-    if (patch.preferredSide !== undefined) {
-      user.preferredSide = patch.preferredSide;
-      if (patch.preferredSide === null) {
-        user.playsBothSides = false;
-      }
-    }
     if (patch.playsBothSides !== undefined) {
       user.playsBothSides = patch.playsBothSides;
+    }
+    if (patch.preferredSide !== undefined) {
+      user.preferredSide = patch.preferredSide;
+      if (patch.preferredSide === null && !user.playsBothSides) {
+        user.playsBothSides = false;
+      }
     }
 
     if (patch.preferredClubIds !== undefined) {
@@ -618,6 +663,9 @@ export async function updateUserProfile(
     await tx.user.update({
       where: { id: userId },
       data: {
+        profileName: user.profileName,
+        firstName: user.firstName,
+        lastName: user.lastName,
         gender: user.gender,
         level: user.level,
         preferredSide: user.preferredSide,
@@ -669,11 +717,12 @@ export async function findOrCreateDraftMatch(
 
     const now = new Date();
     const matchId = crypto.randomUUID();
+    const initialClubIds = user.preferredClubIds;
     await tx.match.create({
       data: {
         id: matchId,
         organizerId,
-        clubId: user.preferredClubIds[0] ?? null,
+        clubId: initialClubIds[0] ?? null,
         scheduledAt: null,
         durationMinutes: 90,
         format: defaultMatchFormatFor(user.gender),
@@ -687,12 +736,24 @@ export async function findOrCreateDraftMatch(
         status: "draft",
         createdAt: now,
         updatedAt: now,
+        clubs:
+          initialClubIds.length > 0
+            ? {
+                create: initialClubIds.map((clubId) => ({ clubId })),
+              }
+            : undefined,
       },
     });
 
-    if (user.profileName) {
+    if (user.firstName || user.lastName || user.profileName) {
+      const organiserName = formatPersonName({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileName: user.profileName,
+        fallback: "Organisator",
+      });
       await tx.matchConfirmedSlot.create({
-        data: { matchId, idx: 0, name: user.profileName },
+        data: { matchId, idx: 0, name: organiserName },
       });
     }
 
@@ -751,7 +812,7 @@ export async function cancelMatch(matchId: string): Promise<Match> {
 export type MatchDraftPatch = Partial<
   Pick<
     Match,
-    | "clubId"
+    | "clubIds"
     | "scheduledAt"
     | "durationMinutes"
     | "format"
@@ -779,10 +840,18 @@ export async function updateMatchDraft(
     }
 
     const data: Prisma.MatchUpdateInput = { updatedAt: new Date() };
-    if (patch.clubId !== undefined) {
-      data.club = patch.clubId
-        ? { connect: { id: patch.clubId } }
+    if (patch.clubIds !== undefined) {
+      const clubIds = [...new Set(patch.clubIds)];
+      data.club = clubIds[0]
+        ? { connect: { id: clubIds[0] } }
         : { disconnect: true };
+      await tx.matchClub.deleteMany({ where: { matchId } });
+      if (clubIds.length > 0) {
+        await tx.matchClub.createMany({
+          data: clubIds.map((clubId) => ({ matchId, clubId })),
+          skipDuplicates: true,
+        });
+      }
     }
     if (patch.scheduledAt !== undefined) {
       data.scheduledAt = patch.scheduledAt ? new Date(patch.scheduledAt) : null;

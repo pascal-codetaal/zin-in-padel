@@ -7,6 +7,7 @@ import {
   useNavigate,
   useSearchParams,
 } from "react-router";
+import { formatPersonName } from "~/lib/person-name";
 import type { Route } from "./+types/dev.simulator";
 import { assertDevOnly } from "~/lib/dev-guard.server";
 import { inboundFromUser } from "~/lib/dev-inbound.server";
@@ -41,6 +42,8 @@ export async function loader({ request }: Route.LoaderArgs) {
   const users = db.users.map((u) => ({
     id: u.id,
     profileName: u.profileName,
+    firstName: u.firstName,
+    lastName: u.lastName,
     waId: u.waId,
     manageToken: u.manageToken,
     optedIn: u.optedIn,
@@ -63,6 +66,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     selectedUser: {
       id: selectedUser.id,
       profileName: selectedUser.profileName,
+      firstName: selectedUser.firstName,
+      lastName: selectedUser.lastName,
       waId: selectedUser.waId,
       manageToken: selectedUser.manageToken,
       optedIn: selectedUser.optedIn,
@@ -208,7 +213,12 @@ export default function DevSimulator({ loaderData }: Route.ComponentProps) {
               <option value="">— Kies —</option>
               {users.map((user) => (
                 <option key={user.id} value={user.id}>
-                  {user.profileName || user.waId}
+                  {formatPersonName({
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    profileName: user.profileName,
+                    fallback: user.waId,
+                  })}
                   {user.optedIn ? " · opt-in" : ""}
                   {user.activeFlow ? ` · ${user.activeFlow}` : ""}
                 </option>
@@ -221,7 +231,7 @@ export default function DevSimulator({ loaderData }: Route.ComponentProps) {
             <input
               name="profileName"
               type="text"
-              placeholder="Naam testgebruiker"
+              placeholder="Voornaam familienaam"
               className="w-full rounded-lg border border-gray-300 px-2.5 py-2 text-sm dark:border-gray-700 dark:bg-gray-950"
             />
             <button
@@ -266,7 +276,12 @@ export default function DevSimulator({ loaderData }: Route.ComponentProps) {
           <>
             <header className="shrink-0 border-b border-gray-300/60 bg-[#f0f2f5] px-4 py-3 dark:border-gray-700 dark:bg-gray-950">
               <p className="font-medium">
-                {selectedUser.profileName || selectedUser.waId}
+                {formatPersonName({
+                  firstName: selectedUser.firstName,
+                  lastName: selectedUser.lastName,
+                  profileName: selectedUser.profileName,
+                  fallback: selectedUser.waId,
+                })}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Zin in Padel · WhatsApp

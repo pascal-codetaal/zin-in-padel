@@ -129,7 +129,7 @@ export function MatchInvitePicker({
                       {initials(player.name)}
                     </span>
                     <span className="w-full truncate text-center text-sm font-medium">
-                      {player.name.split(" ")[0]}
+                      {player.name}
                     </span>
                     {player.level !== null && (
                       <span className="inline-flex rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold tabular-nums text-accent-foreground">

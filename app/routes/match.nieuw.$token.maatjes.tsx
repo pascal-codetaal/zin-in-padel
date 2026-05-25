@@ -13,6 +13,7 @@ import {
   maatjeSlotsFromDraft,
   parseInvitedRefsForm,
 } from "~/lib/match-picker.server";
+import { formatPersonName } from "~/lib/person-name";
 import { StepFooter } from "~/components/step-footer";
 import type { Route } from "./+types/match.nieuw.$token.maatjes";
 
@@ -23,8 +24,14 @@ const NEXT_SLUG = nextMatchStep(STEP_SLUG)!;
 export async function loader({ params }: Route.LoaderArgs) {
   const { user, draft } = await requireDraftFor(params.token);
   const players = await getMatchPickerPlayers(user.id);
+  const organizerName = formatPersonName({
+    firstName: user.firstName,
+    lastName: user.lastName,
+    profileName: user.profileName,
+    fallback: "Jij",
+  });
   const slots = maatjeSlotsFromDraft(
-    user.profileName,
+    organizerName,
     draft.confirmedSlotNames,
     players,
   );
@@ -43,8 +50,14 @@ export async function action({ request, params }: Route.ActionArgs) {
   const { user, draft } = await requireDraftFor(params.token);
   const form = await request.formData();
   const players = await getMatchPickerPlayers(user.id);
+  const organizerName = formatPersonName({
+    firstName: user.firstName,
+    lastName: user.lastName,
+    profileName: user.profileName,
+    fallback: "Jij",
+  });
   const slots = maatjeSlotsFromDraft(
-    user.profileName,
+    organizerName,
     draft.confirmedSlotNames,
     players,
   );

@@ -55,6 +55,8 @@ export type User = {
   /** WhatsApp address, e.g. whatsapp:+32470123456 */
   phone: string;
   profileName: string;
+  firstName: string | null;
+  lastName: string | null;
   optedIn: boolean;
   onboardingComplete: boolean;
   activeFlow: ActiveFlow;
@@ -120,7 +122,10 @@ export type MatchStatus =
 export type Match = {
   id: string;
   organizerId: string;
+  /** @deprecated Prefer {@link Match.clubIds}; kept as first selected club. */
   clubId: string | null;
+  /** Clubs where this match may be played (organizer picks from their profile clubs). */
+  clubIds: string[];
   /** ISO date-time, local-time-shaped (e.g. 2026-05-23T19:00). */
   scheduledAt: string | null;
   durationMinutes: number;
@@ -277,11 +282,12 @@ export function playerRefFromPhone(phone: string): PlayerRef {
   return phone;
 }
 
-/** Human-readable side label ("links" / "rechts", optionally "(beide)"). */
+/** Human-readable side label ("links" / "rechts", "beide kanten", …). */
 export function formatPreferredSide(
-  side: PreferredSide,
+  side: PreferredSide | null,
   playsBothSides: boolean,
 ): string {
+  if (playsBothSides && side === null) return "beide kanten";
   const base = side === "left" ? "links" : "rechts";
   return playsBothSides ? `${base} (beide kanten)` : base;
 }

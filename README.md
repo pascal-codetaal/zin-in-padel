@@ -118,21 +118,28 @@ Alle bot-antwoorden staan in `app/lib/bot-messages.nl.ts`.
 
 Na `JA` of `MAATJES` neemt een Mastra-agent de conversatie over om favoriete medespelers (naam + mobiel nummer) te verzamelen. De agent eindigt zijn laatste bericht met `[DONE]` (intern, wordt gestript) zodra de gebruiker klaar is — daarna staat `user.activeFlow` weer op `null` en pakken de hardcoded commando's de besturing terug.
 
-Hardcoded commando's (`JA`/`STOP`/`HELP`/`MAATJES`) bypassen de agent altijd.
+Hardcoded commando's: alleen `STOP` (directe opt-out). Overige berichten (`JA`, `HELP`, `MATCH`, …) gaan naar de padel-assistent met sessie-tools (`opt-in`, `opt-out`, `set-active-flow`).
 
 ### Agent-geheugen
 
-De agent heeft een persistent geheugen via Mastra Memory + LibSQL (SQLite-bestand op `data/mastra-memory.db`, gitignored). Elke gebruiker krijgt een eigen `thread` (`= user.id`); de laatste 20 turns worden bij elke `generate`-call automatisch meegestuurd. Geen vector recall, geen externe afhankelijkheden — bestand-lokaal en in lijn met de POC-schaal van `data/app.db`. Geconfigureerd in `app/lib/mastra/memory.server.ts`.
+De agent heeft persistent geheugen via Mastra Memory + **Postgres** (zelfde Supabase DB als de app, `mastra_*` tabellen). Elke gebruiker krijgt een eigen `thread` (`= user.id`). Geconfigureerd in `app/lib/mastra/memory.server.ts` — gebruikt `DATABASE_URL` (directe `db.*.supabase.co:5432` verbinding werkt het best).
 
 ### Mastra Studio
 
 Voor het iteratief tunen van het system prompt en handmatig testen van de tools:
 
 ```bash
+pnpm presets:sync   # presets.json vullen met userId + appOrigin per gebruiker (telefoon in label)
 pnpm mastra:dev
 ```
 
 Open [http://localhost:4111](http://localhost:4111). Studio draait naast `pnpm dev` en gebruikt dezelfde `.env`.
+
+**Request context (belangrijk):** tools zoals `get-new-match-link` en `read-profile` hebben de actieve gebruiker nodig. In Studio kies je bovenaan een **preset** (bv. `Pascal (32484085782)` — het telefoonnummer staat in het label). Die preset injecteert `userId` en `appOrigin` in elke tool-aanroep, net zoals de WhatsApp-webhook dat doet via het Twilio-nummer van de gebruiker.
+
+Optioneel in `.env`: `APP_ORIGIN=http://localhost:5173` (standaard voor presets; productie-URL als je links naar Vercel wilt testen).
+
+**Storage-fout "Tenant or user not found":** `DIRECT_URL` wijst vaak naar de Supabase pooler met user `postgres` — dat moet `postgres.<project-ref>` zijn. Zet `DIRECT_URL` gelijk aan je werkende `DATABASE_URL` (`db.*.supabase.co:5432`), of verwijder `DIRECT_URL` tijdelijk. Mastra gebruikt `DATABASE_URL` vóór `DIRECT_URL`.
 
 ## WhatsApp simulator (lokaal)
 

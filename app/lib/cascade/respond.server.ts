@@ -23,6 +23,7 @@ import { decideEarlyAdvance } from "./early-advance";
 const MATCH_INCLUDE = {
   invitedPlayers: true,
   confirmedSlots: true,
+  clubs: true,
 } as const;
 
 export type InviteLookup = {

@@ -16,6 +16,7 @@ import {
 } from "~/lib/db.server";
 import { buildMaatjesPageUrl } from "~/lib/maatjes-url.server";
 import { dispatchPendingInvites } from "~/lib/cascade/send.server";
+import { resolveAppOrigin } from "~/lib/app-origin.server";
 import {
   ALL_PADEL_LEVELS,
   acceptedPlayerRefsOf,
@@ -93,14 +94,12 @@ export const readMatchProfileTool = createTool({
   }),
   execute: async (_input, context) => {
     const userId = context?.requestContext?.get("userId") as string | undefined;
-    const appOrigin = context?.requestContext?.get("appOrigin") as
-      | string
-      | undefined;
     const db = await getDatabase();
     const user = userId ? db.users.find((u) => u.id === userId) : null;
 
+    const appOrigin = resolveAppOrigin(context);
     const maatjesPageUrl =
-      user && appOrigin
+      user
         ? buildMaatjesPageUrl(new Request(`${appOrigin}/`), user.manageToken)
         : null;
 
@@ -256,6 +255,7 @@ export const readMatchDraftTool = createTool({
       .object({
         id: z.string(),
         clubId: z.string().nullable(),
+        clubIds: z.array(z.string()),
         scheduledAt: z.string().nullable(),
         durationMinutes: z.number(),
         format: matchFormatSchema,
@@ -283,6 +283,7 @@ export const readMatchDraftTool = createTool({
       draft: {
         id: draft.id,
         clubId: draft.clubId,
+        clubIds: draft.clubIds,
         scheduledAt: draft.scheduledAt,
         durationMinutes: draft.durationMinutes,
         format: draft.format,
@@ -308,7 +309,11 @@ export const upsertMatchDraftTool = createTool({
   description:
     "Maak een draft-match aan voor de actieve gebruiker (als er nog geen is) en/of werk velden bij. Geef alleen velden mee die je wilt zetten — niet meegegeven velden blijven ongewijzigd. Geef scheduledAt als ISO-string (zie parse-dutch-datetime). Bij een Playtomic-paste: geef totalSlots=4 en confirmedSlotNames met alle ✅-namen mee, zodat openSlots automatisch klopt.",
   inputSchema: z.object({
-    clubId: z.string().optional(),
+    clubId: z.string().optional().describe("Enkele club; gebruik clubIds voor meerdere."),
+    clubIds: z
+      .array(z.string())
+      .optional()
+      .describe("Eén of meerdere club-ids uit de voorkeurclubs van de gebruiker."),
     scheduledAt: z
       .string()
       .datetime({ offset: true })
@@ -374,9 +379,17 @@ export const upsertMatchDraftTool = createTool({
       input.invitedFriendRefs &&
       input.invitedFriendRefs.filter((r) => user.favoritePlayerRefs.includes(r));
 
+    const clubIds =
+      input.clubIds ??
+      (input.clubId !== undefined
+        ? input.clubId
+          ? [input.clubId]
+          : []
+        : undefined);
+
     try {
       const updated = await updateMatchDraft(draft.id, {
-        clubId: input.clubId,
+        ...(clubIds !== undefined ? { clubIds } : {}),
         scheduledAt: input.scheduledAt,
         durationMinutes: input.durationMinutes,
         format: input.format,
@@ -414,9 +427,6 @@ export const finalizeMatchTool = createTool({
   }),
   execute: async (_input, context) => {
     const userId = context?.requestContext?.get("userId") as string | undefined;
-    const appOrigin = context?.requestContext?.get("appOrigin") as
-      | string
-      | undefined;
     if (!userId) return { ok: false, error: "no_user_context" };
 
     const user = await findUserById(userId);
@@ -424,7 +434,7 @@ export const finalizeMatchTool = createTool({
 
     const draft = await findDraftMatch(userId);
     if (!draft) return { ok: false, error: "no_draft" };
-    if (!draft.scheduledAt || !draft.clubId) {
+    if (!draft.scheduledAt || draft.clubIds.length === 0) {
       return { ok: false, error: "draft_incomplete" };
     }
 
@@ -433,9 +443,7 @@ export const finalizeMatchTool = createTool({
     // Safe to await — POC scale, and surfacing failures to the agent turn
     // is better than silently dropping invites.
     await dispatchPendingInvites(finalized.id, new Date());
-    const club = draft.clubId
-      ? (await getClubsByIds([draft.clubId]))[0]
-      : undefined;
+    const clubs = await getClubsByIds(draft.clubIds);
     const db = await getDatabase();
     const inviteeNames = finalized.invitedFriendRefs
       .map((ref) => db.players.find((p) => p.ref === ref)?.name ?? ref)
@@ -445,7 +453,9 @@ export const finalizeMatchTool = createTool({
 
     const summaryParts = [
       `${formatMatchFormat(finalized.format)} match`,
-      club ? `bij ${club.name}` : null,
+      clubs.length > 0
+        ? `bij ${clubs.map((c) => c.name).join(" / ")}`
+        : null,
       finalized.scheduledAt
         ? `op ${new Date(finalized.scheduledAt).toLocaleString("nl-BE", {
             weekday: "long",
@@ -468,9 +478,7 @@ export const finalizeMatchTool = createTool({
       inviteeNames ? ` Uitgenodigd: ${inviteeNames}.` : ""
     }`;
 
-    const listUrl = appOrigin
-      ? `${appOrigin}/match/${user.manageToken}?created=${finalized.id}`
-      : null;
+    const listUrl = `${resolveAppOrigin(context)}/match/${user.manageToken}?created=${finalized.id}`;
 
     return { ok: true, matchId: finalized.id, summary, listUrl };
   },

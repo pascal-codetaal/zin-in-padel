@@ -21,6 +21,8 @@ model User {
   waId               String   @unique
   phone              String
   profileName        String
+  firstName          String?
+  lastName           String?
   optedIn            Boolean  @default(false)
   onboardingComplete Boolean  @default(false)
   onboardingStep     Int?
@@ -99,12 +101,24 @@ model Match {
 
   organizer      User                 @relation("MatchOrganizer", fields: [organizerId], references: [id], onDelete: Cascade)
   club           Club?                @relation(fields: [clubId], references: [id])
+  clubs          MatchClub[]
   invitedPlayers MatchInvitedPlayer[]
   confirmedSlots MatchConfirmedSlot[]
 
   @@index([organizerId])
   @@index([clubId])
   @@index([nextCascadeAt])
+}
+
+model MatchClub {
+  matchId String
+  clubId  String
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  club  Club  @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@id([matchId, clubId])
+  @@index([clubId])
 }
 
 model MatchInvitedPlayer {
@@ -174,6 +188,7 @@ model Club {
   playtomicAliases ClubPlaytomicAlias[]
   preferredBy      UserPreferredClub[]
   matches          Match[]
+  matchLocations   MatchClub[]
 }
 
 model ClubPlaytomicAlias {
