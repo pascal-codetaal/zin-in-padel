@@ -8,7 +8,8 @@
   },
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "build": "react-router build",
+    "build": "prisma generate && react-router build",
+    "postinstall": "prisma generate",
     "dev": "react-router dev",
     "mastra:dev": "NODE_OPTIONS='--dns-result-order=ipv4first' mastra dev --dir app/lib/mastra --env .env --request-context-presets presets.json",
     "start": "react-router-serve ./build/server/index.js",

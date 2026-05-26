@@ -4,6 +4,14 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   plugins: [tailwindcss(), reactRouter()],
+  ssr: {
+    // Keep Prisma as runtime deps (generated via postinstall/build); avoids bundling issues on Vercel.
+    external: [
+      "@prisma/client",
+      "@prisma/client-runtime-utils",
+      "@prisma/adapter-pg",
+    ],
+  },
   resolve: {
     tsconfigPaths: true,
   },

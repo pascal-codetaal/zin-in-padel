@@ -5,12 +5,19 @@ export type TwilioInboundMessage = {
   waId: string;
 };
 
-export function parseTwilioForm(form: FormData): TwilioInboundMessage {
+export function parseTwilioForm(
+  form: FormData | Record<string, string>,
+): TwilioInboundMessage {
+  const get = (key: string) =>
+    (form instanceof FormData
+      ? form.get(key)?.toString()
+      : form[key]) ?? "";
+
   return {
-    from: form.get("From")?.toString() ?? "",
-    body: form.get("Body")?.toString() ?? "",
-    profileName: form.get("ProfileName")?.toString() ?? "",
-    waId: form.get("WaId")?.toString() ?? "",
+    from: get("From"),
+    body: get("Body"),
+    profileName: get("ProfileName"),
+    waId: get("WaId"),
   };
 }
 
@@ -21,6 +28,12 @@ export function twimlResponse(xml: string): Response {
       "Content-Type": "text/xml; charset=utf-8",
     },
   });
+}
+
+/** Ack inbound without sending a message (use when replying via REST API). */
+export function emptyMessagingReply(): string {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<Response></Response>`;
 }
 
 export function messagingReply(text: string): string {

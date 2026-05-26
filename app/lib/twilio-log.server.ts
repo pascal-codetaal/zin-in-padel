@@ -41,16 +41,22 @@ export function logTwilioError(
 }
 
 /** Log raw Twilio POST fields useful for debugging inbound delivery. */
-export function logTwilioInboundForm(form: FormData): void {
-  const body = form.get("Body")?.toString() ?? "";
+export function logTwilioInboundForm(
+  params: FormData | Record<string, string>,
+): void {
+  const get = (key: string) =>
+    (params instanceof FormData
+      ? params.get(key)?.toString()
+      : params[key]) ?? null;
+  const body = get("Body") ?? "";
   logTwilio("inbound received", {
-    messageSid: form.get("MessageSid")?.toString() ?? null,
-    accountSid: form.get("AccountSid")?.toString() ?? null,
-    from: form.get("From")?.toString() ?? null,
-    to: form.get("To")?.toString() ?? null,
-    waId: form.get("WaId")?.toString() ?? null,
-    profileName: form.get("ProfileName")?.toString() ?? null,
-    numMedia: form.get("NumMedia")?.toString() ?? "0",
+    messageSid: get("MessageSid"),
+    accountSid: get("AccountSid"),
+    from: get("From"),
+    to: get("To"),
+    waId: get("WaId"),
+    profileName: get("ProfileName"),
+    numMedia: get("NumMedia") ?? "0",
     bodyLength: body.length,
     bodyPreview: preview(body),
   });
@@ -58,9 +64,10 @@ export function logTwilioInboundForm(form: FormData): void {
 
 export function logTwilioReply(
   reply: string,
-  meta: { durationMs: number; waId: string },
+  meta: { durationMs: number; waId: string; via?: "api" | "twiml" },
 ): void {
-  logTwilio("reply sent (TwiML)", {
+  const channel = meta.via === "api" ? "REST API" : "TwiML";
+  logTwilio(`reply sent (${channel})`, {
     waId: meta.waId,
     durationMs: meta.durationMs,
     replyLength: reply.length,

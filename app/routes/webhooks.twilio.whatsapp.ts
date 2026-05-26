@@ -1,6 +1,10 @@
 import type { Route } from "./+types/webhooks.twilio.whatsapp";
 import { handleIncomingMessage } from "~/lib/whatsapp-bot.server";
-import { validateTwilioWebhookSignature } from "~/lib/twilio-client.server";
+import {
+  isTwilioAccountSidPlausible,
+  twilioParamsFromBody,
+  validateTwilioWebhookSignature,
+} from "~/lib/twilio-client.server";
 import {
   getTwilioWebhookUrl,
   isTwilioConfigured,
@@ -14,7 +18,7 @@ import {
   logTwilioWarn,
 } from "~/lib/twilio-log.server";
 import {
-  messagingReply,
+  emptyMessagingReply,
   parseTwilioForm,
   twimlResponse,
 } from "~/lib/twilio.server";
@@ -33,21 +37,31 @@ export async function action({ request }: Route.ActionArgs) {
     signatureValidationEnabled: shouldValidateTwilioSignature(),
   });
 
-  let form: FormData;
+  let body: string;
   try {
-    form = await request.formData();
+    body = await request.text();
   } catch (error) {
-    logTwilioError("failed to parse form body", error);
+    logTwilioError("failed to read body", error);
     return new Response("Bad Request", { status: 400 });
   }
 
-  logTwilioInboundForm(form);
+  const params = twilioParamsFromBody(body);
+  logTwilioInboundForm(params);
 
   if (shouldValidateTwilioSignature()) {
     const webhookUrl = getTwilioWebhookUrl(request);
-    const valid = validateTwilioWebhookSignature(request, form, webhookUrl);
+    const valid = validateTwilioWebhookSignature(request, params, webhookUrl);
     if (!valid) {
-      logTwilioWarn("signature invalid", { webhookUrl });
+      const configuredSid = process.env.TWILIO_ACCOUNT_SID?.trim() ?? "";
+      logTwilioWarn("signature invalid", {
+        webhookUrl,
+        accountSidFromTwilio: params.AccountSid ?? null,
+        configuredAccountSidPrefix: configuredSid.slice(0, 6) || "(unset)",
+        hint:
+          !isTwilioAccountSidPlausible()
+            ? "TWILIO_ACCOUNT_SID must be AC… (Account SID), not SK… (API key). TWILIO_AUTH_TOKEN must be the Primary Auth Token from Twilio Console → Account → API keys & tokens → Auth token — not the API key secret."
+            : "Check TWILIO_AUTH_TOKEN on Vercel matches the Primary Auth Token for this account (rotate in Twilio if unsure).",
+      });
       return new Response("Forbidden", { status: 403 });
     }
     logTwilio("signature ok", { webhookUrl });
@@ -55,7 +69,7 @@ export async function action({ request }: Route.ActionArgs) {
     logTwilio("signature check skipped");
   }
 
-  const inbound = parseTwilioForm(form);
+  const inbound = parseTwilioForm(params);
   const appOrigin = new URL(request.url).origin;
 
   logTwilio("processing inbound", {
@@ -67,21 +81,23 @@ export async function action({ request }: Route.ActionArgs) {
   try {
     const reply = await handleIncomingMessage(inbound, {
       appOrigin,
-      deliverReplyViaApi: false,
+      deliverReplyViaApi: true,
     });
 
     if (!isTwilioConfigured()) {
       logTwilioWarn(
-        "TWILIO_* not set — reply stored in DB; TwiML may not deliver to WhatsApp",
+        "TWILIO_* not set — reply stored in DB only; WhatsApp will not receive it",
       );
     }
 
     logTwilioReply(reply, {
       durationMs: Date.now() - startedAt,
       waId: inbound.waId,
+      via: "api",
     });
 
-    return twimlResponse(messagingReply(reply));
+    // Empty TwiML ack: reply is sent via REST API so slow agent runs (>15s) still deliver.
+    return twimlResponse(emptyMessagingReply());
   } catch (error) {
     logTwilioError("handler failed", error, {
       waId: inbound.waId,

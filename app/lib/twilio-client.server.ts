@@ -24,17 +24,31 @@ export function normalizeWhatsAppAddress(phone: string): string {
   return `whatsapp:+${trimmed.replace(/\D/g, "")}`;
 }
 
+/** Params from application/x-www-form-urlencoded body (matches Twilio signature input). */
+export function twilioParamsFromBody(body: string): Record<string, string> {
+  const params: Record<string, string> = {};
+  for (const [key, value] of new URLSearchParams(body)) {
+    params[key] = value;
+  }
+  return params;
+}
+
 export function validateTwilioWebhookSignature(
   request: Request,
-  form: FormData,
+  params: Record<string, string>,
   webhookUrl: string,
 ): boolean {
   const authToken = process.env.TWILIO_AUTH_TOKEN?.trim();
   const signature = request.headers.get("X-Twilio-Signature");
   if (!authToken || !signature) return false;
 
-  const params = Object.fromEntries(form.entries()) as Record<string, string>;
   return twilio.validateRequest(authToken, signature, webhookUrl, params);
+}
+
+/** True when TWILIO_ACCOUNT_SID looks like a real account SID (AC…), not an API key (SK…). */
+export function isTwilioAccountSidPlausible(): boolean {
+  const sid = process.env.TWILIO_ACCOUNT_SID?.trim() ?? "";
+  return sid.startsWith("AC");
 }
 
 /**
