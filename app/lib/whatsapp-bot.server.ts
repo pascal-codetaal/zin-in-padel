@@ -5,7 +5,10 @@ import {
   upsertUser,
 } from "~/lib/db.server";
 import { messages } from "~/lib/bot-messages.nl";
-import { tryResolvePendingFriend } from "~/lib/friends.server";
+import {
+  tryAddFriendFromSharedContact,
+  tryResolvePendingFriend,
+} from "~/lib/friends.server";
 import { mastra } from "~/lib/mastra";
 import { RequestContext } from "@mastra/core/request-context";
 import type { TwilioInboundMessage } from "~/lib/twilio.server";
@@ -129,7 +132,38 @@ export async function processInboundReply(
     activeUser = await updateUser(activeUser.id, { activeFlow: "match_creation" });
   }
 
-  await tryResolvePendingFriend(activeUser, inbound.body);
+  if (inbound.vcardUnreadable) {
+    const outbound =
+      "Ik kon dat contact niet lezen. Stuur het mobiele nummer als tekst, of probeer het contact opnieuw te delen.";
+    await sendWhatsAppMessage(activeUser.id, outbound, {
+      deliverViaApi: options.deliverReplyViaApi ?? false,
+    });
+    return outbound;
+  }
+
+  if (inbound.sharedContact) {
+    const shared = await tryAddFriendFromSharedContact(
+      activeUser,
+      inbound.sharedContact,
+    );
+    if (shared.handled) {
+      activeUser = shared.user;
+      const outbound = shared.reply;
+      await sendWhatsAppMessage(activeUser.id, outbound, {
+        deliverViaApi: options.deliverReplyViaApi ?? false,
+      });
+      return outbound;
+    }
+  }
+
+  const pendingFriend = await tryResolvePendingFriend(activeUser, inbound.body);
+  if (pendingFriend.handled) {
+    const outbound = pendingFriend.reply;
+    await sendWhatsAppMessage(pendingFriend.user.id, outbound, {
+      deliverViaApi: options.deliverReplyViaApi ?? false,
+    });
+    return outbound;
+  }
 
   await sendWhatsAppTypingIndicator(inbound.messageSid);
 
@@ -160,7 +194,17 @@ export async function handleIncomingMessage(
     profileName: inbound.profileName,
   });
 
-  await appendMessage(user.id, inbound.body, "in");
+  const inboundText =
+    inbound.body.trim() ||
+    (inbound.sharedContact
+      ? `[contact: ${inbound.sharedContact.name}]`
+      : inbound.vcardUnreadable
+        ? "[contact: niet leesbaar]"
+        : "");
+
+  if (inboundText) {
+    await appendMessage(user.id, inboundText, "in");
+  }
 
   return processInboundReply(user, inbound, {
     isNewUser,

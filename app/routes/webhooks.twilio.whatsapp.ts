@@ -17,6 +17,7 @@ import {
   logTwilioReply,
   logTwilioWarn,
 } from "~/lib/twilio-log.server";
+import { enrichInboundWithSharedContact } from "~/lib/twilio-inbound-media.server";
 import {
   emptyMessagingReply,
   parseTwilioForm,
@@ -69,13 +70,17 @@ export async function action({ request }: Route.ActionArgs) {
     logTwilio("signature check skipped");
   }
 
-  const inbound = parseTwilioForm(params);
+  let inbound = parseTwilioForm(params);
+  inbound = await enrichInboundWithSharedContact(inbound, params);
   const appOrigin = new URL(request.url).origin;
 
   logTwilio("processing inbound", {
     waId: inbound.waId,
     from: inbound.from,
     profileName: inbound.profileName,
+    sharedContact: inbound.sharedContact
+      ? { name: inbound.sharedContact.name, phone: inbound.sharedContact.phone }
+      : null,
   });
 
   try {

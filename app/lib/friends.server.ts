@@ -45,6 +45,46 @@ export async function stageFriendName(
   return { message: phonePrompt(name.trim()) };
 }
 
+export async function tryAddFriendFromSharedContact(
+  user: User,
+  contact: { name: string; phone: string },
+): Promise<{ handled: true; reply: string; user: User } | { handled: false }> {
+  const name = (user.pendingFriend?.name ?? contact.name).trim();
+  if (!name) {
+    return {
+      handled: true,
+      reply:
+        "Ik kon geen naam uit dat contact halen. Stuur de naam en daarna het nummer, of gebruik je maatjes-link.",
+      user,
+    };
+  }
+
+  const result = await addFriend(user.id, name, contact.phone);
+  if (!result.ok) {
+    return {
+      handled: true,
+      reply: `Dat contact heeft geen geldig mobiel nummer voor ons. ${phonePrompt(name)}`,
+      user,
+    };
+  }
+
+  const updated = await findUserById(user.id);
+  if (!updated) {
+    return {
+      handled: true,
+      reply: "Er ging iets mis. Probeer opnieuw.",
+      user,
+    };
+  }
+
+  const dup = result.alreadyFavorite ? " Die stond al in je vriendenlijst." : "";
+  return {
+    handled: true,
+    reply: `${result.name} toegevoegd (${result.phone}).${dup}`,
+    user: updated,
+  };
+}
+
 export async function tryResolvePendingFriend(
   user: User,
   body: string,
