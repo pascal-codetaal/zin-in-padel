@@ -9,7 +9,10 @@ import { tryResolvePendingFriend } from "~/lib/friends.server";
 import { mastra } from "~/lib/mastra";
 import { RequestContext } from "@mastra/core/request-context";
 import type { TwilioInboundMessage } from "~/lib/twilio.server";
-import { sendWhatsAppMessage } from "~/lib/whatsapp-messaging.server";
+import {
+  sendWhatsAppMessage,
+  sendWhatsAppTypingIndicator,
+} from "~/lib/whatsapp-messaging.server";
 import { resolveAppOriginFromRequest } from "~/lib/app-origin.server";
 import { formatPersonName, firstNameFromDisplayName } from "~/lib/person-name";
 import { optOutUser } from "~/lib/user-session.server";
@@ -127,6 +130,8 @@ export async function processInboundReply(
   }
 
   await tryResolvePendingFriend(activeUser, inbound.body);
+
+  await sendWhatsAppTypingIndicator(inbound.messageSid);
 
   const replyBody = await runPadelAssistantAgent(
     activeUser,

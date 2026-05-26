@@ -76,3 +76,45 @@ export async function sendTwilioWhatsAppMessage(
     body,
   });
 }
+
+/**
+ * Show WhatsApp "typing…" for the inbound message being answered (Twilio public beta).
+ * @see https://www.twilio.com/docs/whatsapp/api/typing-indicators-resource
+ */
+export async function sendTwilioWhatsAppTypingIndicator(
+  messageId: string,
+): Promise<void> {
+  if (isTwilioMock()) {
+    console.info("[twilio:mock] typing indicator", { messageId });
+    return;
+  }
+
+  const accountSid = process.env.TWILIO_ACCOUNT_SID?.trim();
+  const authToken = process.env.TWILIO_AUTH_TOKEN?.trim();
+  if (!accountSid || !authToken) {
+    throw new Error("Twilio is not configured (TWILIO_* env vars).");
+  }
+
+  if (!/^(SM|MM)[a-f0-9]{32}$/i.test(messageId)) {
+    throw new Error(`Invalid message SID for typing indicator: ${messageId}`);
+  }
+
+  const response = await fetch(
+    "https://messaging.twilio.com/v2/Indicators/Typing.json",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${Buffer.from(`${accountSid}:${authToken}`).toString("base64")}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({ messageId, channel: "whatsapp" }),
+    },
+  );
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new Error(
+      `Twilio typing indicator failed (${response.status}): ${detail}`,
+    );
+  }
+}

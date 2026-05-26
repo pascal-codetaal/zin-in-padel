@@ -15,3 +15,6 @@
 
 # Prisma SQLite app database
 /data/app.db*
+
+# Prisma generated client (regenerated via postinstall / build)
+/app/generated/prisma/

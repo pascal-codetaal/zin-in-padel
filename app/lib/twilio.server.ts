@@ -3,6 +3,8 @@ export type TwilioInboundMessage = {
   body: string;
   profileName: string;
   waId: string;
+  /** Twilio MessageSid (SM…) from the inbound webhook; required for typing indicators. */
+  messageSid?: string;
 };
 
 export function parseTwilioForm(
@@ -13,11 +15,13 @@ export function parseTwilioForm(
       ? form.get(key)?.toString()
       : form[key]) ?? "";
 
+  const messageSid = get("MessageSid");
   return {
     from: get("From"),
     body: get("Body"),
     profileName: get("ProfileName"),
     waId: get("WaId"),
+    messageSid: messageSid || undefined,
   };
 }
 

@@ -1,7 +1,41 @@
 import { appendMessage, findUserById } from "~/lib/db.server";
-import { isTwilioConfigured } from "~/lib/twilio-config.server";
-import { sendTwilioWhatsAppMessage } from "~/lib/twilio-client.server";
-import { logTwilio, logTwilioWarn } from "~/lib/twilio-log.server";
+import { isTwilioConfigured, isTwilioMock } from "~/lib/twilio-config.server";
+import {
+  sendTwilioWhatsAppMessage,
+  sendTwilioWhatsAppTypingIndicator,
+} from "~/lib/twilio-client.server";
+import {
+  logTwilio,
+  logTwilioError,
+  logTwilioWarn,
+} from "~/lib/twilio-log.server";
+
+/** Best-effort typing indicator; never throws (WhatsApp public beta on Twilio). */
+export async function sendWhatsAppTypingIndicator(
+  messageSid: string | undefined,
+): Promise<void> {
+  const sid = messageSid?.trim();
+  if (!sid) return;
+
+  if (isTwilioMock()) {
+    logTwilio("typing indicator (mock)", { messageSid: sid });
+    return;
+  }
+
+  if (!isTwilioConfigured()) {
+    logTwilioWarn("typing indicator skipped — Twilio not configured", {
+      messageSid: sid,
+    });
+    return;
+  }
+
+  try {
+    await sendTwilioWhatsAppTypingIndicator(sid);
+    logTwilio("typing indicator sent", { messageSid: sid });
+  } catch (error) {
+    logTwilioError("typing indicator failed", error, { messageSid: sid });
+  }
+}
 
 export type SendWhatsAppOptions = {
   /**
