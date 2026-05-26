@@ -6,7 +6,7 @@ import {
 } from "~/lib/db.server";
 import { messages } from "~/lib/bot-messages.nl";
 import {
-  tryAddFriendFromSharedContact,
+  tryAddFriendsFromSharedContacts,
   tryResolvePendingFriend,
 } from "~/lib/friends.server";
 import { mastra } from "~/lib/mastra";
@@ -141,10 +141,10 @@ export async function processInboundReply(
     return outbound;
   }
 
-  if (inbound.sharedContact) {
-    const shared = await tryAddFriendFromSharedContact(
+  if (inbound.sharedContacts && inbound.sharedContacts.length > 0) {
+    const shared = await tryAddFriendsFromSharedContacts(
       activeUser,
-      inbound.sharedContact,
+      inbound.sharedContacts,
     );
     if (shared.handled) {
       activeUser = shared.user;
@@ -196,8 +196,8 @@ export async function handleIncomingMessage(
 
   const inboundText =
     inbound.body.trim() ||
-    (inbound.sharedContact
-      ? `[contact: ${inbound.sharedContact.name}]`
+    (inbound.sharedContacts?.length
+      ? `[contacten: ${inbound.sharedContacts.map((c) => c.name).join(", ")}]`
       : inbound.vcardUnreadable
         ? "[contact: niet leesbaar]"
         : "");

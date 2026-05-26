@@ -5,8 +5,8 @@ export type TwilioInboundMessage = {
   waId: string;
   /** Twilio MessageSid (SM…) from the inbound webhook; required for typing indicators. */
   messageSid?: string;
-  /** Parsed from an inbound vCard (WhatsApp “share contact”). */
-  sharedContact?: { name: string; phone: string };
+  /** Parsed from inbound vCard(s) (WhatsApp “share contact”). */
+  sharedContacts?: { name: string; phone: string }[];
   /** vCard attachment present but could not be parsed into name + phone. */
   vcardUnreadable?: boolean;
 };

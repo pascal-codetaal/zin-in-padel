@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseVcard, primaryPhoneFromVcard } from "./vcard.server";
+import { parseVcard, parseVcards, primaryPhoneFromVcard } from "./vcard.server";
 
 const SAMPLE_VCARD = `BEGIN:VCARD
 VERSION:3.0
@@ -39,5 +39,23 @@ END:VCARD`);
 
   it("returns null for non-vCard text", () => {
     expect(parseVcard("hello")).toBeNull();
+  });
+
+  it("parses multiple vCards in one file", () => {
+    const parsed = parseVcards(`BEGIN:VCARD
+VERSION:3.0
+FN:Alice
+TEL:+32470111111
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+FN:Bob
+TEL:+32470222222
+END:VCARD`);
+    expect(parsed).toHaveLength(2);
+    expect(parsed[0]?.name).toBe("Alice");
+    expect(primaryPhoneFromVcard(parsed[0]!)).toBe("+32470111111");
+    expect(parsed[1]?.name).toBe("Bob");
+    expect(primaryPhoneFromVcard(parsed[1]!)).toBe("+32470222222");
   });
 });

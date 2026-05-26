@@ -78,9 +78,8 @@ export async function action({ request }: Route.ActionArgs) {
     waId: inbound.waId,
     from: inbound.from,
     profileName: inbound.profileName,
-    sharedContact: inbound.sharedContact
-      ? { name: inbound.sharedContact.name, phone: inbound.sharedContact.phone }
-      : null,
+    sharedContacts: inbound.sharedContacts?.length ?? 0,
+    numMedia: params.NumMedia ?? "0",
   });
 
   try {

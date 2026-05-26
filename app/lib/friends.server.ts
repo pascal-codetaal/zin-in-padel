@@ -45,27 +45,42 @@ export async function stageFriendName(
   return { message: phonePrompt(name.trim()) };
 }
 
-export async function tryAddFriendFromSharedContact(
+function resolveSharedContactName(
   user: User,
   contact: { name: string; phone: string },
-): Promise<{ handled: true; reply: string; user: User } | { handled: false }> {
-  const name = (user.pendingFriend?.name ?? contact.name).trim();
-  if (!name) {
-    return {
-      handled: true,
-      reply:
-        "Ik kon geen naam uit dat contact halen. Stuur de naam en daarna het nummer, of gebruik je maatjes-link.",
-      user,
-    };
+  total: number,
+): string {
+  if (user.pendingFriend && total === 1) {
+    return user.pendingFriend.name.trim();
   }
+  return contact.name.trim();
+}
 
-  const result = await addFriend(user.id, name, contact.phone);
-  if (!result.ok) {
-    return {
-      handled: true,
-      reply: `Dat contact heeft geen geldig mobiel nummer voor ons. ${phonePrompt(name)}`,
-      user,
-    };
+export async function tryAddFriendsFromSharedContacts(
+  user: User,
+  contacts: { name: string; phone: string }[],
+): Promise<{ handled: true; reply: string; user: User } | { handled: false }> {
+  if (contacts.length === 0) return { handled: false };
+
+  const added: string[] = [];
+  const duplicates: string[] = [];
+  let skipped = 0;
+
+  for (let i = 0; i < contacts.length; i++) {
+    const contact = contacts[i]!;
+    const name = resolveSharedContactName(user, contact, contacts.length);
+    if (!name) {
+      skipped += 1;
+      continue;
+    }
+
+    const result = await addFriend(user.id, name, contact.phone);
+    if (!result.ok) {
+      skipped += 1;
+      continue;
+    }
+    if (result.alreadyFavorite) duplicates.push(result.name);
+    else added.push(`${result.name} (${result.phone})`);
   }
 
   const updated = await findUserById(user.id);
@@ -77,10 +92,38 @@ export async function tryAddFriendFromSharedContact(
     };
   }
 
-  const dup = result.alreadyFavorite ? " Die stond al in je vriendenlijst." : "";
+  if (added.length === 0 && duplicates.length === 0) {
+    const pendingName = user.pendingFriend?.name;
+    return {
+      handled: true,
+      reply: pendingName
+        ? `Geen geldig nummer gevonden. ${phonePrompt(pendingName)}`
+        : "Ik kon geen geldige contacten uit dat bericht halen. Stuur ze één voor één of als tekst met nummer.",
+      user: updated,
+    };
+  }
+
+  const parts: string[] = [];
+  if (added.length === 1) {
+    parts.push(`${added[0]} toegevoegd.`);
+  } else if (added.length > 1) {
+    parts.push(`${added.length} maatjes toegevoegd:\n${added.map((a) => `• ${a}`).join("\n")}`);
+  }
+  if (duplicates.length > 0) {
+    const dupLabel =
+      duplicates.length === 1
+        ? `${duplicates[0]} stond al in je lijst.`
+        : `${duplicates.length} contacten stonden al in je lijst.`;
+    parts.push(dupLabel);
+  }
+  if (skipped > 0) {
+    parts.push(
+      `${skipped} contact${skipped === 1 ? "" : "en"} overgeslagen (geen geldig nummer).`,
+    );
+  }
   return {
     handled: true,
-    reply: `${result.name} toegevoegd (${result.phone}).${dup}`,
+    reply: parts.join("\n"),
     user: updated,
   };
 }

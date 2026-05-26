@@ -2,7 +2,7 @@ import { isTwilioMock } from "~/lib/twilio-config.server";
 import { logTwilio, logTwilioWarn } from "~/lib/twilio-log.server";
 import type { TwilioInboundMessage } from "~/lib/twilio.server";
 import {
-  parseVcard,
+  parseVcards,
   primaryPhoneFromVcard,
   type ParsedVcardContact,
 } from "~/lib/vcard.server";
@@ -67,38 +67,53 @@ function toSharedContact(parsed: ParsedVcardContact): SharedContact | null {
   return { name: parsed.name, phone };
 }
 
+function dedupeSharedContacts(contacts: SharedContact[]): SharedContact[] {
+  const seen = new Set<string>();
+  const out: SharedContact[] = [];
+  for (const c of contacts) {
+    if (seen.has(c.phone)) continue;
+    seen.add(c.phone);
+    out.push(c);
+  }
+  return out;
+}
+
 /**
- * Download and parse the first vCard attachment on an inbound WhatsApp message.
+ * Download and parse all vCard contacts on an inbound WhatsApp message.
+ * Note: WhatsApp via Twilio allows at most one media attachment per message
+ * (`NumMedia` is 0 or 1); multiple selected contacts may arrive as separate
+ * webhooks or bundled in one .vcf with multiple BEGIN:VCARD blocks.
  */
-export async function resolveSharedContactFromMedia(
+export async function resolveSharedContactsFromMedia(
   media: TwilioInboundMedia[],
-): Promise<SharedContact | null> {
+): Promise<SharedContact[]> {
+  const contacts: SharedContact[] = [];
+
   for (const item of media) {
     if (!isVcardContentType(item.contentType)) continue;
 
     if (isTwilioMock()) {
       logTwilio("shared contact (mock)", { contentType: item.contentType });
-      return null;
+      continue;
     }
 
     try {
       const raw = await fetchTwilioMedia(item.url);
-      const parsed = parseVcard(raw);
-      if (!parsed) {
-        logTwilioWarn("vCard parse returned no contact", {
+      const parsedList = parseVcards(raw);
+      if (parsedList.length === 0) {
+        logTwilioWarn("vCard parse returned no contacts", {
           contentType: item.contentType,
         });
         continue;
       }
-      const contact = toSharedContact(parsed);
-      if (contact) {
-        logTwilio("shared contact parsed", {
-          name: contact.name,
-          phone: contact.phone,
-        });
-        return contact;
+
+      for (const parsed of parsedList) {
+        const contact = toSharedContact(parsed);
+        if (contact) contacts.push(contact);
+        else {
+          logTwilioWarn("vCard had no valid phone", { name: parsed.name });
+        }
       }
-      logTwilioWarn("vCard had no valid phone", { name: parsed.name });
     } catch (error) {
       logTwilioWarn("vCard download/parse failed", {
         contentType: item.contentType,
@@ -107,7 +122,14 @@ export async function resolveSharedContactFromMedia(
     }
   }
 
-  return null;
+  const deduped = dedupeSharedContacts(contacts);
+  if (deduped.length > 0) {
+    logTwilio("shared contacts parsed", {
+      count: deduped.length,
+      names: deduped.map((c) => c.name),
+    });
+  }
+  return deduped;
 }
 
 export function inboundHasVcardMedia(media: TwilioInboundMedia[]): boolean {
@@ -124,8 +146,8 @@ export async function enrichInboundWithSharedContact(
   const media = parseTwilioInboundMedia(params);
   if (media.length === 0) return inbound;
 
-  const sharedContact = await resolveSharedContactFromMedia(media);
-  if (sharedContact) return { ...inbound, sharedContact };
+  const sharedContacts = await resolveSharedContactsFromMedia(media);
+  if (sharedContacts.length > 0) return { ...inbound, sharedContacts };
 
   if (inboundHasVcardMedia(media)) {
     return { ...inbound, vcardUnreadable: true };
