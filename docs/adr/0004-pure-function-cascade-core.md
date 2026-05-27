@@ -95,7 +95,7 @@ The pure core may not:
   `(currentPhase, configFlags, isFull, nextCascadeAt, now)` combination.
 - `app/lib/cascade/audience.test.ts` — every exclusion rule with explicit
   fixtures.
-- `app/lib/cascade/format.test.ts` — snapshot the three message templates
+- `whatsapp-templates/invites/format.test.ts` — snapshot the three message templates
   for representative inputs.
 
 ### Manual tick endpoint

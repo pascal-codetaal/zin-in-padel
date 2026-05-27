@@ -15,7 +15,8 @@
     "jsx": "react-jsx",
     "rootDirs": [".", "./.react-router/types"],
     "paths": {
-      "~/*": ["./app/*"]
+      "~/*": ["./app/*"],
+      "@whatsapp-templates/*": ["./whatsapp-templates/*"]
     },
     "esModuleInterop": true,
     "verbatimModuleSyntax": true,

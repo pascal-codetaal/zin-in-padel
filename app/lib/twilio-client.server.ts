@@ -78,6 +78,56 @@ export async function sendTwilioWhatsAppMessage(
 }
 
 /**
+ * Send an approved WhatsApp Content template (business-initiated / outside 24h window).
+ * @see https://www.twilio.com/docs/content/create-and-send-your-first-content-api-template
+ */
+export async function sendTwilioWhatsAppTemplate(
+  to: string,
+  contentSid: string,
+  contentVariables: Record<string, string>,
+): Promise<void> {
+  if (isTwilioMock()) {
+    console.info("[twilio:mock] outbound template", {
+      to,
+      contentSid,
+      contentVariables,
+    });
+    return;
+  }
+
+  const twilioClient = getTwilioClient();
+  const from = process.env.TWILIO_WHATSAPP_FROM?.trim();
+  const messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID?.trim();
+  if (!twilioClient) {
+    throw new Error("Twilio is not configured (TWILIO_* env vars).");
+  }
+  if (!from && !messagingServiceSid) {
+    throw new Error(
+      "Twilio template send requires TWILIO_WHATSAPP_FROM or TWILIO_MESSAGING_SERVICE_SID.",
+    );
+  }
+
+  const base = {
+    to: normalizeWhatsAppAddress(to),
+    contentSid,
+    contentVariables: JSON.stringify(contentVariables),
+  };
+
+  if (messagingServiceSid) {
+    await twilioClient.messages.create({
+      ...base,
+      messagingServiceSid,
+    });
+    return;
+  }
+
+  await twilioClient.messages.create({
+    ...base,
+    from: from!,
+  });
+}
+
+/**
  * Show WhatsApp "typing…" for the inbound message being answered (Twilio public beta).
  * @see https://www.twilio.com/docs/whatsapp/api/typing-indicators-resource
  */

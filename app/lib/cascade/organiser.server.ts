@@ -14,6 +14,10 @@ import {
   matchRowToDomain,
 } from "~/lib/db.server";
 import { sendWhatsAppMessage } from "~/lib/whatsapp-messaging.server";
+import {
+  formatMatchCancelledNotice,
+  formatRemovedFromMatchNotice,
+} from "@whatsapp-templates/invitee/notifications";
 import { getClubsByIds } from "~/lib/clubs.server";
 import { formatScheduledAt } from "~/lib/match-defaults";
 import { isMatchFull, type Match } from "~/types/domain";
@@ -331,20 +335,8 @@ async function renderNotification(
 
   switch (note.kind) {
     case "removed-from-match":
-      return [
-        `${greeting},`,
-        ``,
-        `De organisator heeft je uit de padelmatch bij ${clubName} (${when}) gehaald. Je hoeft niet meer te komen.`,
-        ``,
-        `Reply STOP om geen berichten meer te ontvangen.`,
-      ].join("\n");
+      return formatRemovedFromMatchNotice({ greeting, clubName, when });
     case "match-cancelled":
-      return [
-        `${greeting},`,
-        ``,
-        `De padelmatch bij ${clubName} (${when}) is geannuleerd door de organisator.`,
-        ``,
-        `Reply STOP om geen berichten meer te ontvangen.`,
-      ].join("\n");
+      return formatMatchCancelledNotice({ greeting, clubName, when });
   }
 }

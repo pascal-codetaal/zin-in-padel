@@ -149,6 +149,24 @@ model MatchConfirmedSlot {
 }
 
 /* -------------------------------------------------------------------------- */
+/*  WhatsApp templates (Twilio Content API / Meta approval)                   */
+/* -------------------------------------------------------------------------- */
+
+model WhatsAppTemplate {
+  id                String    @id
+  friendlyName      String
+  contentSid        String?   @unique
+  whatsappName      String?
+  category          String    @default("UTILITY")
+  approvalStatus    String    @default("draft")
+  rejectionReason   String?
+  contentSourcePath String?
+  lastSyncedAt      DateTime?
+  createdAt         DateTime
+  updatedAt         DateTime
+}
+
+/* -------------------------------------------------------------------------- */
 /*  Messages                                                                  */
 /* -------------------------------------------------------------------------- */
 

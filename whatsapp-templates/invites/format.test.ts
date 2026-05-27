@@ -57,7 +57,7 @@ describe("formatInviteMessage", () => {
         ...URLS,
       }),
     ).toMatchInlineSnapshot(`
-      "Jan Janssens zoekt nog spelers op jouw niveau voor een padelmatch in Padel Vlaanderen Brussel.
+      "Padelmatch: Jan Janssens zoekt nog spelers op jouw niveau in Padel Vlaanderen Brussel.
 
       📍 Padel Vlaanderen Brussel
       📅 vrijdag 5 juni — 19:00
@@ -81,7 +81,7 @@ describe("formatInviteMessage", () => {
         ...URLS,
       }),
     ).toMatchInlineSnapshot(`
-      "Jan Janssens zoekt nog spelers voor een padelmatch in Padel Vlaanderen Brussel. Zin om mee te doen?
+      "Padelmatch: Jan Janssens zoekt nog spelers in Padel Vlaanderen Brussel. Zin om mee te doen?
 
       📍 Padel Vlaanderen Brussel
       📅 vrijdag 5 juni — 19:00

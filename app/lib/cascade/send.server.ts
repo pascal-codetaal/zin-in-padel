@@ -24,8 +24,12 @@ import {
 } from "~/lib/db.server";
 import { getClubsByIds } from "~/lib/clubs.server";
 import { sendWhatsAppMessage } from "~/lib/whatsapp-messaging.server";
+import { isTwilioConfigured, isTwilioMock } from "~/lib/twilio-config.server";
+import { findApprovedWhatsAppTemplate } from "~/lib/whatsapp-templates-db.server";
 import { formatScheduledAt } from "~/lib/match-defaults";
 import { formatInviteMessage } from "./format";
+import { buildInviteContentVariables } from "@whatsapp-templates/invites/variables";
+import { INVITE_TEMPLATE_KEY_BY_PHASE } from "@whatsapp-templates/registry";
 import { openSlotsOf, type Match, type MatchInvite } from "~/types/domain";
 import type { FiringPhase } from "./types";
 
@@ -132,27 +136,56 @@ async function dispatchOne(args: {
   }
 
   const baseUrl = getBaseUrl();
+  const phase = invite.cascadePhase as FiringPhase;
+  const matchView = {
+    clubName,
+    whenLabel: formatScheduledAt(match.scheduledAt),
+    openSlots: openSlotsOf(match),
+    format: match.format,
+    fallbackLevelMin: match.fallbackLevelMin,
+    fallbackLevelMax: match.fallbackLevelMax,
+  };
+  const recipient = {
+    firstName:
+      (player?.name ?? user.profileName).split(/\s+/)[0] ?? user.profileName,
+  };
+  const organiser = { fullName: organiserFullName };
+  const acceptUrl = `${baseUrl}/i/${invite.token}`;
+  const declineUrl = `${baseUrl}/i/${invite.token}/nee`;
+
   const body = formatInviteMessage({
-    phase: invite.cascadePhase as FiringPhase,
-    match: {
-      clubName,
-      whenLabel: formatScheduledAt(match.scheduledAt),
-      openSlots: openSlotsOf(match),
-      format: match.format,
-      fallbackLevelMin: match.fallbackLevelMin,
-      fallbackLevelMax: match.fallbackLevelMax,
-    },
-    recipient: {
-      firstName:
-        (player?.name ?? user.profileName).split(/\s+/)[0] ??
-        user.profileName,
-    },
-    organiser: { fullName: organiserFullName },
-    acceptUrl: `${baseUrl}/i/${invite.token}`,
-    declineUrl: `${baseUrl}/i/${invite.token}/nee`,
+    phase,
+    match: matchView,
+    recipient,
+    organiser,
+    acceptUrl,
+    declineUrl,
   });
 
-  await sendWhatsAppMessage(user.id, body);
+  const templateKey = INVITE_TEMPLATE_KEY_BY_PHASE[phase];
+  const approvedTemplate = await findApprovedWhatsAppTemplate(templateKey);
+  const contentVariables = buildInviteContentVariables({
+    phase,
+    match: matchView,
+    recipient,
+    organiser,
+    acceptUrl,
+    declineUrl,
+  });
+  const twilioTemplate =
+    approvedTemplate?.contentSid && contentVariables
+      ? {
+          contentSid: approvedTemplate.contentSid,
+          contentVariables,
+        }
+      : undefined;
+
+  const deliverViaApi = isTwilioConfigured() && !isTwilioMock();
+
+  await sendWhatsAppMessage(user.id, body, {
+    deliverViaApi,
+    twilioTemplate,
+  });
   await prisma.matchInvitedPlayer.update({
     where: { token: invite.token },
     data: { sentAt: now },

@@ -19,6 +19,11 @@ import { getClubsByIds } from "~/lib/clubs.server";
 import { formatScheduledAt } from "~/lib/match-defaults";
 import { sendWhatsAppMessage } from "~/lib/whatsapp-messaging.server";
 import type { Match } from "~/types/domain";
+import {
+  formatCascadeExhaustedNotice,
+  formatInviteeAcceptedNotice,
+  formatMatchFullNotice,
+} from "@whatsapp-templates/organiser/notify";
 import type { OrganiserNotice } from "./organiser-notify";
 
 function getBaseUrl(): string {
@@ -80,28 +85,22 @@ async function renderNotice(input: {
   switch (notice.kind) {
     case "invitee-accepted": {
       const firstName = await resolveFirstName(notice.playerRef);
-      return [
-        `${firstName} doet mee met je padelmatch bij ${clubName} (${when}). 🎾`,
-        ``,
+      return formatInviteeAcceptedNotice({
+        firstName,
+        clubName,
+        when,
         matchUrl,
-      ].join("\n");
+      });
     }
     case "match-full":
-      return [
-        `Je padelmatch bij ${clubName} (${when}) is vol. 🎉`,
-        `De cascade is automatisch gestopt.`,
-        ``,
-        matchUrl,
-      ].join("\n");
+      return formatMatchFullNotice({ clubName, when, matchUrl });
     case "cascade-exhausted":
-      return [
-        `Je padelmatch bij ${clubName} (${when}) heeft nog ${notice.openSlots} open ${
-          notice.openSlots === 1 ? "plek" : "plekken"
-        }, maar de cascade is uitgeput.`,
-        `Open de match om iemand handmatig toe te voegen of de match te annuleren.`,
-        ``,
+      return formatCascadeExhaustedNotice({
+        clubName,
+        when,
+        openSlots: notice.openSlots,
         matchUrl,
-      ].join("\n");
+      });
   }
 }
 

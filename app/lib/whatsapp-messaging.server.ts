@@ -2,6 +2,7 @@ import { appendMessage, findUserById } from "~/lib/db.server";
 import { isTwilioConfigured, isTwilioMock } from "~/lib/twilio-config.server";
 import {
   sendTwilioWhatsAppMessage,
+  sendTwilioWhatsAppTemplate,
   sendTwilioWhatsAppTypingIndicator,
 } from "~/lib/twilio-client.server";
 import {
@@ -43,6 +44,14 @@ export type SendWhatsAppOptions = {
    * from the inbound webhook (avoids duplicate messages).
    */
   deliverViaApi?: boolean;
+  /**
+   * When set and `deliverViaApi` is true, send via Twilio Content API using an
+   * approved WhatsApp template. `body` is still stored in `messages[]` for audit.
+   */
+  twilioTemplate?: {
+    contentSid: string;
+    contentVariables: Record<string, string>;
+  };
 };
 
 export async function sendWhatsAppMessage(
@@ -67,13 +76,23 @@ export async function sendWhatsAppMessage(
     return;
   }
 
+  const template = options.twilioTemplate;
   logTwilio("outbound API send", {
     userId,
     to: user.phone,
     bodyLength: body.length,
+    contentSid: template?.contentSid,
   });
 
-  await sendTwilioWhatsAppMessage(user.phone, body);
+  if (template) {
+    await sendTwilioWhatsAppTemplate(
+      user.phone,
+      template.contentSid,
+      template.contentVariables,
+    );
+  } else {
+    await sendTwilioWhatsAppMessage(user.phone, body);
+  }
 
   logTwilio("outbound API sent", { userId, to: user.phone });
 }

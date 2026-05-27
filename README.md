@@ -112,7 +112,7 @@ In het [Twilio Console](https://console.twilio.com/) → **Messaging** → **Try
 | `STOP` | Afmelden (sluit ook actieve flow) |
 | `HELP` | Commando-overzicht |
 
-Alle bot-antwoorden staan in `app/lib/bot-messages.nl.ts`.
+Alle bot-antwoorden staan in `whatsapp-templates/bot/messages.nl.ts` (re-export via `app/lib/bot-messages.nl.ts`).
 
 ## Mastra agent (favorieten-flow)
 
@@ -181,7 +181,7 @@ app/
     whatsapp-messaging.server.ts    # Outbound (db + toekomstige Twilio API)
     dev-guard.server.ts             # Dev-only route guard
     dev-inbound.server.ts           # Synthetic Twilio inbound
-    bot-messages.nl.ts              # Nederlandse teksten
+    bot-messages.nl.ts              # Re-export → whatsapp-templates/
     mastra/
       index.ts                      # Mastra registry (voor Studio)
       agent.server.ts               # Favorieten-agent
@@ -192,7 +192,14 @@ data/
 prisma/
   schema.prisma                     # Prisma schema (SQLite)
   migrations/                       # Versie-historie
+whatsapp-templates/                 # WhatsApp copy + Twilio Content JSON
+  invites/                          # Cascade uitnodigingen (3 fasen)
+  bot/                              # Hardcoded commando's
+  organiser/                        # Berichten naar organisator
+  invitee/                          # Verwijderd / geannuleerd
 ```
+
+Zie `whatsapp-templates/README.md` voor Twilio-registratie (`pnpm templates:seed` / `templates:register` / `templates:sync`).
 
 ## Scripts
 

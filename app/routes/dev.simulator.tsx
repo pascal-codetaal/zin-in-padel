@@ -23,6 +23,12 @@ import { resetDevSimulatorUser } from "~/lib/dev-reset-user.server";
 import { processInboundReply } from "~/lib/whatsapp-bot.server";
 import { runCascadeTick, type TickTrace } from "~/lib/cascade/runner.server";
 import type { ActiveFlow, Message, User } from "~/types/domain";
+import {
+  INVITE_ACCEPT_BUTTON_LABEL,
+  INVITE_ACCEPT_LINE_PREFIX,
+  INVITE_DECLINE_BUTTON_LABEL,
+  INVITE_DECLINE_LINE_PREFIX,
+} from "@whatsapp-templates/shared";
 
 const QUICK_COMMANDS = ["JA", "FRIENDS", "HELP", "STOP"] as const;
 
@@ -256,9 +262,14 @@ function extractInviteButtons(body: string): {
   body: string;
   buttons: Array<{ label: string; url: string }> | null;
 } {
-  // Match `✅ Ja, ik doe mee: <url>` and `❌ Nee, andere keer: <url>`
-  const acceptRe = /^✅ Ja, ik doe mee:\s+(\S+)\s*$/m;
-  const declineRe = /^❌ Nee, andere keer:\s+(\S+)\s*$/m;
+  const acceptRe = new RegExp(
+    `^${escapeRegExp(INVITE_ACCEPT_LINE_PREFIX)}\\s+(\\S+)\\s*$`,
+    "m",
+  );
+  const declineRe = new RegExp(
+    `^${escapeRegExp(INVITE_DECLINE_LINE_PREFIX)}\\s+(\\S+)\\s*$`,
+    "m",
+  );
   const acceptMatch = body.match(acceptRe);
   const declineMatch = body.match(declineRe);
   if (!acceptMatch || !declineMatch) {
@@ -273,10 +284,14 @@ function extractInviteButtons(body: string): {
   return {
     body: stripped,
     buttons: [
-      { label: "Ja, ik doe mee", url: acceptMatch[1] },
-      { label: "Nee, andere keer", url: declineMatch[1] },
+      { label: INVITE_ACCEPT_BUTTON_LABEL, url: acceptMatch[1] },
+      { label: INVITE_DECLINE_BUTTON_LABEL, url: declineMatch[1] },
     ],
   };
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 export default function DevSimulator({ loaderData }: Route.ComponentProps) {

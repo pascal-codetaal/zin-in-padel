@@ -1,0 +1,30 @@
+{
+  "friendly_name": "zip_invite_phase_1_v2",
+  "language": "nl",
+  "variables": {
+    "1": "Tom",
+    "2": "Jan Janssens",
+    "3": "Padel Vlaanderen Brussel",
+    "4": "vrijdag 5 juni — 19:00",
+    "5": "Nog 2 plekken vrij",
+    "6": "AAA111BBB222CCC333DDD4",
+    "7": "AAA111BBB222CCC333DDD4/nee"
+  },
+  "types": {
+    "twilio/call-to-action": {
+      "body": "Hey {{1}}! {{2}} nodigt je uit voor een padelmatch.\n\n📍 {{3}}\n📅 {{4}}\n👥 {{5}}\n\nStuur STOP om geen uitnodigingen meer te ontvangen.",
+      "actions": [
+        {
+          "type": "URL",
+          "title": "Ja, ik doe mee",
+          "url": "https://zip.app/i/{{6}}"
+        },
+        {
+          "type": "URL",
+          "title": "Nee, andere keer",
+          "url": "https://zip.app/i/{{7}}"
+        }
+      ]
+    }
+  }
+}
