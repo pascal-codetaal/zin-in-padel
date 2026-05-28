@@ -16,7 +16,7 @@ import {
 import type { Match } from "~/types/domain";
 import type { AudienceCandidate, AudienceIndex } from "./audience";
 import { planCascadeTick, type CascadePlan } from "./plan";
-import { dispatchPendingInvites } from "./send.server";
+import { dispatchOrEnqueueInvites } from "./dispatch.server";
 import { decideRunnerNotices } from "./organiser-notify";
 import { notifyOrganiser } from "./organiser-notify.server";
 
@@ -75,7 +75,7 @@ async function tickOneMatch(
   // the cascade transaction so the cascade state advances even if a single
   // recipient lookup blips.
   if (summary.kind === "fire-phase" && summary.invitesInserted > 0) {
-    await dispatchPendingInvites(matchId, now);
+    await dispatchOrEnqueueInvites(matchId, now);
   }
   // Phase H: notify organiser on cascade-terminal outcomes (match-full /
   // cascade-exhausted with open slots). In-app surfaces still cover everything

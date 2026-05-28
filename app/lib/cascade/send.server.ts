@@ -47,7 +47,63 @@ export type DispatchOutcome = {
 export type SkipReason =
   | "no-user-for-phone"
   | "user-opted-out"
-  | "match-not-loadable";
+  | "match-not-loadable"
+  | "invite-not-found"
+  | "already-sent";
+
+export type SendInviteOutcome =
+  | { kind: "sent" }
+  | { kind: "skipped"; reason: SkipReason }
+  | { kind: "failed"; error: string };
+
+/**
+ * Send one invite by its token. Used by both the inline dispatcher and the
+ * pgmq worker (so the Twilio call + DB stamping live in one place).
+ *
+ * Real Twilio mode: throws on Twilio API errors so the worker can NACK and
+ * retry. Mock mode never throws because `sendWhatsAppMessage` only writes
+ * the Message row.
+ */
+export async function sendInviteByToken(
+  token: string,
+  now: Date,
+  options: { deliverViaApi?: boolean } = {},
+): Promise<SendInviteOutcome> {
+  const inviteRow = await prisma.matchInvitedPlayer.findUnique({
+    where: { token },
+  });
+  if (!inviteRow) return { kind: "skipped", reason: "invite-not-found" };
+  if (inviteRow.sentAt !== null) return { kind: "skipped", reason: "already-sent" };
+
+  const matchRow = await prisma.match.findUnique({
+    where: { id: inviteRow.matchId },
+    include: { invitedPlayers: true, confirmedSlots: true, clubs: true },
+  });
+  if (!matchRow) return { kind: "skipped", reason: "match-not-loadable" };
+
+  const match = matchRowToDomain(matchRow);
+  const organiser = await findUserById(match.organizerId);
+  if (!organiser) return { kind: "skipped", reason: "match-not-loadable" };
+
+  const clubs =
+    match.clubIds.length > 0 ? await getClubsByIds(match.clubIds) : [];
+  const clubName =
+    clubs.length > 0
+      ? clubs.map((c) => c.name).join(" / ")
+      : "Onbekende club";
+
+  const invite = match.invitedPlayers.find((i) => i.token === token);
+  if (!invite) return { kind: "skipped", reason: "invite-not-found" };
+
+  return dispatchOne({
+    match,
+    invite,
+    organiserFullName: organiser.profileName,
+    clubName,
+    now,
+    deliverViaApi: options.deliverViaApi === true,
+  });
+}
 
 /**
  * Send every pending invite for `matchId` that has no `sentAt` yet.
@@ -94,15 +150,18 @@ export async function dispatchPendingInvites(
       organiserFullName: organiser.profileName,
       clubName,
       now,
+      deliverViaApi: true,
     });
     if (result.kind === "sent") {
       outcome.sent += 1;
-    } else {
+    } else if (result.kind === "skipped") {
       outcome.skipped.push({
         playerRef: invite.playerRef,
         reason: result.reason,
       });
     }
+    // result.kind === "failed" only happens in deliverViaApi mode (worker).
+    // Inline dispatcher never uses it, but keep the type exhaustive.
   }
 
   return outcome;
@@ -114,11 +173,16 @@ async function dispatchOne(args: {
   organiserFullName: string;
   clubName: string;
   now: Date;
-}): Promise<
-  | { kind: "sent" }
-  | { kind: "skipped"; reason: SkipReason }
-> {
-  const { match, invite, organiserFullName, clubName, now } = args;
+  deliverViaApi?: boolean;
+}): Promise<SendInviteOutcome> {
+  const {
+    match,
+    invite,
+    organiserFullName,
+    clubName,
+    now,
+    deliverViaApi = false,
+  } = args;
 
   const player = await findPlayerByRef(invite.playerRef);
   const phone = player?.phone ?? invite.playerRef;
@@ -152,10 +216,27 @@ async function dispatchOne(args: {
     declineUrl: `${baseUrl}/i/${invite.token}/nee`,
   });
 
-  await sendWhatsAppMessage(user.id, body);
+  try {
+    await sendWhatsAppMessage(user.id, body, { deliverViaApi });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    await prisma.matchInvitedPlayer.update({
+      where: { token: invite.token },
+      data: {
+        sendAttempts: { increment: 1 },
+        sendError: message.slice(0, 500),
+      },
+    });
+    return { kind: "failed", error: message };
+  }
+
   await prisma.matchInvitedPlayer.update({
     where: { token: invite.token },
-    data: { sentAt: now },
+    data: {
+      sentAt: now,
+      sendAttempts: { increment: 1 },
+      sendError: null,
+    },
   });
 
   return { kind: "sent" };
