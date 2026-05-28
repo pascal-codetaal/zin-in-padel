@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { data, Link, redirect, useFetcher } from "react-router";
 import {
   findMatchesByOrganizer,
@@ -34,6 +35,12 @@ type DeclineEntry = {
   name: string;
 };
 
+type SkippedFriendEntry = {
+  playerRef: string;
+  name: string;
+  reason: "not-registered" | "opted-out";
+};
+
 type MatchCardData = {
   id: string;
   scheduledAt: string | null;
@@ -46,6 +53,7 @@ type MatchCardData = {
   confirmedSlotNames: string[];
   acceptedRoster: AcceptedRosterEntry[];
   declines: DeclineEntry[];
+  skippedFriends: SkippedFriendEntry[];
   openSlots: number;
   totalSlots: number;
   fallbackToLevelRange: boolean;
@@ -86,13 +94,11 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const clubIds = Array.from(
     new Set(matches.flatMap((m) => m.clubIds)),
   );
-  const friendRefs = Array.from(
-    new Set(matches.flatMap((m) => m.invitedFriendRefs)),
-  );
 
   const [clubs, db] = await Promise.all([getClubsByIds(clubIds), getDatabase()]);
   const clubsById = new Map(clubs.map((c) => [c.id, c]));
   const playersByRef = new Map(db.players.map((p) => [p.ref, p]));
+  const usersByPhone = new Map(db.users.map((u) => [u.phone, u]));
 
   const cards: MatchCardData[] = matches.map((m) => {
     const matchClubs = m.clubIds
@@ -110,6 +116,30 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         playerRef: i.playerRef,
         name: playersByRef.get(i.playerRef)?.name ?? i.playerRef,
       }));
+
+    // Friends the organiser picked who never got an invite: either no User
+    // record (not joined PadelMatch) or User exists but opted out. Cascade
+    // silently skips them; surface to the organiser so they know.
+    const skippedFriends: SkippedFriendEntry[] = m.invitedFriendRefs
+      .map((ref): SkippedFriendEntry | null => {
+        const u = usersByPhone.get(ref);
+        if (!u) {
+          return {
+            playerRef: ref,
+            name: playersByRef.get(ref)?.name ?? ref,
+            reason: "not-registered",
+          };
+        }
+        if (!u.optedIn) {
+          return {
+            playerRef: ref,
+            name: playersByRef.get(ref)?.name ?? ref,
+            reason: "opted-out",
+          };
+        }
+        return null;
+      })
+      .filter((e): e is SkippedFriendEntry => e !== null);
 
     const hasFutureCascade =
       m.status === "open" &&
@@ -137,6 +167,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       confirmedSlotNames: m.confirmedSlotNames,
       acceptedRoster,
       declines,
+      skippedFriends,
       openSlots: openSlotsOf(m),
       totalSlots: m.totalSlots,
       fallbackToLevelRange: m.fallbackToLevelRange,
@@ -338,7 +369,16 @@ function MatchCard({
         />
         <Detail
           label="Cascade"
-          value={renderCascade(match)}
+          value={
+            <>
+              {renderCascade(match)}
+              {match.canSkipPhase && match.nextCascadeAt && (
+                <div className="mt-1">
+                  <CascadeCountdown targetIso={match.nextCascadeAt} />
+                </div>
+              )}
+            </>
+          }
           colSpan
         />
       </dl>
@@ -366,6 +406,24 @@ function MatchCard({
               · {match.declines.map((d) => d.name).join(", ")}
             </span>
           )}
+        </div>
+      )}
+
+      {match.skippedFriends.length > 0 && match.status !== "cancelled" && (
+        <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
+          <div className="font-semibold text-slate-900">
+            Geen uitnodiging verstuurd
+          </div>
+          <ul className="mt-1 space-y-0.5">
+            {match.skippedFriends.map((s) => (
+              <li key={s.playerRef}>
+                {s.name} —{" "}
+                {s.reason === "not-registered"
+                  ? "niet ingeschreven bij PadelMatch"
+                  : "heeft notificaties uitgezet"}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -583,6 +641,32 @@ function StatusBadge({ status }: { status: MatchStatus }) {
       className={`inline-flex flex-none items-center rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${style}`}
     >
       {label}
+    </span>
+  );
+}
+
+function CascadeCountdown({ targetIso }: { targetIso: string }) {
+  const target = new Date(targetIso).getTime();
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const remaining = target - now;
+  if (remaining <= 0) {
+    return (
+      <span className="text-xs text-amber-700">Volgende fase elk moment…</span>
+    );
+  }
+  const totalSec = Math.floor(remaining / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const label = h > 0 ? `${h}u ${pad(m)}m ${pad(s)}s` : `${m}m ${pad(s)}s`;
+  return (
+    <span className="text-xs text-muted-foreground">
+      Volgende fase over {label}
     </span>
   );
 }

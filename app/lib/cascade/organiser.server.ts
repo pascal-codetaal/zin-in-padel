@@ -30,6 +30,7 @@ import {
 } from "./organiser";
 import { decideRunnerNotices } from "./organiser-notify";
 import { notifyOrganiser } from "./organiser-notify.server";
+import { archiveInviteSendsForMatch } from "./queue.server";
 
 const MATCH_INCLUDE = {
   invitedPlayers: true,
@@ -51,6 +52,7 @@ export type CancelMatchResult = {
   plan: CancelMatchPlan;
   match: Match;
   notificationsSent: number;
+  queuedSendsArchived: number;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -277,16 +279,24 @@ export async function cancelMatchAsOrganiser(input: {
       },
     });
 
+    // Drain any queued sends for this match so the worker stops dispatching
+    // invites after cancel. No-op when pgmq isn't enabled.
+    const archived = await archiveInviteSendsForMatch(matchId).catch(() => 0);
+
     const fresh = await tx.match.findUniqueOrThrow({
       where: { id: matchId },
       include: MATCH_INCLUDE,
     });
-    return { plan, match: matchRowToDomain(fresh) };
+    return { plan, match: matchRowToDomain(fresh), archived };
   });
 
   if (!txResult) return null;
   if (txResult.plan.kind !== "cancel") {
-    return { ...txResult, notificationsSent: 0 } as CancelMatchResult;
+    return {
+      ...txResult,
+      notificationsSent: 0,
+      queuedSendsArchived: txResult.archived,
+    } as CancelMatchResult;
   }
 
   let sent = 0;
@@ -294,7 +304,11 @@ export async function cancelMatchAsOrganiser(input: {
     const ok = await sendOrganiserNotification(note, txResult.match);
     if (ok) sent += 1;
   }
-  return { ...txResult, notificationsSent: sent } as CancelMatchResult;
+  return {
+    ...txResult,
+    notificationsSent: sent,
+    queuedSendsArchived: txResult.archived,
+  } as CancelMatchResult;
 }
 
 /* -------------------------------------------------------------------------- */
