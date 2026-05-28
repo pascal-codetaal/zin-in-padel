@@ -6,9 +6,9 @@ RUN pnpm install --frozen-lockfile
 
 FROM node:22-alpine AS production-dependencies-env
 RUN corepack enable
-COPY ./package.json pnpm-lock.yaml pnpm-workspace.yaml /app/
+COPY ./package.json pnpm-lock.yaml pnpm-workspace.yaml ./prisma/ ./app/
 WORKDIR /app
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --frozen-lockfile
 
 FROM node:22-alpine AS build-env
 RUN corepack enable
@@ -22,5 +22,8 @@ RUN corepack enable
 COPY ./package.json pnpm-lock.yaml pnpm-workspace.yaml /app/
 COPY --from=production-dependencies-env /app/node_modules /app/node_modules
 COPY --from=build-env /app/build /app/build
+COPY --from=build-env /app/app /app/app
+COPY --from=build-env /app/scripts /app/scripts
+COPY --from=build-env /app/prisma /app/prisma
 WORKDIR /app
 CMD ["pnpm", "run", "start"]

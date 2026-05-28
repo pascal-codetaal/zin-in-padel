@@ -13,7 +13,6 @@
  */
 
 import type { Route } from "./+types/api.cron.send-tick";
-import { runSendTick, type SendTickTrace } from "~/lib/cascade/send-worker.server";
 
 function isAuthorized(request: Request): boolean {
   const secret = process.env.CRON_SECRET;
@@ -30,16 +29,14 @@ async function handle(request: Request): Promise<Response> {
   if (!isAuthorized(request)) {
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }
-
-  const url = new URL(request.url);
-  const atParam = url.searchParams.get("at");
-  const now = atParam ? new Date(atParam) : new Date();
-  if (Number.isNaN(now.getTime())) {
-    return Response.json({ error: `invalid ?at=${atParam}` }, { status: 400 });
-  }
-
-  const trace: SendTickTrace = await runSendTick(now);
-  return Response.json(trace);
+  return Response.json(
+    {
+      error: "deprecated",
+      message:
+        "send-tick is disabled. Use the dedicated Fly worker process instead.",
+    },
+    { status: 410 },
+  );
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
