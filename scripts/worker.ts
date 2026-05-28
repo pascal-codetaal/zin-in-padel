@@ -1,3 +1,8 @@
+import { config as loadDotenv } from "dotenv";
+// `tsx` does not automatically load `.env` like Vite/React Router dev do.
+// Load `.env` first, then allow `.env.local` to override when present.
+loadDotenv({ path: ".env" });
+
 import { Worker } from "bullmq";
 import {
   getCascadePhaseEventQueue,
@@ -8,6 +13,7 @@ import {
 } from "../app/lib/cascade/queue.server";
 import { sendInviteByToken } from "../app/lib/cascade/send.server";
 import { runCascadeTickForMatch } from "../app/lib/cascade/runner.server";
+
 
 async function main() {
   if (!isInviteQueueEnabled()) {
