@@ -26,7 +26,9 @@
     "presets:sync": "tsx scripts/sync-presets.ts",
     "templates:seed": "tsx scripts/seed-whatsapp-templates.ts",
     "templates:sync": "tsx scripts/sync-whatsapp-templates.ts",
-    "templates:register": "tsx scripts/register-whatsapp-template.ts"
+    "templates:register": "tsx scripts/register-whatsapp-template.ts",
+    "test:pascal-invites-joris": "sh -c 'set -a; . ./.env; set +a; tsx scripts/setup-pascal-invites-joris.ts'",
+    "test:joris-invites-pascal": "sh -c 'set -a; . ./.env; set +a; tsx scripts/setup-joris-invites-pascal.ts'"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.64",

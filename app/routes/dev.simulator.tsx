@@ -22,6 +22,7 @@ import {
 import { resetDevSimulatorUser } from "~/lib/dev-reset-user.server";
 import { processInboundReply } from "~/lib/whatsapp-bot.server";
 import { runCascadeTick, type TickTrace } from "~/lib/cascade/runner.server";
+import { runSendTick, type SendTickTrace } from "~/lib/cascade/send-worker.server";
 import type { ActiveFlow, Message, User } from "~/types/domain";
 import {
   INVITE_ACCEPT_BUTTON_LABEL,
@@ -150,6 +151,16 @@ export async function action({ request }: Route.ActionArgs) {
     }
     const trace = await runCascadeTick(now);
     return { ok: true as const, intent: "cron-tick" as const, trace };
+  }
+
+  if (intent === "send-tick") {
+    const atParam = form.get("at")?.toString();
+    const now = atParam ? new Date(atParam) : new Date();
+    if (Number.isNaN(now.getTime())) {
+      return { ok: false as const, error: "invalid_at" };
+    }
+    const trace = await runSendTick(now);
+    return { ok: true as const, intent: "send-tick" as const, trace };
   }
 
   if (intent === "send-inbound") {
@@ -303,6 +314,7 @@ export default function DevSimulator({ loaderData }: Route.ComponentProps) {
   const cronFetcher = useFetcher<
     | { ok: false; error: string }
     | { ok: true; intent: "cron-tick"; trace: TickTrace }
+    | { ok: true; intent: "send-tick"; trace: SendTickTrace }
   >();
   const threadEndRef = useRef<HTMLDivElement>(null);
   const messageInputRef = useRef<HTMLInputElement>(null);
@@ -698,6 +710,7 @@ export default function DevSimulator({ loaderData }: Route.ComponentProps) {
 type CronFetcherData =
   | { ok: false; error: string }
   | { ok: true; intent: "cron-tick"; trace: TickTrace }
+  | { ok: true; intent: "send-tick"; trace: SendTickTrace }
   | undefined;
 
 function CronTickPanel({
@@ -710,10 +723,9 @@ function CronTickPanel({
   return (
     <div className="flex flex-col gap-2 border-t border-gray-200 pt-4 dark:border-gray-800">
       <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
-        Cascade cron
+        Cron taps
       </p>
       <fetcher.Form method="post" className="flex flex-col gap-1.5">
-        <input type="hidden" name="intent" value="cron-tick" />
         <input
           type="datetime-local"
           name="at"
@@ -722,16 +734,27 @@ function CronTickPanel({
         />
         <button
           type="submit"
+          name="intent"
+          value="cron-tick"
           disabled={isTicking}
           className="w-full rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-900 hover:bg-emerald-100 disabled:opacity-50 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200 dark:hover:bg-emerald-900/50"
         >
-          {isTicking ? "Tikken…" : "⏱ Tick cron"}
+          {isTicking ? "Tikken…" : "⏱ Tick cascade"}
+        </button>
+        <button
+          type="submit"
+          name="intent"
+          value="send-tick"
+          disabled={isTicking}
+          className="w-full rounded-lg border border-sky-300 bg-sky-50 px-3 py-2 text-xs font-medium text-sky-900 hover:bg-sky-100 disabled:opacity-50 dark:border-sky-700 dark:bg-sky-900/30 dark:text-sky-200 dark:hover:bg-sky-900/50"
+        >
+          {isTicking ? "Tikken…" : "📨 Tick send-queue"}
         </button>
       </fetcher.Form>
       {data && data.ok === false && (
         <p className="text-xs text-rose-600 dark:text-rose-400">{data.error}</p>
       )}
-      {data && data.ok === true && (
+      {data && data.ok === true && data.intent === "cron-tick" && (
         <div className="rounded-lg bg-gray-100 p-2 text-[10px] text-gray-700 dark:bg-gray-800 dark:text-gray-300">
           <p>
             <strong>{data.trace.matchesConsidered}</strong> match
@@ -745,6 +768,30 @@ function CronTickPanel({
                 <li key={entry.matchId} className="break-all">
                   <code>{entry.matchId.slice(0, 8)}</code>:{" "}
                   {summarisePlan(entry.plan)}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+      {data && data.ok === true && data.intent === "send-tick" && (
+        <div className="rounded-lg bg-gray-100 p-2 text-[10px] text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+          <p>
+            {data.trace.queueEnabled ? (
+              <>
+                <strong>{data.trace.processed}</strong> message
+                {data.trace.processed === 1 ? "" : "s"} gedraind
+              </>
+            ) : (
+              <em>queue uit (INVITE_QUEUE_ENABLED=false)</em>
+            )}
+          </p>
+          {data.trace.perMessage.length > 0 && (
+            <ul className="mt-1 space-y-1">
+              {data.trace.perMessage.map((entry) => (
+                <li key={entry.msgId} className="break-all">
+                  <code>{entry.inviteToken.slice(0, 8)}</code>: {entry.outcome.kind}{" "}
+                  → {entry.action}
                 </li>
               ))}
             </ul>

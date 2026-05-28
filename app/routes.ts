@@ -27,5 +27,7 @@ export default [
   route("i/:token/nee", "routes/i.$token.nee.tsx"),
   route("dev/simulator", "routes/dev.simulator.tsx"),
   route("dev/cron-tick", "routes/dev.cron-tick.tsx"),
+  route("api/cron/cascade-tick", "routes/api.cron.cascade-tick.tsx"),
+  route("api/cron/send-tick", "routes/api.cron.send-tick.tsx"),
   route("webhooks/twilio/whatsapp", "routes/webhooks.twilio.whatsapp.ts"),
 ] satisfies RouteConfig;
