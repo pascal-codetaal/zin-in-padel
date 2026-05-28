@@ -8,6 +8,10 @@ import {
   finalizeMatchDraft,
   getDatabase,
 } from "~/lib/db.server";
+import {
+  dispatchOrEnqueueInvites,
+  scheduleCascadeFallbackEvents,
+} from "~/lib/cascade/dispatch.server";
 import { getClubsByIds } from "~/lib/clubs.server";
 import { formatScheduledAt } from "~/lib/match-defaults";
 import {
@@ -68,6 +72,8 @@ export async function action({ request, params }: Route.ActionArgs) {
 
   if (intent === "create") {
     const finalized = await finalizeMatchDraft(draft.id, "open");
+    await dispatchOrEnqueueInvites(finalized.id, new Date());
+    await scheduleCascadeFallbackEvents(finalized.id);
     return redirect(`/match/${params.token}?created=${finalized.id}`);
   }
 

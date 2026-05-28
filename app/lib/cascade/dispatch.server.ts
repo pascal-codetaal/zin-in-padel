@@ -10,6 +10,7 @@
 import { prisma } from "~/lib/prisma.server";
 import { dispatchPendingInvites } from "./send.server";
 import {
+  enqueueCascadePhaseEvent,
   enqueueInviteSend,
   isInviteQueueEnabled,
   type InviteSendPayload,
@@ -58,4 +59,36 @@ export async function dispatchOrEnqueueInvites(
   }
 
   return { kind: "enqueued", enqueued };
+}
+
+export async function scheduleCascadeFallbackEvents(matchId: string): Promise<void> {
+  if (!isInviteQueueEnabled()) return;
+  const match = await prisma.match.findUnique({
+    where: { id: matchId },
+    select: {
+      fallbackToLevelRange: true,
+      fallbackLevelDelayMinutes: true,
+      fallbackToEveryone: true,
+      fallbackEveryoneDelayMinutes: true,
+    },
+  });
+  if (!match) return;
+
+  if (match.fallbackToLevelRange) {
+    await enqueueCascadePhaseEvent({
+      matchId,
+      phase: 2,
+      delayMs: match.fallbackLevelDelayMinutes * 60_000,
+    });
+  }
+  if (match.fallbackToEveryone) {
+    const phase3DelayMinutes =
+      match.fallbackEveryoneDelayMinutes +
+      (match.fallbackToLevelRange ? match.fallbackLevelDelayMinutes : 0);
+    await enqueueCascadePhaseEvent({
+      matchId,
+      phase: 3,
+      delayMs: phase3DelayMinutes * 60_000,
+    });
+  }
 }

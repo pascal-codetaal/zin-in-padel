@@ -14,6 +14,10 @@
 
 import type { Route } from "./+types/api.cron.cascade-tick";
 import { runCascadeTick, type TickTrace } from "~/lib/cascade/runner.server";
+import {
+  runCascadeEventTick,
+  type CascadeEventTickTrace,
+} from "~/lib/cascade/phase-worker.server";
 
 function isAuthorized(request: Request): boolean {
   const secret = process.env.CRON_SECRET;
@@ -37,8 +41,9 @@ async function handle(request: Request): Promise<Response> {
     return Response.json({ error: `invalid ?at=${atParam}` }, { status: 400 });
   }
 
-  const trace: TickTrace = await runCascadeTick(now);
-  return Response.json(trace);
+  const [phaseEvents, trace]: [CascadeEventTickTrace, TickTrace] =
+    await Promise.all([runCascadeEventTick(now), runCascadeTick(now)]);
+  return Response.json({ phaseEvents, trace });
 }
 
 export async function loader({ request }: Route.LoaderArgs) {

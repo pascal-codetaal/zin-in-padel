@@ -1,14 +1,9 @@
-/**
- * pgmq drain loop for the `invite-sends` queue.
- *
- * The Supabase cron row hits `/api/cron/send-tick`, which calls this. We
- * read a small batch with a short visibility timeout, send each via Twilio
- * (real or mock), then either delete (success) or archive (terminal skip /
- * retry exhaustion) the message. Transient failures are left in-place so
- * pgmq re-delivers them after the VT expires.
- */
-
-import { isInviteQueueEnabled, readInviteSendBatch, deleteInviteSend, archiveInviteSend, type InviteSendMessage } from "./queue.server";
+import { Worker } from "bullmq";
+import {
+  getInviteSendQueue,
+  isInviteQueueEnabled,
+  type InviteSendPayload,
+} from "./queue.server";
 import { sendInviteByToken, type SendInviteOutcome } from "./send.server";
 
 export type SendTickTrace = {
@@ -16,22 +11,18 @@ export type SendTickTrace = {
   queueEnabled: boolean;
   processed: number;
   perMessage: Array<{
-    msgId: string;
+    msgId: string | null;
     inviteToken: string;
-    readCt: number;
+    attemptsMade: number;
     outcome: SendInviteOutcome;
-    action: "deleted" | "archived" | "left-for-retry";
+    action: "completed" | "failed";
   }>;
 };
 
 const DEFAULT_BATCH_SIZE = 10;
-const DEFAULT_VT_SECONDS = 60;
-const MAX_ATTEMPTS = 5;
 
 export type RunSendTickOptions = {
   batchSize?: number;
-  vtSeconds?: number;
-  maxAttempts?: number;
 };
 
 export async function runSendTick(
@@ -48,55 +39,68 @@ export async function runSendTick(
   if (!trace.queueEnabled) return trace;
 
   const batchSize = options.batchSize ?? DEFAULT_BATCH_SIZE;
-  const vtSeconds = options.vtSeconds ?? DEFAULT_VT_SECONDS;
-  const maxAttempts = options.maxAttempts ?? MAX_ATTEMPTS;
+  const queue = getInviteSendQueue();
+  const { waiting = 0, delayed = 0 } = await queue.getJobCounts(
+    "waiting",
+    "delayed",
+  );
+  if (waiting + delayed === 0) return trace;
 
-  const messages = await readInviteSendBatch({ qty: batchSize, vtSeconds });
+  const worker = new Worker<InviteSendPayload>(
+    queue.name,
+    async (job) => {
+      const outcome = await handleOne(job.data.inviteToken, now);
+      if (outcome.kind === "failed") {
+        throw new Error(outcome.error);
+      }
 
-  for (const msg of messages) {
-    const outcome = await handleOne(msg, now);
-    let action: "deleted" | "archived" | "left-for-retry";
+      trace.processed += 1;
+      trace.perMessage.push({
+        msgId: String(job.id),
+        inviteToken: job.data.inviteToken,
+        attemptsMade: job.attemptsMade,
+        outcome,
+        action: "completed",
+      });
+      return outcome;
+    },
+    { connection: queue.opts.connection, concurrency: batchSize },
+  );
 
-    if (outcome.kind === "sent" || outcome.kind === "skipped") {
-      // Terminal: stop redelivery. Skipped = permanent reason (already-sent,
-      // user-opted-out, etc.) — no point retrying.
-      await deleteInviteSend(msg.msgId);
-      action = "deleted";
-    } else if (msg.readCt >= maxAttempts) {
-      // Failed too many times — archive to keep the dead letter out of the
-      // active queue. The `MatchInvitedPlayer.sendError` field has the last
-      // error and the organiser UI surfaces it.
-      await archiveInviteSend(msg.msgId);
-      action = "archived";
-    } else {
-      // Transient failure: leave the message; pgmq makes it visible again
-      // when the VT expires.
-      action = "left-for-retry";
-    }
-
+  worker.on("failed", (job, error) => {
+    const inviteToken = job?.data?.inviteToken ?? "unknown";
+    const attemptsMade = job?.attemptsMade ?? 0;
     trace.processed += 1;
     trace.perMessage.push({
-      msgId: msg.msgId.toString(),
-      inviteToken: msg.payload.inviteToken,
-      readCt: msg.readCt,
-      outcome,
-      action,
+      msgId: job?.id ? String(job.id) : null,
+      inviteToken,
+      attemptsMade,
+      outcome: { kind: "failed", error: error.message },
+      action: "failed",
     });
+  });
+
+  for (let i = 0; i < 10; i += 1) {
+    const counts = await queue.getJobCounts("waiting", "active", "delayed");
+    if (counts.waiting === 0 && counts.active === 0) break;
+    await sleep(500);
   }
+  await worker.close();
 
   return trace;
 }
 
-async function handleOne(
-  msg: InviteSendMessage,
-  now: Date,
-): Promise<SendInviteOutcome> {
+async function handleOne(token: string, now: Date): Promise<SendInviteOutcome> {
   try {
-    return await sendInviteByToken(msg.payload.inviteToken, now, {
+    return await sendInviteByToken(token, now, {
       deliverViaApi: true,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return { kind: "failed", error: message };
   }
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

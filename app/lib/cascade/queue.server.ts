@@ -1,19 +1,7 @@
-/**
- * Thin pgmq wrapper for the `invite-sends` queue.
- *
- * Calls Supabase's `pgmq` extension via Prisma's raw query API. Keep this
- * file the only place that knows pgmq SQL — callers deal in typed payloads.
- *
- * Disabled in mock / non-configured environments: `enqueueInviteSend` and
- * the read/delete/archive helpers short-circuit and the runner falls back
- * to the synchronous dispatcher in `send.server.ts`. That keeps the local
- * dev loop working on a vanilla Postgres without pgmq installed.
- */
-
-import type { Prisma } from "@prisma/client";
-import { prisma } from "~/lib/prisma.server";
+import { Queue } from "bullmq";
 
 export const INVITE_SEND_QUEUE = "invite-sends";
+export const CASCADE_PHASE_EVENT_QUEUE = "cascade-phase-events";
 
 export type InviteSendPayload = {
   inviteToken: string;
@@ -21,104 +9,146 @@ export type InviteSendPayload = {
   phase: 1 | 2 | 3;
 };
 
-export type InviteSendMessage = {
-  msgId: bigint;
-  readCt: number;
-  enqueuedAt: Date;
-  vt: Date;
-  payload: InviteSendPayload;
+export type CascadePhaseEventPayload = {
+  matchId: string;
+  phase: 2 | 3;
 };
 
-/**
- * True when this process should use pgmq. Off by default — opt in with
- * `INVITE_QUEUE_ENABLED=true` once the migration is applied. Lets us merge
- * the queue worker without forcing every dev box to install pgmq.
- */
 export function isInviteQueueEnabled(): boolean {
-  return process.env.INVITE_QUEUE_ENABLED === "true";
+  return (
+    process.env.INVITE_QUEUE_ENABLED === "true" &&
+    getRedisConnection() !== null
+  );
 }
 
-type TxClient = Prisma.TransactionClient | typeof prisma;
+export type EnqueueInviteSendOptions = {
+  delayMs?: number;
+};
 
 export async function enqueueInviteSend(
   payload: InviteSendPayload,
-  tx: TxClient = prisma,
-): Promise<bigint | null> {
+  options: EnqueueInviteSendOptions = {},
+): Promise<string | null> {
   if (!isInviteQueueEnabled()) return null;
+  const queue = getInviteSendQueue();
+  const delay = Math.max(0, options.delayMs ?? 0);
+  const jobId = buildInviteSendJobId(payload);
 
-  const rows = await tx.$queryRaw<{ send: bigint }[]>`
-    SELECT pgmq.send(
-      ${INVITE_SEND_QUEUE}::text,
-      ${JSON.stringify(payload)}::jsonb
-    ) AS send
-  `;
-  return rows[0]?.send ?? null;
+  const job = await queue.add("send-invite", payload, {
+    jobId,
+    delay,
+    attempts: 5,
+    backoff: { type: "exponential", delay: 30_000 },
+    removeOnComplete: true,
+  });
+
+  return String(job.id);
 }
 
-/**
- * Read up to `qty` messages with a `vt` second visibility timeout. Messages
- * stay in the queue until `deleteInviteSend` or `archiveInviteSend` is
- * called; if the visibility timeout expires they become readable again.
- */
-export async function readInviteSendBatch(args: {
-  qty: number;
-  vtSeconds: number;
-}): Promise<InviteSendMessage[]> {
-  if (!isInviteQueueEnabled()) return [];
-
-  type RawRow = {
-    msg_id: bigint | number;
-    read_ct: number;
-    enqueued_at: Date;
-    vt: Date;
-    message: unknown;
-  };
-
-  const rows = await prisma.$queryRaw<RawRow[]>`
-    SELECT msg_id, read_ct, enqueued_at, vt, message
-    FROM pgmq.read(${INVITE_SEND_QUEUE}::text, ${args.vtSeconds}::integer, ${args.qty}::integer)
-  `;
-
-  return rows.map((row) => ({
-    msgId: BigInt(row.msg_id),
-    readCt: row.read_ct,
-    enqueuedAt: row.enqueued_at,
-    vt: row.vt,
-    payload: row.message as InviteSendPayload,
-  }));
-}
-
-export async function deleteInviteSend(msgId: bigint): Promise<void> {
-  if (!isInviteQueueEnabled()) return;
-  await prisma.$executeRaw`
-    SELECT pgmq.delete(${INVITE_SEND_QUEUE}::text, ${msgId}::bigint)
-  `;
-}
-
-export async function archiveInviteSend(msgId: bigint): Promise<void> {
-  if (!isInviteQueueEnabled()) return;
-  await prisma.$executeRaw`
-    SELECT pgmq.archive(${INVITE_SEND_QUEUE}::text, ${msgId}::bigint)
-  `;
-}
-
-/**
- * Drain (archive) any queued sends still pending for a given match. Used by
- * cancel-match in Phase G3; called here so all pgmq SQL stays colocated.
- */
-export async function archiveInviteSendsForMatch(matchId: string): Promise<number> {
+export async function cancelInviteSendsForMatch(matchId: string): Promise<number> {
   if (!isInviteQueueEnabled()) return 0;
+  const queues = [getInviteSendQueue(), getCascadePhaseEventQueue()];
+  const prefix = `match|${matchId}|`;
+  let cancelled = 0;
 
-  // pgmq stores messages in `pgmq.q_<queue_name>`. We can't reference the
-  // table directly (queue name comes from data), so use a dynamic SQL via
-  // `format`/`EXECUTE` in a DO block.
-  const result = await prisma.$queryRaw<{ archived: number }[]>`
-    WITH archived AS (
-      SELECT pgmq.archive(${INVITE_SEND_QUEUE}::text, msg_id) AS archived_id
-      FROM pgmq.q_invite_sends
-      WHERE message ->> 'matchId' = ${matchId}
-    )
-    SELECT count(*)::int AS archived FROM archived
-  `;
-  return result[0]?.archived ?? 0;
+  for (const queue of queues) {
+    let start = 0;
+    const pageSize = 250;
+    while (true) {
+      const jobs = await queue.getJobs(
+        ["delayed", "waiting", "prioritized", "paused", "waiting-children"],
+        start,
+        start + pageSize - 1,
+        true,
+      );
+      if (jobs.length === 0) break;
+
+      for (const job of jobs) {
+        if (String(job.id).startsWith(prefix)) {
+          await job.remove();
+          cancelled += 1;
+        }
+      }
+      if (jobs.length < pageSize) break;
+      start += pageSize;
+    }
+  }
+
+  return cancelled;
+}
+
+export function getInviteSendQueue(): Queue<InviteSendPayload> {
+  const connection = getRedisConnection();
+  if (!connection) {
+    throw new Error("INVITE_QUEUE_ENABLED=true but no Redis connection configured.");
+  }
+  return new Queue<InviteSendPayload>(INVITE_SEND_QUEUE, { connection });
+}
+
+export function getCascadePhaseEventQueue(): Queue<CascadePhaseEventPayload> {
+  const connection = getRedisConnection();
+  if (!connection) {
+    throw new Error("INVITE_QUEUE_ENABLED=true but no Redis connection configured.");
+  }
+  return new Queue<CascadePhaseEventPayload>(CASCADE_PHASE_EVENT_QUEUE, {
+    connection,
+  });
+}
+
+export async function enqueueCascadePhaseEvent(args: {
+  matchId: string;
+  phase: 2 | 3;
+  delayMs: number;
+}): Promise<string | null> {
+  if (!isInviteQueueEnabled()) return null;
+  const queue = getCascadePhaseEventQueue();
+  const delay = Math.max(0, args.delayMs);
+  const job = await queue.add(
+    "fire-cascade-phase",
+    { matchId: args.matchId, phase: args.phase },
+    {
+      jobId: buildCascadePhaseJobId(args.matchId, args.phase),
+      delay,
+      attempts: 1,
+      removeOnComplete: true,
+      removeOnFail: false,
+    },
+  );
+  return String(job.id);
+}
+
+function buildInviteSendJobId(payload: InviteSendPayload): string {
+  return `match|${payload.matchId}|invite|${payload.inviteToken}|phase|${payload.phase}`;
+}
+
+function buildCascadePhaseJobId(matchId: string, phase: 2 | 3): string {
+  return `match|${matchId}|cascade-phase|${phase}`;
+}
+
+function getRedisConnection():
+  | {
+      host: string;
+      port: number;
+      username?: string;
+      password?: string;
+      tls?: Record<string, never>;
+      maxRetriesPerRequest: null;
+    }
+  | null {
+  const redisUrl =
+    process.env.BULLMQ_REDIS_URL ??
+    process.env.UPSTASH_REDIS_URL ??
+    process.env.REDIS_URL;
+  if (!redisUrl) return null;
+
+  const parsed = new URL(redisUrl);
+  const isTls = parsed.protocol === "rediss:";
+  return {
+    host: parsed.hostname,
+    port: Number(parsed.port || (isTls ? "6380" : "6379")),
+    username: parsed.username || undefined,
+    password: parsed.password || undefined,
+    tls: isTls ? {} : undefined,
+    maxRetriesPerRequest: null,
+  };
 }

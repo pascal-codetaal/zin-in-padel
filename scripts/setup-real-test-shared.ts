@@ -9,7 +9,10 @@ import { createManageToken } from "../app/lib/maatjes-url.server";
 import { playerRefFromPhone } from "../app/types/domain";
 import { createInviteToken } from "../app/lib/cascade/token";
 import { finalizeMatchDraft } from "../app/lib/db.server";
-import { dispatchOrEnqueueInvites } from "../app/lib/cascade/dispatch.server";
+import {
+  dispatchOrEnqueueInvites,
+  scheduleCascadeFallbackEvents,
+} from "../app/lib/cascade/dispatch.server";
 
 export type Person = {
   firstName: string;
@@ -199,6 +202,7 @@ export async function runSetup(args: {
 
   // ---- Dispatch phase-1 invite ----
   const result = await dispatchOrEnqueueInvites(matchId, new Date());
+  await scheduleCascadeFallbackEvents(matchId);
   console.log("✓ Dispatch result:", result);
 
   console.log(`\nDone. ${organiserName} invited ${inviteeName}.`);

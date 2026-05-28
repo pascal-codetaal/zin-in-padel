@@ -34,7 +34,7 @@ import {
 } from "./organiser";
 import { decideRunnerNotices } from "./organiser-notify";
 import { notifyOrganiser } from "./organiser-notify.server";
-import { archiveInviteSendsForMatch } from "./queue.server";
+import { cancelInviteSendsForMatch } from "./queue.server";
 
 const MATCH_INCLUDE = {
   invitedPlayers: true,
@@ -283,9 +283,8 @@ export async function cancelMatchAsOrganiser(input: {
       },
     });
 
-    // Drain any queued sends for this match so the worker stops dispatching
-    // invites after cancel. No-op when pgmq isn't enabled.
-    const archived = await archiveInviteSendsForMatch(matchId).catch(() => 0);
+    // Cancel pending queue jobs so no new invites are sent after cancellation.
+    const archived = await cancelInviteSendsForMatch(matchId).catch(() => 0);
 
     const fresh = await tx.match.findUniqueOrThrow({
       where: { id: matchId },

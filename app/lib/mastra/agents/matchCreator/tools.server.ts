@@ -15,7 +15,10 @@ import {
   updateMatchDraft,
 } from "~/lib/db.server";
 import { buildMaatjesPageUrl } from "~/lib/maatjes-url.server";
-import { dispatchOrEnqueueInvites } from "~/lib/cascade/dispatch.server";
+import {
+  dispatchOrEnqueueInvites,
+  scheduleCascadeFallbackEvents,
+} from "~/lib/cascade/dispatch.server";
 import { resolveAppOrigin } from "~/lib/app-origin.server";
 import {
   ALL_PADEL_LEVELS,
@@ -443,6 +446,7 @@ export const finalizeMatchTool = createTool({
     // Safe to await — POC scale, and surfacing failures to the agent turn
     // is better than silently dropping invites.
     await dispatchOrEnqueueInvites(finalized.id, new Date());
+    await scheduleCascadeFallbackEvents(finalized.id);
     const clubs = await getClubsByIds(draft.clubIds);
     const db = await getDatabase();
     const inviteeNames = finalized.invitedFriendRefs

@@ -61,6 +61,13 @@ export async function runCascadeTick(now: Date): Promise<TickTrace> {
   };
 }
 
+export async function runCascadeTickForMatch(
+  matchId: string,
+  now: Date,
+): Promise<CascadePlanSummary> {
+  return tickOneMatch(matchId, now);
+}
+
 async function tickOneMatch(
   matchId: string,
   now: Date,
