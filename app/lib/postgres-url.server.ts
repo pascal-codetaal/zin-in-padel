@@ -1,3 +1,8 @@
+import { config as loadDotenv } from "dotenv";
+// `tsx` does not automatically load `.env` like Vite/React Router dev do.
+// Load `.env` first, then allow `.env.local` to override when present.
+loadDotenv({ path: ".env" });
+
 /**
  * Resolve a Postgres URL for runtime (Prisma, Mastra, serverless).
  *
@@ -12,7 +17,7 @@ export function resolveRuntimePostgresUrl(
   const candidates = [override, process.env.DATABASE_URL, process.env.DIRECT_URL]
     .map((u) => u?.trim())
     .filter((u): u is string => Boolean(u));
-
+  
   if (candidates.length === 0) {
     throw new Error(
       "Set DATABASE_URL to your Supabase connection pooler URL (port 6543, ?pgbouncer=true).",

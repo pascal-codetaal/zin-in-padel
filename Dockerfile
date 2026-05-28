@@ -23,6 +23,8 @@ COPY ./package.json pnpm-lock.yaml pnpm-workspace.yaml /app/
 COPY --from=production-dependencies-env /app/node_modules /app/node_modules
 COPY --from=build-env /app/build /app/build
 COPY --from=build-env /app/app /app/app
+COPY --from=build-env /app/tsconfig.json /app/tsconfig.json
+COPY --from=build-env /app/whatsapp-templates /app/whatsapp-templates
 COPY --from=build-env /app/scripts /app/scripts
 COPY --from=build-env /app/prisma /app/prisma
 WORKDIR /app
