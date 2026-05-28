@@ -2,6 +2,10 @@ import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { getClubsByIds, searchClubs } from "~/lib/clubs.server";
 import {
+  buildFriendInviteFollowUp,
+  formatFriendInviteFollowUpMessage,
+} from "~/lib/friend-invite.server";
+import {
   addFriend,
   stageFriendName,
 } from "~/lib/friends.server";
@@ -310,15 +314,29 @@ export const addFriendTool = createTool({
       };
     }
 
+    let message = result.alreadyFavorite
+      ? `${result.name} (${result.phone}) stond al in je vriendenlijst.`
+      : `${result.name} toegevoegd (${result.phone}).`;
+
+    if (!result.alreadyFavorite) {
+      const followUp = await buildFriendInviteFollowUp({
+        inviterUserId: userId,
+        friendName: result.name,
+        friendPhone: result.phone,
+        twilioWhatsAppFrom: process.env.TWILIO_WHATSAPP_FROM,
+      });
+      if (followUp) {
+        message = `${message}\n\n${formatFriendInviteFollowUpMessage(followUp)}`;
+      }
+    }
+
     return {
       ok: true,
       status: "added" as const,
       playerName: result.name,
       phone: result.phone,
       alreadyFavorite: result.alreadyFavorite,
-      message: result.alreadyFavorite
-        ? `${result.name} (${result.phone}) stond al in je vriendenlijst.`
-        : `${result.name} toegevoegd (${result.phone}).`,
+      message,
     };
   },
 });

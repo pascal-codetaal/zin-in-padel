@@ -5,9 +5,35 @@ import {
   setPendingFriend,
   upsertPlayer,
 } from "~/lib/db.server";
+import {
+  buildFriendInviteFollowUp,
+  type FriendInviteFollowUp,
+} from "~/lib/friend-invite.server";
 import { parsePhoneFromText } from "~/lib/phone.server";
 import type { User } from "~/types/domain";
 import { playerRefFromPhone } from "~/types/domain";
+
+async function inviteFollowUpForNewFriend(
+  userId: string,
+  name: string,
+  phone: string,
+  alreadyFavorite: boolean,
+): Promise<FriendInviteFollowUp | null> {
+  if (alreadyFavorite) return null;
+  return buildFriendInviteFollowUp({
+    inviterUserId: userId,
+    friendName: name,
+    friendPhone: phone,
+    twilioWhatsAppFrom: process.env.TWILIO_WHATSAPP_FROM,
+  });
+}
+
+type FriendHandledResult = {
+  handled: true;
+  reply: string;
+  user: User;
+  inviteFollowUps: FriendInviteFollowUp[];
+};
 
 export function phonePrompt(name: string): string {
   return `Welk mobiel nummer heeft ${name}? Stuur het nummer (bv. 0470123456).`;
@@ -59,11 +85,12 @@ function resolveSharedContactName(
 export async function tryAddFriendsFromSharedContacts(
   user: User,
   contacts: { name: string; phone: string }[],
-): Promise<{ handled: true; reply: string; user: User } | { handled: false }> {
+): Promise<FriendHandledResult | { handled: false }> {
   if (contacts.length === 0) return { handled: false };
 
   const added: string[] = [];
   const duplicates: string[] = [];
+  const inviteFollowUps: FriendInviteFollowUp[] = [];
   let skipped = 0;
 
   for (let i = 0; i < contacts.length; i++) {
@@ -80,7 +107,16 @@ export async function tryAddFriendsFromSharedContacts(
       continue;
     }
     if (result.alreadyFavorite) duplicates.push(result.name);
-    else added.push(`${result.name} (${result.phone})`);
+    else {
+      added.push(`${result.name} (${result.phone})`);
+      const followUp = await inviteFollowUpForNewFriend(
+        user.id,
+        result.name,
+        result.phone,
+        false,
+      );
+      if (followUp) inviteFollowUps.push(followUp);
+    }
   }
 
   const updated = await findUserById(user.id);
@@ -89,6 +125,7 @@ export async function tryAddFriendsFromSharedContacts(
       handled: true,
       reply: "Er ging iets mis. Probeer opnieuw.",
       user,
+      inviteFollowUps: [],
     };
   }
 
@@ -100,6 +137,7 @@ export async function tryAddFriendsFromSharedContacts(
         ? `Geen geldig nummer gevonden. ${phonePrompt(pendingName)}`
         : "Ik kon geen geldige contacten uit dat bericht halen. Stuur ze één voor één of als tekst met nummer.",
       user: updated,
+      inviteFollowUps: [],
     };
   }
 
@@ -125,13 +163,14 @@ export async function tryAddFriendsFromSharedContacts(
     handled: true,
     reply: parts.join("\n"),
     user: updated,
+    inviteFollowUps,
   };
 }
 
 export async function tryResolvePendingFriend(
   user: User,
   body: string,
-): Promise<{ handled: true; reply: string; user: User } | { handled: false }> {
+): Promise<FriendHandledResult | { handled: false }> {
   const pending = user.pendingFriend;
   if (!pending) return { handled: false };
 
@@ -141,6 +180,7 @@ export async function tryResolvePendingFriend(
       handled: true,
       reply: `Dat lijkt geen geldig mobiel nummer. ${phonePrompt(pending.name)}`,
       user,
+      inviteFollowUps: [],
     };
   }
 
@@ -150,13 +190,21 @@ export async function tryResolvePendingFriend(
       handled: true,
       reply: "Er ging iets mis. Probeer opnieuw.",
       user,
+      inviteFollowUps: [],
     };
   }
 
   const dup = result.alreadyFavorite ? " Die stond al in je vriendenlijst." : "";
+  const followUp = await inviteFollowUpForNewFriend(
+    user.id,
+    result.name,
+    result.phone,
+    result.alreadyFavorite,
+  );
   return {
     handled: true,
     reply: `${result.name} toegevoegd (${result.phone}).${dup}`,
     user: updated,
+    inviteFollowUps: followUp ? [followUp] : [],
   };
 }

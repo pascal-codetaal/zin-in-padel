@@ -17,7 +17,6 @@ import {
   getFavoritePlayersForUser,
   type FavoritePlayerView,
 } from "~/lib/favorites-page.server";
-import { botOnboardingPrefillMessage } from "~/lib/bot-onboarding.server";
 import { formatPersonName } from "~/lib/person-name";
 
 export function meta({ loaderData }: Route.MetaArgs) {
@@ -73,7 +72,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     },
     players: favorites.ok ? favorites.players : [],
     inviteConfigured: Boolean(twilioFrom),
-    prefillMessage: botOnboardingPrefillMessage(),
     batchFeedback:
       batchAdded !== null && !Number.isNaN(batchAdded)
         ? { added: batchAdded, skipped: batchSkipped ?? 0 }
@@ -176,7 +174,6 @@ export default function MaatjesPage({
     user,
     players,
     inviteConfigured,
-    prefillMessage,
     batchFeedback,
   } = loaderData;
   const navigation = useNavigation();
@@ -184,9 +181,9 @@ export default function MaatjesPage({
 
   const isSubmitting = navigation.state !== "idle";
 
-  async function copyInvite(url: string, ref: string) {
+  async function copyInvite(text: string, ref: string) {
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(text);
       setCopiedRef(ref);
       window.setTimeout(() => setCopiedRef(null), 2000);
     } catch {
@@ -245,7 +242,8 @@ export default function MaatjesPage({
           </h1>
           <p className="mt-3 text-lg text-muted-foreground">
             Voeg spelers toe die je het liefst uitnodigt. Nog geen gebruiker van
-            PadelMatch? Deel de uitnodigingslink via WhatsApp.
+            Zin in Padel? Stuur ze zelf een bericht via WhatsApp — dat voelt
+            persoonlijker dan een automatische uitnodiging van ons.
           </p>
 
           {batchFeedback && (
@@ -340,7 +338,6 @@ export default function MaatjesPage({
                     key={player.ref}
                     player={player}
                     token={token}
-                    prefillMessage={prefillMessage}
                     isSubmitting={isSubmitting}
                     copiedRef={copiedRef}
                     onCopyInvite={copyInvite}
@@ -358,17 +355,15 @@ export default function MaatjesPage({
 function PlayerCard({
   player,
   token,
-  prefillMessage,
   isSubmitting,
   copiedRef,
   onCopyInvite,
 }: {
   player: FavoritePlayerView;
   token: string;
-  prefillMessage: string;
   isSubmitting: boolean;
   copiedRef: string | null;
-  onCopyInvite: (url: string, ref: string) => void;
+  onCopyInvite: (text: string, ref: string) => void;
 }) {
   return (
     <li className="rounded-2xl border border-border bg-card p-4 shadow-soft">
@@ -386,25 +381,27 @@ function PlayerCard({
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        {player.inviteUrl ? (
+        {player.inviteUrl && player.inviteForwardText ? (
           <>
-            <button
-              type="button"
-              onClick={() => onCopyInvite(player.inviteUrl!, player.ref)}
-              className="inline-flex h-9 items-center gap-2 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
-            >
-              <LinkIcon className="h-3.5 w-3.5" />
-              {copiedRef === player.ref ? "Gekopieerd!" : "Kopieer uitnodiging"}
-            </button>
             <a
               href={player.inviteUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex h-9 items-center gap-2 rounded-full border border-border bg-background px-4 text-sm font-medium transition hover:bg-secondary"
+              className="inline-flex h-9 items-center gap-2 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
             >
               <MessageIcon className="h-3.5 w-3.5" />
-              Open WhatsApp
+              Stuur via WhatsApp
             </a>
+            <button
+              type="button"
+              onClick={() =>
+                onCopyInvite(player.inviteForwardText!, player.ref)
+              }
+              className="inline-flex h-9 items-center gap-2 rounded-full border border-border bg-background px-4 text-sm font-medium transition hover:bg-secondary"
+            >
+              <LinkIcon className="h-3.5 w-3.5" />
+              {copiedRef === player.ref ? "Gekopieerd!" : "Kopieer bericht"}
+            </button>
           </>
         ) : player.isAppUser && player.optedIn ? (
           <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -426,13 +423,11 @@ function PlayerCard({
         </Form>
       </div>
 
-      {player.inviteUrl && (
+      {player.inviteUrl && player.inviteForwardText && (
         <p className="mt-3 text-xs text-muted-foreground">
-          De ontvanger opent WhatsApp en stuurt{" "}
-          <strong className="font-medium text-foreground">
-            {prefillMessage}
-          </strong>{" "}
-          om berichten te accepteren.
+          Je opent een chat met {player.name}. Het bericht staat klaar — controleer
+          het en tik op Verzenden. Zo komt de uitnodiging van jou, niet van ons
+          systeem.
         </p>
       )}
     </li>

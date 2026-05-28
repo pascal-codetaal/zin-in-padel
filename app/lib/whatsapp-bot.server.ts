@@ -6,6 +6,10 @@ import {
 } from "~/lib/db.server";
 import { messages } from "~/lib/bot-messages.nl";
 import {
+  formatFriendInviteFollowUpsMessage,
+  type FriendInviteFollowUp,
+} from "~/lib/friend-invite.server";
+import {
   tryAddFriendsFromSharedContacts,
   tryResolvePendingFriend,
 } from "~/lib/friends.server";
@@ -32,6 +36,19 @@ export type HandleIncomingOptions = {
 };
 
 const DONE_MARKER = "[DONE]";
+
+async function sendFriendInviteFollowUps(
+  userId: string,
+  followUps: FriendInviteFollowUp[],
+  deliverViaApi: boolean,
+): Promise<void> {
+  if (followUps.length === 0) return;
+  await sendWhatsAppMessage(
+    userId,
+    formatFriendInviteFollowUpsMessage(followUps),
+    { deliverViaApi },
+  );
+}
 
 /**
  * Injects WhatsApp session context so the agent can route JA/HELP/MATCH/etc.
@@ -149,9 +166,13 @@ export async function processInboundReply(
     if (shared.handled) {
       activeUser = shared.user;
       const outbound = shared.reply;
-      await sendWhatsAppMessage(activeUser.id, outbound, {
-        deliverViaApi: options.deliverReplyViaApi ?? false,
-      });
+      const deliverViaApi = options.deliverReplyViaApi ?? false;
+      await sendWhatsAppMessage(activeUser.id, outbound, { deliverViaApi });
+      await sendFriendInviteFollowUps(
+        activeUser.id,
+        shared.inviteFollowUps,
+        deliverViaApi,
+      );
       return outbound;
     }
   }
@@ -159,9 +180,13 @@ export async function processInboundReply(
   const pendingFriend = await tryResolvePendingFriend(activeUser, inbound.body);
   if (pendingFriend.handled) {
     const outbound = pendingFriend.reply;
-    await sendWhatsAppMessage(pendingFriend.user.id, outbound, {
-      deliverViaApi: options.deliverReplyViaApi ?? false,
-    });
+    const deliverViaApi = options.deliverReplyViaApi ?? false;
+    await sendWhatsAppMessage(pendingFriend.user.id, outbound, { deliverViaApi });
+    await sendFriendInviteFollowUps(
+      pendingFriend.user.id,
+      pendingFriend.inviteFollowUps,
+      deliverViaApi,
+    );
     return outbound;
   }
 
