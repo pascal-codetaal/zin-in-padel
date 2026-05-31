@@ -11,6 +11,7 @@ const emptyIndex: AudienceIndex = {
   declinedRefs: new Set(),
   friendRefs: new Set(),
   conflictingRefs: new Set(),
+  onCourtRefs: new Set(),
 };
 
 describe("excludeReason — universal (all phases)", () => {
@@ -28,6 +29,17 @@ describe("excludeReason — universal (all phases)", () => {
     expect(excludeReason(match, 2, user, "+32470000001", emptyIndex)).toBe(
       "opted-out",
     );
+  });
+
+  it("excludes players already on the court", () => {
+    const match = makeMatch();
+    const user = makeUser();
+    expect(
+      excludeReason(match, 1, user, "+32470000001", {
+        ...emptyIndex,
+        onCourtRefs: new Set(["+32470000001"]),
+      }),
+    ).toBe("already-on-court");
   });
 
   it("excludes already-invited refs", () => {

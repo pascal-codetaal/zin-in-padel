@@ -1,6 +1,10 @@
 -- Collapse MatchAcceptedPlayer into MatchInvitedPlayer and add cascade state.
 -- See docs/adr/0002-collapse-accepted-into-invited.md.
 
+-- gen_random_bytes() lives in pgcrypto; enable it for shadow DB replays (Supabase
+-- prod often has this already, but Prisma migrate dev starts from an empty DB).
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- 1. Extend MatchInvitedPlayer with the new fields. Token is nullable for the
 --    backfill step, then made NOT NULL + UNIQUE.
 ALTER TABLE "MatchInvitedPlayer"

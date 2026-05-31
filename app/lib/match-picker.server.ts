@@ -9,8 +9,19 @@ import {
   type MaatjeSlots,
   type MatchPickerPlayer,
 } from "~/lib/match-picker";
+import {
+  filterInvitableFriendRefs,
+  findPlayerRefByFuzzyName,
+  playerRefsOnCourtFromRoster,
+} from "~/lib/match-roster.server";
 import { phonesEquivalent } from "~/lib/phone-match.server";
 import type { Player, User } from "~/types/domain";
+
+export {
+  filterInvitableFriendRefs,
+  findPlayerRefByFuzzyName,
+  playerRefsOnCourtFromRoster,
+} from "~/lib/match-roster.server";
 
 export type { MaatjeSlots, MatchPickerPlayer } from "~/lib/match-picker";
 export { MAATJE_SLOT_COUNT, MAX_COURT_SLOTS } from "~/lib/match-picker";
@@ -72,13 +83,28 @@ export function maatjeSlotsFromDraft(
   for (const name of slotNames) {
     if (normalizeName(name) === orgKey) continue;
     if (i >= MAATJE_SLOT_COUNT) break;
-    const player = players.find(
-      (p) => normalizeName(p.name) === normalizeName(name),
-    );
-    slots[i] = player?.ref ?? null;
+    slots[i] = findPlayerRefByFuzzyName(name, players);
     i += 1;
   }
   return slots;
+}
+
+/** On-court refs for invite UI: fuzzy names + explicit court slot refs. */
+export function onCourtRefsForInviteStep(input: {
+  organizerName: string;
+  confirmedSlotNames: string[];
+  players: MatchPickerPlayer[];
+  slotRefs: MaatjeSlots;
+}): string[] {
+  const fromSlots = input.slotRefs.filter((r): r is string => r !== null);
+  return [
+    ...playerRefsOnCourtFromRoster({
+      organizerName: input.organizerName,
+      confirmedSlotNames: input.confirmedSlotNames,
+      players: input.players,
+      extraRefs: fromSlots,
+    }),
+  ];
 }
 
 /** Build confirmedSlotNames: organizer + filled slots in order. */

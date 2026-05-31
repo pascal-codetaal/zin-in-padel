@@ -76,6 +76,27 @@ model UserPreferredClub {
 }
 
 /* -------------------------------------------------------------------------- */
+/*  Waitlist (landing-page viability signups)                                 */
+/* -------------------------------------------------------------------------- */
+
+model WaitlistSignup {
+  id         String   @id
+  phone      String   @unique
+  tvMemberId Int
+  clubId     String?
+  consent    Boolean
+  createdAt  DateTime
+  updatedAt  DateTime
+
+  member TvMember @relation(fields: [tvMemberId], references: [id])
+  club   Club?    @relation(fields: [clubId], references: [id])
+
+  @@index([createdAt])
+  @@index([tvMemberId])
+  @@index([clubId])
+}
+
+/* -------------------------------------------------------------------------- */
 /*  Matches                                                                   */
 /* -------------------------------------------------------------------------- */
 
@@ -205,10 +226,73 @@ model Club {
   city     String
   province String?
 
-  playtomicAliases ClubPlaytomicAlias[]
-  preferredBy      UserPreferredClub[]
-  matches          Match[]
-  matchLocations   MatchClub[]
+  padelstatsClubId   Int?
+  padelstatsSyncedAt DateTime?
+  tvClubId           Int?
+  tvSyncedAt         DateTime?
+
+  playtomicAliases      ClubPlaytomicAlias[]
+  preferredBy           UserPreferredClub[]
+  matches               Match[]
+  matchLocations        MatchClub[]
+  padelstatsMemberships ClubPadelstatsMembership[]
+  tvMemberships         ClubTvMembership[]
+  waitlistSignups       WaitlistSignup[]
+}
+
+model PadelstatsMember {
+  id            Int      @id
+  name          String
+  gender        String
+  currentRank   Int
+  predictedRank Int
+  subCategory   String
+  createdAt     DateTime
+  updatedAt     DateTime
+
+  clubMemberships ClubPadelstatsMembership[]
+
+  @@index([name])
+}
+
+model ClubPadelstatsMembership {
+  clubId             String
+  padelstatsMemberId Int
+  importedAt         DateTime
+
+  club   Club             @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  member PadelstatsMember @relation(fields: [padelstatsMemberId], references: [id], onDelete: Cascade)
+
+  @@id([clubId, padelstatsMemberId])
+  @@index([padelstatsMemberId])
+}
+
+model TvMember {
+  id            Int      @id
+  name          String
+  gender        String
+  padelRanking  String?
+  currentRank   Int
+  subCategory   String
+  createdAt     DateTime
+  updatedAt     DateTime
+
+  clubMemberships ClubTvMembership[]
+  waitlistSignups WaitlistSignup[]
+
+  @@index([name])
+}
+
+model ClubTvMembership {
+  clubId     String
+  tvMemberId Int
+  importedAt DateTime
+
+  club   Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  member TvMember @relation(fields: [tvMemberId], references: [id], onDelete: Cascade)
+
+  @@id([clubId, tvMemberId])
+  @@index([tvMemberId])
 }
 
 model ClubPlaytomicAlias {

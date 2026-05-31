@@ -1,0 +1,2 @@
+export const MEMBER_SEARCH_MIN_QUERY_LENGTH = 5;
+export const MEMBER_SEARCH_LIMIT = 10;

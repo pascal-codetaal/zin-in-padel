@@ -1,0 +1,1652 @@
+[
+    {
+        "name": "A.T.C.ANZEGEM",
+        "id": "2032",
+        "city": "Anzegem"
+    },
+    {
+        "name": "AALST PADEL 2.0",
+        "id": "8188",
+        "city": "Aalst"
+    },
+    {
+        "name": "ACASA PADEL LAARNE",
+        "id": "8203",
+        "city": "Laarne"
+    },
+    {
+        "name": "ANDERLECHT TENNIS",
+        "id": "7055",
+        "city": "Anderlecht"
+    },
+    {
+        "name": "ANTWERP INDOOR PADEL CLUB",
+        "id": "0230",
+        "city": "Sint-Job-in-’t-Goor"
+    },
+    {
+        "name": "ANTWERP PADEL CLUB",
+        "id": "0215",
+        "city": "Berchem (Antwerpen)"
+    },
+    {
+        "name": "ARENAL BRUGGE",
+        "id": "2194",
+        "city": "Sint-Kruis (Brugge)"
+    },
+    {
+        "name": "ARENAL GRIMBERGEN",
+        "id": "7135",
+        "city": "Strombeek-Bever"
+    },
+    {
+        "name": "ARENAL MECHELEN",
+        "id": "0217",
+        "city": "Mechelen"
+    },
+    {
+        "name": "ARENAL WAREGEM",
+        "id": "2198",
+        "city": "Waregem"
+    },
+    {
+        "name": "ATP WEZEMAAL",
+        "id": "7059",
+        "city": "Wezemaal"
+    },
+    {
+        "name": "Arenal Antwerpen",
+        "id": "0248",
+        "city": "Antwerpen"
+    },
+    {
+        "name": "Arenal Bree",
+        "id": "5116",
+        "city": "Bree"
+    },
+    {
+        "name": "Arenal Hoogerheide",
+        "id": "0251",
+        "city": "Hoogerheide"
+    },
+    {
+        "name": "Arenal Knokke",
+        "id": "2221",
+        "city": "Westkapelle"
+    },
+    {
+        "name": "Arenal Lommel",
+        "id": "5115",
+        "city": "Lommel"
+    },
+    {
+        "name": "Arenal Meise",
+        "id": "7028",
+        "city": "Wolvertem"
+    },
+    {
+        "name": "Arenal Roeselare",
+        "id": "2033",
+        "city": "Roeselare"
+    },
+    {
+        "name": "Arenal Terneuzen",
+        "id": "8223",
+        "city": "Terneuzen"
+    },
+    {
+        "name": "Arenal Verrebroek",
+        "id": "8191",
+        "city": "Verrebroek"
+    },
+    {
+        "name": "B.T.K.",
+        "id": "0131",
+        "city": "Bonheiden"
+    },
+    {
+        "name": "BAUDOUIN PADEL CLUB",
+        "id": "7131",
+        "city": "Dilbeek"
+    },
+    {
+        "name": "BELL PADEL",
+        "id": "7133",
+        "city": "Roosdaal"
+    },
+    {
+        "name": "BONAIR SPORT",
+        "id": "8192",
+        "city": "Herzele"
+    },
+    {
+        "name": "BOTZ PADEL",
+        "id": "8194",
+        "city": "Lokeren"
+    },
+    {
+        "name": "BOTZ SNOA",
+        "id": "8204",
+        "city": "Sinaai-Waas"
+    },
+    {
+        "name": "BRUGHIA",
+        "id": "2200",
+        "city": "Sint-Kruis (Brugge)"
+    },
+    {
+        "name": "BRUSSELSE T.C.",
+        "id": "7003",
+        "city": "Wemmel"
+    },
+    {
+        "name": "Balls And More - Lille",
+        "id": "0249",
+        "city": "Lille"
+    },
+    {
+        "name": "Balls And More - Lubbeek",
+        "id": "7143",
+        "city": "Lubbeek"
+    },
+    {
+        "name": "Blue Lions Hockey, Tennis en Padel Club Tervuren",
+        "id": "7130",
+        "city": "Tervuren"
+    },
+    {
+        "name": "Bola Padel",
+        "id": "7142",
+        "city": "Asse"
+    },
+    {
+        "name": "Borgerweert",
+        "id": "0063",
+        "city": "Antwerpen"
+    },
+    {
+        "name": "Botz Jasmijn",
+        "id": "8096",
+        "city": "Sint-Niklaas"
+    },
+    {
+        "name": "C-Padel Indoor",
+        "id": "2217",
+        "city": "Ieper"
+    },
+    {
+        "name": "Center Court Brasschaat",
+        "id": "0245",
+        "city": "Brasschaat"
+    },
+    {
+        "name": "DE KLINKAERT",
+        "id": "0146",
+        "city": "Rumst"
+    },
+    {
+        "name": "DE MEREL SPORT",
+        "id": "0226",
+        "city": "Brecht"
+    },
+    {
+        "name": "DE PADELVER",
+        "id": "2208",
+        "city": "Elverdinge"
+    },
+    {
+        "name": "DROPSHOT BERLARE",
+        "id": "8033",
+        "city": "Berlare"
+    },
+    {
+        "name": "De Pelgrim Padelclub",
+        "id": "8184",
+        "city": "Lokeren"
+    },
+    {
+        "name": "DebAce",
+        "id": "2215",
+        "city": "Poperinge"
+    },
+    {
+        "name": "Depot 44",
+        "id": "7148",
+        "city": "Attenrode"
+    },
+    {
+        "name": "EEG Padel",
+        "id": "8224",
+        "city": "Zottegem"
+    },
+    {
+        "name": "EL CITADEL",
+        "id": "0240",
+        "city": "Borsbeek (Antw.)"
+    },
+    {
+        "name": "FITZONE PADEL",
+        "id": "8207",
+        "city": "Assenede"
+    },
+    {
+        "name": "Fit-Out Padelclub",
+        "id": "8221",
+        "city": "Destelbergen"
+    },
+    {
+        "name": "Fitlink Diepenbeek",
+        "id": "5119",
+        "city": "Diepenbeek"
+    },
+    {
+        "name": "G.T. TESSENDERLO",
+        "id": "5048",
+        "city": "Tessenderlo"
+    },
+    {
+        "name": "GANTOISE",
+        "id": "8010",
+        "city": "Gent"
+    },
+    {
+        "name": "GHISTELEHOF SPORTCOMPLEX",
+        "id": "2119",
+        "city": "Gistel"
+    },
+    {
+        "name": "GOLDEN POINT",
+        "id": "2197",
+        "city": "Middelkerke"
+    },
+    {
+        "name": "Garrincha Antwerpen Noord",
+        "id": "0241",
+        "city": "Antwerpen"
+    },
+    {
+        "name": "Garrincha Diegem",
+        "id": "7144",
+        "city": "Diegem"
+    },
+    {
+        "name": "Garrincha Gent",
+        "id": "8214",
+        "city": "Gent"
+    },
+    {
+        "name": "Garrincha Gent Arsenaal",
+        "id": "8225",
+        "city": "Gentbrugge"
+    },
+    {
+        "name": "Garrincha Kortrijk",
+        "id": "2212",
+        "city": "Heule"
+    },
+    {
+        "name": "Garrincha Zuid",
+        "id": "0221",
+        "city": "Hoboken (Antwerpen)"
+    },
+    {
+        "name": "Gemeente Riemst",
+        "id": "5117",
+        "city": "Riemst"
+    },
+    {
+        "name": "HAACHT - TILDONK TENNIS CLUB",
+        "id": "7049",
+        "city": "Haacht"
+    },
+    {
+        "name": "HANGAR PADEL CLUB",
+        "id": "8187",
+        "city": "Beveren-Waas"
+    },
+    {
+        "name": "HAPPY WAREGEM TENNIS & PADEL",
+        "id": "2075",
+        "city": "Waregem"
+    },
+    {
+        "name": "HERENTALSE",
+        "id": "0017",
+        "city": "Herentals"
+    },
+    {
+        "name": "HERSELTSE TENNISCLUB",
+        "id": "0207",
+        "city": "Herselt"
+    },
+    {
+        "name": "HH Padel",
+        "id": "7145",
+        "city": "Heverlee"
+    },
+    {
+        "name": "HTC ISCA",
+        "id": "7011",
+        "city": "Hoeilaart"
+    },
+    {
+        "name": "Hemix Padel&Beach Club",
+        "id": "0242",
+        "city": "Hemiksem"
+    },
+    {
+        "name": "Hercull Rooftop Padel Brugge",
+        "id": "2216",
+        "city": "Sint-Andries"
+    },
+    {
+        "name": "I.S.C. TENNIS & PADEL",
+        "id": "0087",
+        "city": "Oud-Turnhout"
+    },
+    {
+        "name": "IRIS KESSEL-LO T.C.",
+        "id": "7004",
+        "city": "Kessel-Lo (Leuven)"
+    },
+    {
+        "name": "Indoor Padel Club De Ridder",
+        "id": "0244",
+        "city": "Retie"
+    },
+    {
+        "name": "K. Excelsior Tennis- en Padelclub",
+        "id": "5004",
+        "city": "Hasselt"
+    },
+    {
+        "name": "K. MECHELSE T.H.C.",
+        "id": "0013",
+        "city": "Mechelen"
+    },
+    {
+        "name": "K. SCHELLE SPORT",
+        "id": "0205",
+        "city": "Schelle"
+    },
+    {
+        "name": "K. TONGERSE T.C.",
+        "id": "5007",
+        "city": "Tongeren"
+    },
+    {
+        "name": "K.G. WITTE BEER",
+        "id": "2027",
+        "city": "Sint-Kruis (Brugge)"
+    },
+    {
+        "name": "K.G.T.C. ZWEVEGEM",
+        "id": "2046",
+        "city": "Zwevegem"
+    },
+    {
+        "name": "K.T.C. AZALEA",
+        "id": "2024",
+        "city": "Brugge"
+    },
+    {
+        "name": "K.T.C. DE WITTE KAPROENEN",
+        "id": "8073",
+        "city": "Deinze"
+    },
+    {
+        "name": "K.T.C. MEULENBERG",
+        "id": "5008",
+        "city": "Houthalen-Helchteren"
+    },
+    {
+        "name": "K.T.C. SCHOTEN",
+        "id": "0031",
+        "city": "Schoten"
+    },
+    {
+        "name": "K.T.C. ST. GEORGES",
+        "id": "2016",
+        "city": "Kortrijk"
+    },
+    {
+        "name": "KALMTHOUTSE T.C.",
+        "id": "0191",
+        "city": "Kalmthout"
+    },
+    {
+        "name": "KGTP DEN BRUUL",
+        "id": "5005",
+        "city": "Geel"
+    },
+    {
+        "name": "KNOKKE ZOUTE T.C.",
+        "id": "2073",
+        "city": "Knokke-Heist"
+    },
+    {
+        "name": "KON. DEINZE T.C.",
+        "id": "8005",
+        "city": "Deinze"
+    },
+    {
+        "name": "KON. METALLIC T.C.",
+        "id": "5017",
+        "city": "Pelt"
+    },
+    {
+        "name": "KONINKLIJKE RUA T.C.",
+        "id": "0024",
+        "city": "Brasschaat"
+    },
+    {
+        "name": "KONINKLIJKE T.C. HEUSDEN",
+        "id": "5024",
+        "city": "Heusden-Zolder"
+    },
+    {
+        "name": "KONINKLIJKE TENNIS & PADEL PAAL",
+        "id": "5023",
+        "city": "Paal"
+    },
+    {
+        "name": "KONINKLIJKE WEZEL T.C.",
+        "id": "5016",
+        "city": "Mol"
+    },
+    {
+        "name": "KTC BERINGEN",
+        "id": "5001",
+        "city": "Beringen"
+    },
+    {
+        "name": "KTC ISIS",
+        "id": "2038",
+        "city": "Izegem"
+    },
+    {
+        "name": "KTC ISSERA NIEUWPOORT",
+        "id": "2029",
+        "city": "Nieuwpoort"
+    },
+    {
+        "name": "KTC RAPID WATERSCHEI",
+        "id": "5009",
+        "city": "Genk"
+    },
+    {
+        "name": "KTPC De Mangel",
+        "id": "5010",
+        "city": "Heusden-Zolder"
+    },
+    {
+        "name": "Koninklijke Soc Tennis & Padel",
+        "id": "0043",
+        "city": "Brasschaat"
+    },
+    {
+        "name": "Koninklijke Tennis Padel Lanaken",
+        "id": "5028",
+        "city": "Lanaken"
+    },
+    {
+        "name": "Koninklijke Tennis- en Padelclub Beukenhof",
+        "id": "8074",
+        "city": "Aalst"
+    },
+    {
+        "name": "LAGO CLUB PADEL BEVEREN",
+        "id": "8213",
+        "city": "Beveren-Waas"
+    },
+    {
+        "name": "LEEUWSE PADEL CLUB",
+        "id": "7137",
+        "city": "Sint-Pieters-Leeuw"
+    },
+    {
+        "name": "LIMA TENNIS & PADEL",
+        "id": "5014",
+        "city": "Maasmechelen"
+    },
+    {
+        "name": "LIVINUS PLANET",
+        "id": "8195",
+        "city": "Sint-Lievens-Houtem"
+    },
+    {
+        "name": "LOMMELSE T.C.",
+        "id": "5021",
+        "city": "Lommel"
+    },
+    {
+        "name": "LUDOVIEK Padel",
+        "id": "8131",
+        "city": "Knesselare"
+    },
+    {
+        "name": "M.T.C. LEOPOLDSBURG",
+        "id": "5002",
+        "city": "Leopoldsburg"
+    },
+    {
+        "name": "MERKSPLASSE T.C. VZW",
+        "id": "0066",
+        "city": "Merksplas"
+    },
+    {
+        "name": "MOLENBOS NIJLEN",
+        "id": "0084",
+        "city": "Nijlen"
+    },
+    {
+        "name": "MVP PADEL",
+        "id": "8197",
+        "city": "Evergem"
+    },
+    {
+        "name": "Meadow Club Kontich",
+        "id": "0238",
+        "city": "Kontich"
+    },
+    {
+        "name": "Mol Tennis en Padel Club",
+        "id": "5029",
+        "city": "Mol"
+    },
+    {
+        "name": "NEERPELTSE T.C.",
+        "id": "5041",
+        "city": "Pelt"
+    },
+    {
+        "name": "OPEN PADEL",
+        "id": "0223",
+        "city": "Ranst"
+    },
+    {
+        "name": "OPOETERSE TENNIS & PADEL CLUB",
+        "id": "5083",
+        "city": "Opoeteren"
+    },
+    {
+        "name": "ORSCAMP TENNIS & PADEL",
+        "id": "2100",
+        "city": "Oostkamp"
+    },
+    {
+        "name": "Ostend Tennis&Padel Club",
+        "id": "2013",
+        "city": "Oostende"
+    },
+    {
+        "name": "P&T DE VLOER",
+        "id": "7101",
+        "city": "Herent"
+    },
+    {
+        "name": "PACHANGA PADEL",
+        "id": "0211",
+        "city": "Muizen (Mechelen)"
+    },
+    {
+        "name": "PADEL ’74",
+        "id": "8211",
+        "city": "Sint-Laureins"
+    },
+    {
+        "name": "PADEL - EN TENNISCLUB KARTERIA DIEST",
+        "id": "5109",
+        "city": "Diest"
+    },
+    {
+        "name": "PADEL 2020",
+        "id": "8186",
+        "city": "Outer"
+    },
+    {
+        "name": "PADEL 360 TURNHOUT",
+        "id": "0220",
+        "city": "Turnhout"
+    },
+    {
+        "name": "PADEL 4U2 GENT",
+        "id": "8183",
+        "city": "Gentbrugge"
+    },
+    {
+        "name": "PADEL AIR",
+        "id": "0236",
+        "city": "Deurne (Antwerpen)"
+    },
+    {
+        "name": "PADEL BRAKEL",
+        "id": "8202",
+        "city": "Brakel"
+    },
+    {
+        "name": "PADEL CLUB VISION 21",
+        "id": "2195",
+        "city": "Roeselare"
+    },
+    {
+        "name": "PADEL DE VELDEN",
+        "id": "0233",
+        "city": "Oevel"
+    },
+    {
+        "name": "PADEL ERPE-MERE",
+        "id": "8199",
+        "city": "Erpe-Mere"
+    },
+    {
+        "name": "PADEL HET VELD",
+        "id": "0218",
+        "city": "Zandhoven"
+    },
+    {
+        "name": "PADEL IDEGEM",
+        "id": "8205",
+        "city": "Idegem"
+    },
+    {
+        "name": "PADEL KANTIEN",
+        "id": "8196",
+        "city": "Melsele"
+    },
+    {
+        "name": "PADEL KOOIKE",
+        "id": "0237",
+        "city": "Kapellen (Antw.)"
+    },
+    {
+        "name": "PADEL LEUGENBERG 2.0",
+        "id": "0232",
+        "city": "Ekeren (Antwerpen)"
+    },
+    {
+        "name": "PADEL METROPOOL ANTWERPEN",
+        "id": "0231",
+        "city": "Hoboken (Antwerpen)"
+    },
+    {
+        "name": "PADEL OSBROEK - AALST SPORT",
+        "id": "8198",
+        "city": "Aalst"
+    },
+    {
+        "name": "PADEL PAPILLON",
+        "id": "5114",
+        "city": "Kinrooi"
+    },
+    {
+        "name": "PADEL PASSE-PARTOUT",
+        "id": "2206",
+        "city": "Deerlijk"
+    },
+    {
+        "name": "PADEL PEER",
+        "id": "5110",
+        "city": "Peer"
+    },
+    {
+        "name": "PADEL PITTEM",
+        "id": "2209",
+        "city": "Pittem"
+    },
+    {
+        "name": "PADEL POLDERGOTE",
+        "id": "8189",
+        "city": "Zele"
+    },
+    {
+        "name": "PADEL SAFFELBERG",
+        "id": "7127",
+        "city": "Gooik"
+    },
+    {
+        "name": "PADEL WAASLAND",
+        "id": "8180",
+        "city": "Temse"
+    },
+    {
+        "name": "PADELCLUB 360 WESTERLO",
+        "id": "0224",
+        "city": "Westerlo"
+    },
+    {
+        "name": "PADELCLUB CIRCUIT ZOLDER",
+        "id": "5111",
+        "city": "Heusden-Zolder"
+    },
+    {
+        "name": "PADELCLUB HOUTHULST",
+        "id": "2199",
+        "city": "Houthulst"
+    },
+    {
+        "name": "PADELCLUB MAASEIK VZW",
+        "id": "5107",
+        "city": "Maaseik"
+    },
+    {
+        "name": "PADELCLUB MICHELSBERG",
+        "id": "2203",
+        "city": "Spiere-Helkijn"
+    },
+    {
+        "name": "PADELCLUB PAQUITO",
+        "id": "8206",
+        "city": "Erpe-Mere"
+    },
+    {
+        "name": "PADELCLUB TER EIKEN",
+        "id": "0107",
+        "city": "Edegem"
+    },
+    {
+        "name": "PADELLAND",
+        "id": "0229",
+        "city": "Antwerpen"
+    },
+    {
+        "name": "PADELLEBOOGSKE",
+        "id": "5098",
+        "city": "Genk"
+    },
+    {
+        "name": "PADELPOINT HULSTE",
+        "id": "2210",
+        "city": "Hulste"
+    },
+    {
+        "name": "PADELSCHOOL OPDEFORTEN",
+        "id": "8208",
+        "city": "Grembergen"
+    },
+    {
+        "name": "PARK 1800",
+        "id": "7126",
+        "city": "Vilvoorde"
+    },
+    {
+        "name": "PLATFORM PADEL",
+        "id": "2205",
+        "city": "Kortrijk"
+    },
+    {
+        "name": "PTC LOCHRISTI",
+        "id": "8157",
+        "city": "Zaffelare"
+    },
+    {
+        "name": "PUTSE T.C.",
+        "id": "0014",
+        "city": "Putte"
+    },
+    {
+        "name": "Padel 9000",
+        "id": "8219",
+        "city": "Sint-Amandsberg (Gent)"
+    },
+    {
+        "name": "Padel Club Melle",
+        "id": "8216",
+        "city": "Melle"
+    },
+    {
+        "name": "Padel Factory",
+        "id": "8218",
+        "city": "Aalter"
+    },
+    {
+        "name": "Padel Vorselaar",
+        "id": "0243",
+        "city": "Vorselaar"
+    },
+    {
+        "name": "Padel en Tennis BERKENBOS",
+        "id": "5055",
+        "city": "Heusden-Zolder"
+    },
+    {
+        "name": "Primero",
+        "id": "7150",
+        "city": "Lennik"
+    },
+    {
+        "name": "R.T.C. ST. NIKLAAS",
+        "id": "8012",
+        "city": "Sint-Niklaas"
+    },
+    {
+        "name": "RACING WETTEREN TENNIS EN PADEL",
+        "id": "8041",
+        "city": "Wetteren"
+    },
+    {
+        "name": "RADAR PADEL CLUB LOKEREN",
+        "id": "8210",
+        "city": "Lokeren"
+    },
+    {
+        "name": "REDZ HOOGSTRATEN",
+        "id": "0130",
+        "city": "Hoogstraten"
+    },
+    {
+        "name": "ROYAL ANTWERP T.C.",
+        "id": "0002",
+        "city": "Wommelgem"
+    },
+    {
+        "name": "ROYAL HASSELT YACHTING CLUB",
+        "id": "5011",
+        "city": "Hasselt"
+    },
+    {
+        "name": "RTC DE BEMPDEKENS",
+        "id": "0133",
+        "city": "Retie"
+    },
+    {
+        "name": "RUNKSTER T.C.",
+        "id": "5039",
+        "city": "Hasselt"
+    },
+    {
+        "name": "Reinaert Tennis & Padelclub Lokeren vzw",
+        "id": "8034",
+        "city": "Lokeren"
+    },
+    {
+        "name": "Royer Indoor Padel",
+        "id": "7141",
+        "city": "Dilbeek"
+    },
+    {
+        "name": "S.V. AARTSELAAR T.",
+        "id": "0061",
+        "city": "Aartselaar"
+    },
+    {
+        "name": "SHARP RECREAN",
+        "id": "8182",
+        "city": "Oudenaarde"
+    },
+    {
+        "name": "SMASH NEEROETEREN T.C.",
+        "id": "5032",
+        "city": "Neeroeteren"
+    },
+    {
+        "name": "SMASH TENNIS & PADELCLUB OEDELEM",
+        "id": "2120",
+        "city": "Beernem"
+    },
+    {
+        "name": "SOLLENBEEMD T.C. HALLE",
+        "id": "7030",
+        "city": "Halle"
+    },
+    {
+        "name": "SOLTO",
+        "id": "7136",
+        "city": "Tielt-Winge"
+    },
+    {
+        "name": "SPORTA HERK DE STAD T.C.",
+        "id": "5040",
+        "city": "Herk-de-Stad"
+    },
+    {
+        "name": "SPORTACULAIR IN.TERNATIONAL",
+        "id": "7128",
+        "city": "Ternat"
+    },
+    {
+        "name": "SPORTCENTER ’T BROEKSKEN",
+        "id": "8112",
+        "city": "Hamme (O.-Vl.)"
+    },
+    {
+        "name": "SPORTING HOVE T.C.",
+        "id": "0065",
+        "city": "Hove"
+    },
+    {
+        "name": "SPORTJOY",
+        "id": "8201",
+        "city": "Eeklo"
+    },
+    {
+        "name": "SPORTPASSIE",
+        "id": "5081",
+        "city": "Hoeselt"
+    },
+    {
+        "name": "STEPP",
+        "id": "0048",
+        "city": "Puurs-Sint-Amands"
+    },
+    {
+        "name": "Sportaculair Wielsbeke",
+        "id": "2219",
+        "city": "Wielsbeke"
+    },
+    {
+        "name": "Sportcenter De Reep",
+        "id": "8217",
+        "city": "Sint-Gillis-Waas"
+    },
+    {
+        "name": "T.C. ‘T LOBBEKE",
+        "id": "8076",
+        "city": "Maldegem"
+    },
+    {
+        "name": "T.C. ‘T SAS",
+        "id": "0078",
+        "city": "Lier"
+    },
+    {
+        "name": "T.C. AQUILA",
+        "id": "2185",
+        "city": "Wingene"
+    },
+    {
+        "name": "T.C. BACHTEN DE KUPE",
+        "id": "2165",
+        "city": "Veurne"
+    },
+    {
+        "name": "T.C. BASVELD",
+        "id": "5034",
+        "city": "Zonhoven"
+    },
+    {
+        "name": "T.C. BECKHAND",
+        "id": "8140",
+        "city": "Beveren-Waas"
+    },
+    {
+        "name": "T.C. BLANKENBERGE",
+        "id": "2001",
+        "city": "Blankenberge"
+    },
+    {
+        "name": "T.C. BLAUWE REGEN",
+        "id": "0080",
+        "city": "Mortsel"
+    },
+    {
+        "name": "T.C. BOLDERBERG",
+        "id": "5058",
+        "city": "Heusden-Zolder"
+    },
+    {
+        "name": "T.C. BOSTERHOUT",
+        "id": "2110",
+        "city": "Meulebeke"
+    },
+    {
+        "name": "T.C. BRABO",
+        "id": "0102",
+        "city": "Schilde"
+    },
+    {
+        "name": "T.C. DE CHALET",
+        "id": "0163",
+        "city": "Grobbendonk"
+    },
+    {
+        "name": "T.C. DE DAGERAAD",
+        "id": "0035",
+        "city": "Beerse"
+    },
+    {
+        "name": "T.C. DE LUSTHOVEN",
+        "id": "0182",
+        "city": "Arendonk"
+    },
+    {
+        "name": "T.C. DE MOL LEUVEN",
+        "id": "7034",
+        "city": "Leuven"
+    },
+    {
+        "name": "T.C. DE MOTE",
+        "id": "2157",
+        "city": "Koekelare"
+    },
+    {
+        "name": "T.C. DE PINTE",
+        "id": "8055",
+        "city": "De Pinte"
+    },
+    {
+        "name": "T.C. DE POLLEPEL TENNIS & SPORTS",
+        "id": "0060",
+        "city": "Duffel"
+    },
+    {
+        "name": "T.C. DE WEHZEL",
+        "id": "7056",
+        "city": "Elewijt"
+    },
+    {
+        "name": "T.C. DE ZWALUW",
+        "id": "0101",
+        "city": "Rumst"
+    },
+    {
+        "name": "T.C. DENDERLEEUW",
+        "id": "8082",
+        "city": "Denderleeuw"
+    },
+    {
+        "name": "T.C. DUINBERGEN",
+        "id": "2008",
+        "city": "Knokke-Heist"
+    },
+    {
+        "name": "T.C. ELEVEN",
+        "id": "8159",
+        "city": "Deinze"
+    },
+    {
+        "name": "T.C. EMBLEM",
+        "id": "0056",
+        "city": "Ranst"
+    },
+    {
+        "name": "T.C. FOR EVER",
+        "id": "8143",
+        "city": "Gavere"
+    },
+    {
+        "name": "T.C. GRAND SLAM TIENEN",
+        "id": "7115",
+        "city": "Tienen"
+    },
+    {
+        "name": "T.C. GYM OLYMPIADE",
+        "id": "0049",
+        "city": "Schoten"
+    },
+    {
+        "name": "T.C. HALEN DE ZWALUW",
+        "id": "5030",
+        "city": "Halen"
+    },
+    {
+        "name": "T.C. HEIVELD",
+        "id": "0185",
+        "city": "Sint-Katelijne-Waver"
+    },
+    {
+        "name": "T.C. HET ZEEN STERREBEEK",
+        "id": "7071",
+        "city": "Sterrebeek"
+    },
+    {
+        "name": "T.C. HOF TER BURST",
+        "id": "8126",
+        "city": "Lebbeke"
+    },
+    {
+        "name": "T.C. KIKSHAM",
+        "id": "0093",
+        "city": "Rijmenam"
+    },
+    {
+        "name": "T.C. KOKSIJDE",
+        "id": "2090",
+        "city": "Koksijde"
+    },
+    {
+        "name": "T.C. KORTEMARK",
+        "id": "2053",
+        "city": "Kortemark"
+    },
+    {
+        "name": "T.C. KROMVELD",
+        "id": "0128",
+        "city": "Bonheiden"
+    },
+    {
+        "name": "T.C. LAAGLAND",
+        "id": "0166",
+        "city": "Merksem (Antwerpen)"
+    },
+    {
+        "name": "T.C. LEIEMEERS V.Z.W.",
+        "id": "2068",
+        "city": "Kuurne"
+    },
+    {
+        "name": "T.C. LIERDE",
+        "id": "8023",
+        "city": "Lierde"
+    },
+    {
+        "name": "T.C. LOGAN",
+        "id": "2147",
+        "city": "Jabbeke"
+    },
+    {
+        "name": "T.C. LOVANIUM",
+        "id": "7044",
+        "city": "Leuven"
+    },
+    {
+        "name": "T.C. LOVENDEGEM",
+        "id": "8118",
+        "city": "Lovendegem"
+    },
+    {
+        "name": "T.C. LUMMEN",
+        "id": "5026",
+        "city": "Lummen"
+    },
+    {
+        "name": "T.C. MERELBEKE",
+        "id": "8057",
+        "city": "Merelbeke"
+    },
+    {
+        "name": "T.C. MOERBEKE",
+        "id": "8063",
+        "city": "Moerbeke-Waas"
+    },
+    {
+        "name": "T.C. NUCLEA",
+        "id": "5006",
+        "city": "Mol"
+    },
+    {
+        "name": "T.C. OLEN",
+        "id": "0099",
+        "city": "Olen"
+    },
+    {
+        "name": "T.C. PAJOTTENLAND",
+        "id": "7020",
+        "city": "Schepdaal"
+    },
+    {
+        "name": "T.C. PANORAMA",
+        "id": "7091",
+        "city": "Overijse"
+    },
+    {
+        "name": "T.C. PARC ASTRID",
+        "id": "2192",
+        "city": "De Haan"
+    },
+    {
+        "name": "T.C. PLAYERS",
+        "id": "8117",
+        "city": "Ninove"
+    },
+    {
+        "name": "T.C. RAFFIC II",
+        "id": "0176",
+        "city": "Antwerpen"
+    },
+    {
+        "name": "T.C. RANST",
+        "id": "0171",
+        "city": "Ranst"
+    },
+    {
+        "name": "T.C. SAVANTI",
+        "id": "0079",
+        "city": "Sint-Amands"
+    },
+    {
+        "name": "T.C. SETPOINT",
+        "id": "7053",
+        "city": "Londerzeel"
+    },
+    {
+        "name": "T.C. SMASH KERMT",
+        "id": "5047",
+        "city": "Kermt (Hasselt)"
+    },
+    {
+        "name": "T.C. SNAUWAERT KALMTHOUT",
+        "id": "0021",
+        "city": "Kalmthout"
+    },
+    {
+        "name": "T.C. SOKS",
+        "id": "8106",
+        "city": "Rupelmonde"
+    },
+    {
+        "name": "T.C. SPORTEC KRUISHOUTEM",
+        "id": "8115",
+        "city": "Kruishoutem"
+    },
+    {
+        "name": "T.C. ST-MICHIELS",
+        "id": "2031",
+        "city": "Sint-Michiels"
+    },
+    {
+        "name": "T.C. STABROEK",
+        "id": "0135",
+        "city": "Stabroek"
+    },
+    {
+        "name": "T.C. TOPSPIN",
+        "id": "8136",
+        "city": "Zele"
+    },
+    {
+        "name": "T.C. VICHTE",
+        "id": "2121",
+        "city": "Vichte"
+    },
+    {
+        "name": "T.C. WACHTEBEKE",
+        "id": "8065",
+        "city": "Wachtebeke"
+    },
+    {
+        "name": "T.C. WAREGEM GAVER",
+        "id": "2023",
+        "city": "Waregem"
+    },
+    {
+        "name": "T.C. WIMBLEDON",
+        "id": "5050",
+        "city": "Wilderen"
+    },
+    {
+        "name": "T.C. WINDEKIND - Windekind Sport BVBA",
+        "id": "0113",
+        "city": "Vosselaar"
+    },
+    {
+        "name": "T.C. WINTERSLAG",
+        "id": "5012",
+        "city": "Genk"
+    },
+    {
+        "name": "T.C. ZEDELGEM",
+        "id": "2086",
+        "city": "Zedelgem"
+    },
+    {
+        "name": "T.C. ZELEM",
+        "id": "5052",
+        "city": "Zelem"
+    },
+    {
+        "name": "T.C. ZEVENBERGEN",
+        "id": "0036",
+        "city": "Lier"
+    },
+    {
+        "name": "T.C. ZOTTEGEM",
+        "id": "8121",
+        "city": "Zottegem"
+    },
+    {
+        "name": "T.K. G.T. KEIHEUVEL",
+        "id": "5080",
+        "city": "Balen"
+    },
+    {
+        "name": "T.R.C. GROOT-BIJGAARDEN",
+        "id": "7002",
+        "city": "Groot-Bijgaarden"
+    },
+    {
+        "name": "TC DE MAENE",
+        "id": "2182",
+        "city": "Diksmuide"
+    },
+    {
+        "name": "TC DE WATERTOREN",
+        "id": "2190",
+        "city": "Menen"
+    },
+    {
+        "name": "TC DIEPENBROEK VZW",
+        "id": "7123",
+        "city": "Opwijk"
+    },
+    {
+        "name": "TC HECHTEL-EKSEL",
+        "id": "5077",
+        "city": "Hechtel-Eksel"
+    },
+    {
+        "name": "TC KATTEBERG BILZEN",
+        "id": "5108",
+        "city": "Bilzen"
+    },
+    {
+        "name": "TC L’ARMORIAL - DE PANNE",
+        "id": "2187",
+        "city": "De Panne"
+    },
+    {
+        "name": "TC O - TC IRIS",
+        "id": "5057",
+        "city": "Opglabbeek"
+    },
+    {
+        "name": "TC OASE",
+        "id": "0110",
+        "city": "Nijlen"
+    },
+    {
+        "name": "TC PEERDSBOS",
+        "id": "0039",
+        "city": "Schoten"
+    },
+    {
+        "name": "TC VELINA",
+        "id": "8105",
+        "city": "Geraardsbergen"
+    },
+    {
+        "name": "TC WUUSTWEZEL MOLENHEIDE",
+        "id": "0164",
+        "city": "Wuustwezel"
+    },
+    {
+        "name": "TENKIE PARK",
+        "id": "5035",
+        "city": "Hasselt"
+    },
+    {
+        "name": "TENNIS & PADEL DE NETHE",
+        "id": "5036",
+        "city": "Meerhout"
+    },
+    {
+        "name": "TENNIS & PADEL De Valk",
+        "id": "0159",
+        "city": "Rijkevorsel"
+    },
+    {
+        "name": "TENNIS 2000",
+        "id": "8148",
+        "city": "Aalst"
+    },
+    {
+        "name": "TENNIS EN PADELCLUB ROELANDSVELD",
+        "id": "7021",
+        "city": "Dilbeek"
+    },
+    {
+        "name": "TENNIS S.D.I. VZW",
+        "id": "7026",
+        "city": "Itterbeek"
+    },
+    {
+        "name": "TENNIS- & PADELCLUB BOCHOLT",
+        "id": "5087",
+        "city": "Bocholt"
+    },
+    {
+        "name": "TENNIS- & PADELCLUB FIELD",
+        "id": "5053",
+        "city": "Mol"
+    },
+    {
+        "name": "TENNIS- EN PADELCLUB AVELGEM",
+        "id": "2005",
+        "city": "Avelgem"
+    },
+    {
+        "name": "TENNIS- EN PADELCLUB D’HOEVE",
+        "id": "2081",
+        "city": "Kuurne"
+    },
+    {
+        "name": "TENNISCENTRUM ALKEN",
+        "id": "5103",
+        "city": "Alken"
+    },
+    {
+        "name": "TENNISCLUB CHALET RADAR",
+        "id": "8177",
+        "city": "Vloesberg"
+    },
+    {
+        "name": "TENNISCLUB MARIEKERKE",
+        "id": "0123",
+        "city": "Bornem"
+    },
+    {
+        "name": "TENNISCLUB PARK RONSE",
+        "id": "8039",
+        "city": "Ronse"
+    },
+    {
+        "name": "TENNISVERENIGING LOPPEM",
+        "id": "2141",
+        "city": "Loppem"
+    },
+    {
+        "name": "TENZA",
+        "id": "7012",
+        "city": "Zaventem"
+    },
+    {
+        "name": "TER BREME TENNISCLUB VZW",
+        "id": "0222",
+        "city": "Brecht"
+    },
+    {
+        "name": "THE PADEL POINT",
+        "id": "8212",
+        "city": "Sint-Niklaas"
+    },
+    {
+        "name": "THERMAE MERCHTEM",
+        "id": "7023",
+        "city": "Brussegem"
+    },
+    {
+        "name": "TODOS",
+        "id": "2207",
+        "city": "Sint-Michiels"
+    },
+    {
+        "name": "TP MOORSLEDE",
+        "id": "2191",
+        "city": "Moorslede"
+    },
+    {
+        "name": "TP OLYMPOS",
+        "id": "2040",
+        "city": "Wervik"
+    },
+    {
+        "name": "TP RUMBEKE",
+        "id": "2050",
+        "city": "Rumbeke"
+    },
+    {
+        "name": "TP YPER",
+        "id": "2021",
+        "city": "Ieper"
+    },
+    {
+        "name": "TPC AS",
+        "id": "5069",
+        "city": "As"
+    },
+    {
+        "name": "TPC BORNEM",
+        "id": "0053",
+        "city": "Bornem"
+    },
+    {
+        "name": "TPC DRIEHOEVEN",
+        "id": "5072",
+        "city": "Genk"
+    },
+    {
+        "name": "TPC DUVELS",
+        "id": "0140",
+        "city": null
+    },
+    {
+        "name": "TPC Eeklo",
+        "id": "8022",
+        "city": "Eeklo"
+    },
+    {
+        "name": "TPC KOERSEL",
+        "id": "5085",
+        "city": "Koersel"
+    },
+    {
+        "name": "TPC LAAKDAL VZW",
+        "id": "5038",
+        "city": "Laakdal"
+    },
+    {
+        "name": "TS KENTA",
+        "id": "8145",
+        "city": "Lede"
+    },
+    {
+        "name": "TTV TENNIS & PADEL TURNHOUT",
+        "id": "0025",
+        "city": "Turnhout"
+    },
+    {
+        "name": "Tennis & Padel Meerdaal",
+        "id": "7109",
+        "city": "Oud-Heverlee"
+    },
+    {
+        "name": "Tennis & Padel Netevallei",
+        "id": "5075",
+        "city": "Geel"
+    },
+    {
+        "name": "Tennis en Padel Club Ham",
+        "id": "5096",
+        "city": "Ham"
+    },
+    {
+        "name": "Tennis en Padel Pollare",
+        "id": "8059",
+        "city": "Pollare"
+    },
+    {
+        "name": "Tennis en Padel Westerlo",
+        "id": "0062",
+        "city": "Westerlo"
+    },
+    {
+        "name": "Tennis- en Padelclub ’t Spui",
+        "id": "0209",
+        "city": "Lier"
+    },
+    {
+        "name": "Tennis- en Padelclub De Jonge Wingerd",
+        "id": "7032",
+        "city": "Hoeilaart"
+    },
+    {
+        "name": "Tennis- en padelclub Smash Londerzeel",
+        "id": "7007",
+        "city": "Londerzeel"
+    },
+    {
+        "name": "TennisPadel NI&CO",
+        "id": "8070",
+        "city": "Drongen"
+    },
+    {
+        "name": "Ter Eiken Essen",
+        "id": "0239",
+        "city": "Essen"
+    },
+    {
+        "name": "The Court",
+        "id": "2220",
+        "city": "Torhout"
+    },
+    {
+        "name": "V.Z.W. T.C. DE KRIJTE",
+        "id": "8030",
+        "city": "Oostakker"
+    },
+    {
+        "name": "VAMOS",
+        "id": "2010",
+        "city": "Brugge"
+    },
+    {
+        "name": "VCM Padel",
+        "id": "0247",
+        "city": "Mortsel"
+    },
+    {
+        "name": "VILLA VITA PADEL",
+        "id": "8193",
+        "city": "Lochristi"
+    },
+    {
+        "name": "VIVA PADEL BERLAAR",
+        "id": "0234",
+        "city": "Berlaar"
+    },
+    {
+        "name": "VLAAMSE YACHTHAVEN NIEUWPOORT",
+        "id": "2201",
+        "city": "Nieuwpoort"
+    },
+    {
+        "name": "VOSSELAARSE TENNIS- EN PADELCLUB",
+        "id": "0100",
+        "city": "Vosselaar"
+    },
+    {
+        "name": "VZW TC STERRENBOS",
+        "id": "8172",
+        "city": "Nazareth"
+    },
+    {
+        "name": "VZW TENNISCLUB VIJVERHOF",
+        "id": "2007",
+        "city": "Damme"
+    },
+    {
+        "name": "VZW WIKINGS TENNIS EN PADEL CLUB",
+        "id": "2028",
+        "city": "Kortrijk"
+    },
+    {
+        "name": "WATEWY PADEL TIELT",
+        "id": "2202",
+        "city": "Tielt"
+    },
+    {
+        "name": "WINGFIELD",
+        "id": "0097",
+        "city": "Mechelen"
+    },
+    {
+        "name": "WOTEN",
+        "id": "7074",
+        "city": "Sint-Stevens-Woluwe"
+    },
+    {
+        "name": "YCFIVE SPORTS COMPLEX",
+        "id": "7134",
+        "city": "Vilvoorde"
+    }
+]

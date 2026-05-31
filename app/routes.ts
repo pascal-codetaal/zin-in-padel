@@ -2,6 +2,7 @@ import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
 export default [
   index("routes/_index.tsx"),
+  route("admin", "routes/admin._index.tsx"),
   route("maatjes/:token", "routes/maatjes.$token.tsx"),
   route("profiel/:token", "routes/profiel.$token.tsx", [
     index("routes/profiel.$token._index.tsx"),
@@ -21,12 +22,14 @@ export default [
     route("formaat", "routes/match.nieuw.$token.formaat.tsx"),
     route("uitnodigingen", "routes/match.nieuw.$token.uitnodigingen.tsx"),
     route("bevestigen", "routes/match.nieuw.$token.bevestigen.tsx"),
+    route("overzicht", "routes/match.nieuw.$token.overzicht.tsx"),
   ]),
   route("match/:token", "routes/match.$token.tsx"),
   route("i/:token", "routes/i.$token.tsx"),
   route("i/:token/nee", "routes/i.$token.nee.tsx"),
   route("dev/simulator", "routes/dev.simulator.tsx"),
   route("dev/cron-tick", "routes/dev.cron-tick.tsx"),
+  route("api/padelstats/members/search", "routes/api.padelstats.members.search.ts"),
   route("api/cron/cascade-tick", "routes/api.cron.cascade-tick.tsx"),
   route("api/cron/send-tick", "routes/api.cron.send-tick.tsx"),
   route("webhooks/twilio/whatsapp", "routes/webhooks.twilio.whatsapp.ts"),

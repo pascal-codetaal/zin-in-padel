@@ -9,8 +9,10 @@ import { requireDraftFor } from "~/lib/match-wizard.server";
 import { MAX_COURT_SLOTS } from "~/lib/match-picker";
 import {
   applyInvitedRefs,
+  filterInvitableFriendRefs,
   getMatchPickerPlayers,
   maatjeSlotsFromDraft,
+  onCourtRefsForInviteStep,
   parseInvitedRefsForm,
 } from "~/lib/match-picker.server";
 import { formatPersonName } from "~/lib/person-name";
@@ -35,13 +37,22 @@ export async function loader({ params }: Route.LoaderArgs) {
     draft.confirmedSlotNames,
     players,
   );
-  const onCourtRefs = slots.filter((r): r is string => r !== null);
+  const onCourtRefs = onCourtRefsForInviteStep({
+    organizerName,
+    confirmedSlotNames: draft.confirmedSlotNames,
+    players,
+    slotRefs: slots,
+  });
   const openSlots = Math.max(0, MAX_COURT_SLOTS - draft.confirmedSlotNames.length);
+  const invitedFriendRefs = filterInvitableFriendRefs(
+    draft.invitedFriendRefs,
+    new Set(onCourtRefs),
+  );
 
   return {
     players,
     onCourtRefs,
-    invitedFriendRefs: draft.invitedFriendRefs,
+    invitedFriendRefs,
     openSlots,
   };
 }
@@ -61,7 +72,12 @@ export async function action({ request, params }: Route.ActionArgs) {
     draft.confirmedSlotNames,
     players,
   );
-  const onCourtRefs = slots.filter((r): r is string => r !== null);
+  const onCourtRefs = onCourtRefsForInviteStep({
+    organizerName,
+    confirmedSlotNames: draft.confirmedSlotNames,
+    players,
+    slotRefs: slots,
+  });
   const invitedRefs = parseInvitedRefsForm(
     form,
     user.favoritePlayerRefs,

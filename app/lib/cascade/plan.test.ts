@@ -16,6 +16,7 @@ function emptyIndex(): AudienceIndex {
     declinedRefs: new Set(),
     friendRefs: new Set(),
     conflictingRefs: new Set(),
+    onCourtRefs: new Set(),
   };
 }
 

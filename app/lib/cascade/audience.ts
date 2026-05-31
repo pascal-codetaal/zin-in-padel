@@ -22,12 +22,14 @@ import type { FiringPhase } from "./types";
  *   lookup.
  * - `conflictingRefs`: player refs with an `accepted` or `pending` slot
  *   in another match overlapping `match`'s time window.
+ * - `onCourtRefs`: favorieten die al op de baan staan (✅ / fuzzy naam).
  */
 export type AudienceIndex = {
   alreadyInvitedRefs: Set<string>;
   declinedRefs: Set<string>;
   friendRefs: Set<string>;
   conflictingRefs: Set<string>;
+  onCourtRefs: Set<string>;
 };
 
 export type AudienceExclusionReason =
@@ -35,6 +37,7 @@ export type AudienceExclusionReason =
   | "opted-out"
   | "already-invited"
   | "declined-previously"
+  | "already-on-court"
   | "friends-only-preference"
   | "gender-mismatch"
   | "level-out-of-range"
@@ -100,6 +103,7 @@ export function excludeReason(
   if (!user.optedIn) return "opted-out";
   if (index.alreadyInvitedRefs.has(ref)) return "already-invited";
   if (index.declinedRefs.has(ref)) return "declined-previously";
+  if (index.onCourtRefs.has(ref)) return "already-on-court";
 
   if (phase === 1) {
     if (!index.friendRefs.has(ref)) return "not-on-friend-list";

@@ -13,7 +13,13 @@ import {
   matchRowToDomain,
   userRowToDomain,
 } from "~/lib/db.server";
+import {
+  getMatchPickerPlayers,
+  playerRefsOnCourtFromRoster,
+} from "~/lib/match-picker.server";
+import { formatPersonName } from "~/lib/person-name";
 import type { Match } from "~/types/domain";
+import { acceptedPlayerRefsOf } from "~/types/domain";
 import type { AudienceCandidate, AudienceIndex } from "./audience";
 import { planCascadeTick, type CascadePlan } from "./plan";
 import { dispatchOrEnqueueInvites } from "./dispatch.server";
@@ -158,11 +164,31 @@ async function loadCascadeContext(
     ? await findConflictingPlayerRefs(tx, match)
     : new Set<string>();
 
+  const organizerRow = await tx.user.findUnique({
+    where: { id: match.organizerId },
+  });
+  const players = await getMatchPickerPlayers(match.organizerId);
+  const organizerName = organizerRow
+    ? formatPersonName({
+        firstName: organizerRow.firstName,
+        lastName: organizerRow.lastName,
+        profileName: organizerRow.profileName,
+        fallback: "Organisator",
+      })
+    : "Organisator";
+  const onCourtRefs = playerRefsOnCourtFromRoster({
+    organizerName,
+    confirmedSlotNames: match.confirmedSlotNames,
+    players,
+    extraRefs: acceptedPlayerRefsOf(match),
+  });
+
   const index: AudienceIndex = {
     alreadyInvitedRefs,
     declinedRefs,
     friendRefs,
     conflictingRefs,
+    onCourtRefs,
   };
 
   return { match, candidates, index };

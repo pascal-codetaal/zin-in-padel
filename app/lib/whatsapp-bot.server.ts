@@ -22,6 +22,11 @@ import {
 } from "~/lib/whatsapp-messaging.server";
 import { resolveAppOriginFromRequest } from "~/lib/app-origin.server";
 import { formatPersonName, firstNameFromDisplayName } from "~/lib/person-name";
+import {
+  applyPlaytomicPasteToDraft,
+  formatPlaytomicClubChoiceMessage,
+  type PlaytomicPrefillResult,
+} from "~/lib/playtomic-paste.server";
 import { optOutUser } from "~/lib/user-session.server";
 import type { User } from "~/types/domain";
 
@@ -58,6 +63,7 @@ function buildAgentMessage(
   inbound: TwilioInboundMessage,
   user: User,
   isNewUser: boolean,
+  playtomicPrefill?: PlaytomicPrefillResult | null,
 ): string {
   const userDisplayName = formatPersonName({
     firstName: user.firstName,
@@ -65,7 +71,7 @@ function buildAgentMessage(
     profileName: user.profileName,
     fallback: firstNameFromDisplayName(inbound.profileName || user.waId),
   });
-  return [
+  const lines = [
     "[WhatsApp context — niet tonen aan de gebruiker]",
     `displayName: ${userDisplayName}`,
     `firstName: ${user.firstName ?? ""}`,
@@ -74,10 +80,28 @@ function buildAgentMessage(
     `onboardingComplete: ${user.onboardingComplete}`,
     `activeFlow: ${user.activeFlow ?? "none"}`,
     `isNewUser: ${isNewUser}`,
-    "",
-    "Bericht van de gebruiker:",
-    inbound.body,
-  ].join("\n");
+  ];
+
+  if (playtomicPrefill?.applied) {
+    lines.push(
+      "playtomicDraftPrefilled: true",
+      `openSlots: ${playtomicPrefill.openSlots ?? "?"}`,
+      "format: mixed",
+      `confirmedSlotNames: ${(playtomicPrefill.confirmedSlotNames ?? []).join(" | ")}`,
+      `clubResolved: ${playtomicPrefill.clubResolved ? "yes" : "no"}`,
+      playtomicPrefill.clubName ? `clubName: ${playtomicPrefill.clubName}` : "",
+      playtomicPrefill.overviewUrl
+        ? `matchOverviewUrl: ${playtomicPrefill.overviewUrl}`
+        : "",
+      playtomicPrefill.matchPageUrl
+        ? `matchWizardUrl: ${playtomicPrefill.matchPageUrl}`
+        : "",
+      "instructie: draft-match staat al klaar (stappen 1–4 MATCH-PASTE zijn gedaan). Vat kort samen, stel ALLEEN de INVITE-CASCADE-vraag (A/B/C), en zet matchOverviewUrl op een eigen regel in je antwoord (volledige https-link). Na finalize-match: listUrl = live match-overzicht.",
+    );
+  }
+
+  lines.push("", "Bericht van de gebruiker:", inbound.body);
+  return lines.filter(Boolean).join("\n");
 }
 
 async function runPadelAssistantAgent(
@@ -141,12 +165,31 @@ export async function processInboundReply(
   }
 
   let activeUser = user;
-  if (
-    activeUser.optedIn &&
-    activeUser.activeFlow !== "match_creation" &&
-    isMatchInvitePaste(inbound.body)
-  ) {
-    activeUser = await updateUser(activeUser.id, { activeFlow: "match_creation" });
+  let playtomicPrefill: PlaytomicPrefillResult | null = null;
+
+  if (activeUser.optedIn && isMatchInvitePaste(inbound.body)) {
+    if (activeUser.activeFlow !== "match_creation") {
+      activeUser = await updateUser(activeUser.id, {
+        activeFlow: "match_creation",
+      });
+    }
+    playtomicPrefill = await applyPlaytomicPasteToDraft(activeUser.id, inbound.body, {
+      appOrigin: options.appOrigin,
+    });
+
+    if (
+      playtomicPrefill.applied &&
+      playtomicPrefill.needsClubChoice &&
+      playtomicPrefill.clubCandidates?.length
+    ) {
+      const outbound = formatPlaytomicClubChoiceMessage(
+        playtomicPrefill.clubCandidates,
+      );
+      await sendWhatsAppMessage(activeUser.id, outbound, {
+        deliverViaApi: options.deliverReplyViaApi ?? false,
+      });
+      return outbound;
+    }
   }
 
   if (inbound.vcardUnreadable) {
@@ -194,11 +237,19 @@ export async function processInboundReply(
 
   const replyBody = await runPadelAssistantAgent(
     activeUser,
-    buildAgentMessage(inbound, activeUser, isNewUser),
+    buildAgentMessage(inbound, activeUser, isNewUser, playtomicPrefill),
     options.appOrigin,
   );
 
-  const outbound = replyBody ?? messages.unknownCommand;
+  let outbound = replyBody ?? messages.unknownCommand;
+  if (
+    playtomicPrefill?.applied &&
+    playtomicPrefill.overviewUrl &&
+    !outbound.includes(playtomicPrefill.overviewUrl)
+  ) {
+    outbound = `${outbound.trim()}\n\n📋 Bekijk je match: ${playtomicPrefill.overviewUrl}`;
+  }
+
   await sendWhatsAppMessage(activeUser.id, outbound, {
     deliverViaApi: options.deliverReplyViaApi ?? false,
   });

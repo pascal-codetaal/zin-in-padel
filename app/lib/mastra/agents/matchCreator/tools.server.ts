@@ -21,6 +21,12 @@ import {
 } from "~/lib/cascade/dispatch.server";
 import { resolveAppOrigin } from "~/lib/app-origin.server";
 import {
+  filterInvitableFriendRefs,
+  getMatchPickerPlayers,
+  playerRefsOnCourtFromRoster,
+} from "~/lib/match-picker.server";
+import { formatPersonName } from "~/lib/person-name";
+import {
   ALL_PADEL_LEVELS,
   acceptedPlayerRefsOf,
   formatMatchFormat,
@@ -341,7 +347,7 @@ export const upsertMatchDraftTool = createTool({
       .array(z.string())
       .optional()
       .describe(
-        "Lijst van player-refs (telefoonnummers) uit de favorietenlijst van de gebruiker.",
+        "Favorieten om uit te nodigen (player-refs). Spelers al op de baan (✅ / confirmedSlotNames) worden automatisch uitgesloten.",
       ),
     fallbackToLevelRange: z.boolean().optional(),
     fallbackLevelMin: padelLevelSchema.optional(),
@@ -377,10 +383,34 @@ export const upsertMatchDraftTool = createTool({
 
     const draft = await findOrCreateDraftMatch(userId);
 
-    // Validate invitedFriendRefs are actually in the user's favorites.
-    const refs =
-      input.invitedFriendRefs &&
-      input.invitedFriendRefs.filter((r) => user.favoritePlayerRefs.includes(r));
+    const players = await getMatchPickerPlayers(userId);
+    const organizerName = formatPersonName({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      profileName: user.profileName,
+      fallback: "Organisator",
+    });
+    const confirmedSlotNames =
+      input.confirmedSlotNames ?? draft.confirmedSlotNames;
+    const onCourtRefs = playerRefsOnCourtFromRoster({
+      organizerName,
+      confirmedSlotNames,
+      players,
+      extraRefs: acceptedPlayerRefsOf(draft),
+    });
+
+    let invitedFriendRefs: string[] | undefined;
+    if (input.invitedFriendRefs !== undefined) {
+      const favoritesOnly = input.invitedFriendRefs.filter((r) =>
+        user.favoritePlayerRefs.includes(r),
+      );
+      invitedFriendRefs = filterInvitableFriendRefs(favoritesOnly, onCourtRefs);
+    } else if (input.confirmedSlotNames !== undefined) {
+      invitedFriendRefs = filterInvitableFriendRefs(
+        draft.invitedFriendRefs,
+        onCourtRefs,
+      );
+    }
 
     const clubIds =
       input.clubIds ??
@@ -398,7 +428,7 @@ export const upsertMatchDraftTool = createTool({
         format: input.format,
         totalSlots: input.totalSlots,
         confirmedSlotNames: input.confirmedSlotNames,
-        invitedFriendRefs: refs,
+        ...(invitedFriendRefs !== undefined ? { invitedFriendRefs } : {}),
         fallbackToLevelRange: input.fallbackToLevelRange,
         fallbackLevelMin: input.fallbackLevelMin as PadelLevel | undefined,
         fallbackLevelMax: input.fallbackLevelMax as PadelLevel | undefined,

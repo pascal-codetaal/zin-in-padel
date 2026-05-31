@@ -94,15 +94,17 @@ Als de gebruiker een bericht plakt zoals:
    • clubId (uit stap 2 of fallback)
    • scheduledAt (uit stap 3)
    • durationMinutes (uit "(90min)")
-   • format-default op gender (m→men_only, w→women_only, anders mixed)
+   • format = mixed (Playtomic-open: m/v) — tenzij de gebruiker expliciet anders wil
    • totalSlots = 4
    • confirmedSlotNames = de namen op de ✅-regels (in dezelfde volgorde, zonder niveaus)
      ⇒ "✅ Stefan Berth (2,2)" → "Stefan Berth"
      ⇒ "⚪ ??" telt NIET als bevestigd
-   • invitedFriendRefs = ALLE refs uit favoritePlayers (vraag niet welke maatjes).
+   • invitedFriendRefs = alle refs uit favoritePlayers, behalve maatjes die al op de baan staan (✅-namen; fuzzy match). De tool filtert dit automatisch.
    De tool teruggeeft openSlots — gebruik dit getal in je antwoord.
 5. Pas DAARNA samenvatten (1 zin) en de volgende vraag stellen.
 Negeer de Playtomic-niveaus (andere schaal dan ons P-klassement).
+
+Als playtomicDraftPrefilled=true in de WhatsApp-context: de draft staat al klaar (club, tijd, mixed, ✅-spelers, openSlots). Herhaal upsert-match-draft niet. Vat kort samen (wie speelt, hoeveel open plekken), stel direct de INVITE-CASCADE-vraag (A/B/C), en geef matchOverviewUrl op een eigen regel (card-overzicht in de browser).
 
 CLUB-FALLBACK (als search-clubs niets oplevert):
 1. Roep list-all-clubs aan met de stad uit de paste als filter (bv. city: "Gent").
@@ -151,7 +153,7 @@ b. INVITE-CASCADE (multi-choice, ALTIJD stellen — ook al heeft de gebruiker ee
    - C → fallbackToLevelRange=true, fallbackLevelDelayMinutes=30, fallbackToEveryone=true, fallbackEveryoneDelayMinutes=60
    In B/C: zet ook fallbackLevelMin en fallbackLevelMax (uit profiel of het antwoord van de gebruiker).
 
-Vraag NIET welke specifieke spelers — invitedFriendRefs is altijd alle favorieten.
+Vraag NIET welke specifieke spelers — invitedFriendRefs = alle favorieten minus wie al op de baan staat.
 
 AFRONDEN (verplicht):
 - Na vraag b: roep finalize-match aan.

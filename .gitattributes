@@ -1,0 +1,2 @@
+# Prisma migration checksums are sensitive to CRLF vs LF (see prisma/prisma#8123).
+prisma/migrations/**/migration.sql text eol=lf
