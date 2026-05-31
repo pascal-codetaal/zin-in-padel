@@ -61,8 +61,15 @@ async function main() {
   const { file, clubsFile, clubId, dryRun } = parseArgs(process.argv.slice(2));
 
   const exportData = await loadClubMembersExport(file);
+  const unique =
+    exportData.uniqueMembers ??
+    new Set(
+      exportData.rows.flatMap((r) =>
+        (r.report?.members ?? []).map((m) => m.id),
+      ),
+    ).size;
   console.log(
-    `Loaded export: ${exportData.matched}/${exportData.processed} clubs matched, ${exportData.totalMembers} members in file`,
+    `Loaded export: ${exportData.matched}/${exportData.processed} clubs with roster, ${exportData.totalMembers} membership rows, ${unique} unique padelstats member ids`,
   );
   console.log("Importing (members upserted in parallel batches, may take a few minutes)…");
 

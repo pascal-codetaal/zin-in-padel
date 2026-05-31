@@ -97,12 +97,12 @@ export function PadelstatsMemberAutocomplete({ selected, onSelect }: Props) {
   const showPickHint = pickHint && needsPickFromList;
 
   const helperText = selected
-    ? null
+    ? "Geselecteerd — je WhatsApp-nummer koppelen we aan dit profiel op Tennis & Padel Vlaanderen."
     : showPickHint
-      ? "Klik op je naam in de lijst om te bevestigen."
+      ? "Selecteer jezelf in de TV-lijst. Vrije tekst is niet geldig."
       : canSearch && searched && !loading && members.length === 0 && !error
-        ? "Geen resultaat — pas je spelling aan of typ alleen je familienaam."
-        : `Typ minstens ${MEMBER_SEARCH_MIN_QUERY_LENGTH} tekens en kies je naam uit de lijst.`;
+        ? "Geen clublid gevonden bij TV. Controleer de spelling of zoek op familienaam."
+        : `Zoek in de TV-clubleden (min. ${MEMBER_SEARCH_MIN_QUERY_LENGTH} tekens) en selecteer je profiel.`;
 
   return (
     <div className="space-y-1.5">
@@ -110,7 +110,14 @@ export function PadelstatsMemberAutocomplete({ selected, onSelect }: Props) {
       <input type="hidden" name="clubId" value={selected?.clubId ?? ""} />
 
       <label className="block space-y-1.5">
-        <span className="text-sm font-medium">Je naam</span>
+        <span className="text-sm font-medium">
+          Zoek je profiel op Tennis & Padel Vlaanderen
+        </span>
+        <span className="block text-xs leading-relaxed text-muted-foreground">
+          Sta je ingeschreven bij een club? Zoek je naam in de officiële
+          clubledenlijst en selecteer jezelf. Zo koppelen we je WhatsApp-nummer
+          straks aan het juiste TV-profiel.
+        </span>
         <div className="relative">
           <input
             type="search"
@@ -150,7 +157,7 @@ export function PadelstatsMemberAutocomplete({ selected, onSelect }: Props) {
                   ? "border-primary/40 ring-2 ring-primary/15"
                   : "border-input"
             }`}
-            placeholder="Zoek en kies je naam uit de lijst"
+            placeholder="Zoek je naam zoals bij TV (bv. Van Hecke Pascal)"
           />
 
           {selected && (
@@ -172,7 +179,7 @@ export function PadelstatsMemberAutocomplete({ selected, onSelect }: Props) {
             <ul
               id={listId}
               role="listbox"
-              aria-label="Spelers"
+              aria-label="Clubleden Tennis en Padel Vlaanderen"
               className="absolute inset-x-0 top-full z-30 mt-1 max-h-60 overflow-y-auto rounded-xl border border-border bg-card py-1 shadow-soft"
             >
               {!loading && members.length > 0 && (
@@ -180,12 +187,12 @@ export function PadelstatsMemberAutocomplete({ selected, onSelect }: Props) {
                   className="border-b border-border/80 px-4 py-2 text-xs font-medium text-muted-foreground"
                   aria-hidden
                 >
-                  Kies je naam
+                  Selecteer je TV-profiel
                 </li>
               )}
               {loading && (
                 <li className="px-4 py-2 text-sm text-muted-foreground">
-                  Zoeken…
+                  Zoeken in TV-clubleden…
                 </li>
               )}
               {!loading &&
@@ -222,8 +229,8 @@ export function PadelstatsMemberAutocomplete({ selected, onSelect }: Props) {
               )}
               {!loading && !error && searched && members.length === 0 && (
                 <li className="px-4 py-2 text-sm text-muted-foreground">
-                  Geen spelers gevonden. Controleer de spelling of probeer alleen
-                  je familienaam.
+                  Geen clublid gevonden bij Tennis & Padel Vlaanderen.
+                  Controleer de spelling of zoek op familienaam.
                 </li>
               )}
             </ul>

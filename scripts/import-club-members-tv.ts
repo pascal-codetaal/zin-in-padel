@@ -76,7 +76,13 @@ async function main() {
 
   const prefix = dryRun ? "[dry-run] Would import" : "Imported";
   console.log(
-    `${prefix}: ${result.clubsCatalogImported} clubs (catalog), ${result.clubsTvLinked} TV club links, ${result.clubsWithRoster} with roster, ${result.membersUpserted} unique members, ${result.membershipsWritten} memberships (${result.exportErrors} export rows with errors)`,
+    `${prefix}: ${result.clubsCatalogImported} clubs (catalog), ${result.clubsTvLinked} TV links, ${result.clubsWithRoster} rosters`,
+  );
+  console.log(
+    `  ${result.membersUpserted} unique TvMember rows, ${result.membershipsWritten} ClubTvMembership rows (${result.exportErrors} export errors)`,
+  );
+  console.log(
+    "  Note: unique members ≠ membership rows (players in multiple clubs count once in TvMember).",
   );
 }
 

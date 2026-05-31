@@ -54,7 +54,14 @@ export function WaitlistSignupForm({
         </h2>
         {!compact && (
           <p className="mt-2 text-sm text-muted-foreground">
-            Zoek je naam en laat je WhatsApp-nummer achter.
+            Zoek en selecteer jezelf in de clubleden van Tennis & Padel
+            Vlaanderen, dan laat je je WhatsApp-nummer achter. Zo koppelen we
+            je nummer aan je TV-profiel.
+          </p>
+        )}
+        {compact && (
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+            Selecteer je TV-profiel en laat je WhatsApp-nummer achter.
           </p>
         )}
       </header>

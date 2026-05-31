@@ -14,7 +14,7 @@
  *   pnpm clubs:padelstats -- --all --out data/all-club-members.json
  */
 import "dotenv/config";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import {
   catalogClubToTvClub,
@@ -41,13 +41,52 @@ type ClubSyncRow = {
 
 const DEFAULT_TEST_CLUB_ID = "8221"; // Fit-Out Padelclub
 const DEFAULT_CONCURRENCY = 8;
+const DEFAULT_RETRY_CONCURRENCY = 3;
+const DEFAULT_RETRY_DELAY_MS = 500;
+const DEFAULT_OUT = resolve(process.cwd(), "data/all-club-members.json");
+
+type PadelstatsExport = {
+  processed: number;
+  matched: number;
+  totalMembers: number;
+  uniqueMembers: number;
+  rows: ClubSyncRow[];
+};
+
+function summarizeExport(rows: ClubSyncRow[]): PadelstatsExport {
+  const unique = new Set<number>();
+  let totalMembers = 0;
+  for (const row of rows) {
+    for (const m of row.report?.members ?? []) {
+      unique.add(m.id);
+      totalMembers += 1;
+    }
+  }
+  return {
+    processed: rows.length,
+    matched: rows.filter((r) => r.report && r.report.members.length > 0).length,
+    totalMembers,
+    uniqueMembers: unique.size,
+    rows,
+  };
+}
+
+async function loadPadelstatsExport(filePath: string): Promise<PadelstatsExport> {
+  const text = await readFile(filePath, "utf8");
+  const data = JSON.parse(text) as PadelstatsExport;
+  if (!Array.isArray(data.rows)) {
+    throw new Error(`Invalid export: missing rows in ${filePath}`);
+  }
+  return data;
+}
 
 function parseArgs(argv: string[]) {
   let clubId: string | null = null;
   let all = false;
+  let retryErrors = false;
   let padelstatsId: number | null = null;
   let limit: number | null = null;
-  let delayMs = 0;
+  let delayMs: number | null = null;
   let concurrency = DEFAULT_CONCURRENCY;
   let outPath: string | null = null;
   let quiet = false;
@@ -57,6 +96,8 @@ function parseArgs(argv: string[]) {
     const arg = argv[i]!;
     if (arg === "--all") {
       all = true;
+    } else if (arg === "--retry-errors") {
+      retryErrors = true;
     } else if (arg === "--concurrency" || arg === "-j") {
       concurrency = Number(argv[++i]);
     } else if (arg === "--club-id") {
@@ -78,6 +119,7 @@ function parseArgs(argv: string[]) {
 
 Options:
   --all                   Process every club in data/clubs.json (~330)
+  --retry-errors          Re-fetch failed rows from --out and merge back
   --club-id <id>          One catalog club from data/clubs.json (TV id / CLUBNR)
   --padelstats-id <id>    Skip search; fetch get_club_report directly
   --limit <n>             Process at most n clubs from the catalog
@@ -91,6 +133,7 @@ Examples:
   pnpm clubs:padelstats:test
   pnpm clubs:padelstats:all
   pnpm clubs:padelstats -- --club-id 8221
+  pnpm clubs:padelstats:retry
   pnpm clubs:padelstats -- --all -j 12 -o data/all-club-members.json -q
 `);
       process.exit(0);
@@ -100,6 +143,7 @@ Examples:
   return {
     clubId,
     all,
+    retryErrors,
     padelstatsId,
     limit,
     delayMs,
@@ -162,8 +206,12 @@ function logClubResult(
 
 async function syncOneClub(
   catalogClub: CatalogClub,
-  padelstatsIdOverride: number | null,
+  options: {
+    padelstatsIdOverride: number | null;
+    padelstatsClubHint: PadelstatsClubHit | null;
+  },
 ): Promise<ClubSyncRow> {
+  const { padelstatsIdOverride, padelstatsClubHint } = options;
   const tvClub = catalogClubToTvClub(catalogClub);
   const padelstatsSearch = padelstatsSearchTermFromClubName(catalogClub.name);
   const row: ClubSyncRow = {
@@ -190,7 +238,9 @@ async function syncOneClub(
 
     row.padelstatsCandidates = await searchPadelstatsClubs(padelstatsSearch);
 
-    row.padelstatsClub = matchPadelstatsClub(tvClub, row.padelstatsCandidates);
+    row.padelstatsClub =
+      matchPadelstatsClub(tvClub, row.padelstatsCandidates) ??
+      padelstatsClubHint;
     if (!row.padelstatsClub) {
       row.error = "no padelstats match";
       return row;
@@ -208,6 +258,7 @@ async function main() {
   const {
     clubId,
     all,
+    retryErrors,
     padelstatsId,
     limit,
     delayMs,
@@ -217,17 +268,49 @@ async function main() {
     clubsFile,
   } = parseArgs(process.argv.slice(2));
 
+  const targetOut = outPath ? resolve(outPath) : DEFAULT_OUT;
+  const delayMsResolved =
+    delayMs ?? (retryErrors ? DEFAULT_RETRY_DELAY_MS : 0);
   const poolSize =
     Number.isFinite(concurrency) && concurrency > 0
       ? Math.floor(concurrency)
-      : DEFAULT_CONCURRENCY;
+      : retryErrors
+        ? DEFAULT_RETRY_CONCURRENCY
+        : DEFAULT_CONCURRENCY;
 
   const catalog = await loadClubsCatalog(
     clubsFile ? resolve(clubsFile) : undefined,
   );
 
+  let existingExport: PadelstatsExport | null = null;
+  const padelstatsByCatalogId = new Map<string, PadelstatsClubHit | null>();
+
+  if (retryErrors) {
+    existingExport = await loadPadelstatsExport(targetOut);
+    const failed = existingExport.rows.filter((r) => r.error || !r.report);
+    if (failed.length === 0) {
+      console.error(`No failed rows in ${targetOut}; nothing to retry.`);
+      process.exit(0);
+    }
+    for (const row of failed) {
+      padelstatsByCatalogId.set(row.catalogClub.id, row.padelstatsClub);
+    }
+    console.error(`Retrying ${failed.length} clubs from ${targetOut}…`);
+  }
+
   let selected: CatalogClub[];
-  if (clubId) {
+  if (retryErrors && existingExport) {
+    const failedIds = new Set(
+      existingExport.rows
+        .filter((r) => r.error || !r.report)
+        .map((r) => r.catalogClub.id),
+    );
+    selected = catalog.filter((c) => failedIds.has(c.id));
+    if (selected.length === 0) {
+      console.error("Failed club ids not found in catalog.");
+      process.exit(1);
+    }
+  } else if (clubId) {
     const one = findCatalogClub(catalog, clubId);
     if (!one) {
       console.error(`Club id "${clubId}" not found in catalog (${catalog.length} clubs)`);
@@ -261,7 +344,7 @@ async function main() {
 
   if (!quiet) {
     console.error(
-      `Processing ${selected.length} club(s) (${catalog.length} in catalog), concurrency ${poolSize}${delayMs > 0 ? `, stagger ${delayMs}ms` : ""}…`,
+      `Processing ${selected.length} club(s) (${catalog.length} in catalog), concurrency ${poolSize}${delayMsResolved > 0 ? `, stagger ${delayMsResolved}ms` : ""}…`,
     );
   }
 
@@ -269,42 +352,37 @@ async function main() {
     selected,
     poolSize,
     async (catalogClub, index) => {
-      if (delayMs > 0) await sleep(delayMs);
-      const row = await syncOneClub(catalogClub, padelstatsId);
+      if (delayMsResolved > 0) await sleep(delayMsResolved);
+      const row = await syncOneClub(catalogClub, {
+        padelstatsIdOverride: padelstatsId,
+        padelstatsClubHint: padelstatsByCatalogId.get(catalogClub.id) ?? null,
+      });
       logClubResult(index, selected.length, row, quiet);
       return row;
     },
   );
 
-  const matched = rows.filter((r) => r.report != null).length;
-  const totalMembers = rows.reduce(
-    (sum, r) => sum + (r.report?.members.length ?? 0),
-    0,
-  );
+  let exportRows = rows;
+  if (retryErrors && existingExport) {
+    const byCatalogId = new Map(rows.map((r) => [r.catalogClub.id, r]));
+    exportRows = existingExport.rows.map(
+      (r) => byCatalogId.get(r.catalogClub.id) ?? r,
+    );
+  }
 
-  const summary = {
-    processed: rows.length,
-    matched,
-    totalMembers,
-    rows,
-  };
-
-  const unmatched = rows
-    .filter((r) => !r.report)
-    .map((r) => ({
-      id: r.catalogClub.id,
-      name: r.catalogClub.name,
-      error: r.error ?? "no match",
-    }));
+  const summary = summarizeExport(exportRows);
+  const unmatched = exportRows.filter((r) => !r.report);
 
   if (!quiet) {
     console.error(
-      `\nDone: ${matched}/${rows.length} clubs with members, ${totalMembers} players total.`,
+      `\nDone: ${summary.matched}/${summary.processed} clubs with roster, ${summary.totalMembers} membership rows, ${summary.uniqueMembers} unique member ids.`,
     );
     if (unmatched.length > 0) {
       console.error(`${unmatched.length} without roster:`);
       for (const u of unmatched.slice(0, 20)) {
-        console.error(`  - ${u.name} (${u.id}): ${u.error}`);
+        console.error(
+          `  - ${u.catalogClub.name} (${u.catalogClub.id}): ${u.error ?? "no match"}`,
+        );
       }
       if (unmatched.length > 20) {
         console.error(`  … and ${unmatched.length - 20} more`);
@@ -312,15 +390,17 @@ async function main() {
     }
   }
 
-  const json = JSON.stringify(summary, null, 2);
-
-  if (outPath) {
-    const abs = resolve(outPath);
-    await mkdir(dirname(abs), { recursive: true });
-    await writeFile(abs, json, "utf8");
-    if (!quiet) console.error(`Wrote ${abs}`);
-  } else if (!quiet || rows.length <= 1) {
-    console.log(json);
+  const writeOut = retryErrors || all || outPath;
+  if (writeOut) {
+    await mkdir(dirname(targetOut), { recursive: true });
+    await writeFile(
+      targetOut,
+      `${JSON.stringify(summary, null, 2)}\n`,
+      "utf8",
+    );
+    if (!quiet) console.error(`Wrote ${targetOut}`);
+  } else if (!quiet || exportRows.length <= 1) {
+    console.log(JSON.stringify(summary, null, 2));
   }
 }
 
