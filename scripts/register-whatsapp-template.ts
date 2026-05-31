@@ -2,8 +2,8 @@
  * Create a Content template in Twilio from repo JSON and submit for WhatsApp approval.
  *
  * Run:
- *   npx tsx scripts/register-whatsapp-template.ts invite_phase_1
- *   npx tsx scripts/register-whatsapp-template.ts invite_phase_1 --no-submit
+ *   npx tsx scripts/register-whatsapp-template.ts match-invite
+ *   npx tsx scripts/register-whatsapp-template.ts match-invite --no-submit
  *   npx tsx scripts/register-whatsapp-template.ts --all
  */
 import "dotenv/config";

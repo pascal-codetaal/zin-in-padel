@@ -12,7 +12,7 @@ export type InviteContentVariablesInput = {
 
 /**
  * Numeric keys match Twilio Content variable placeholders {{1}}, {{2}}, …
- * in `invites/twilio/phase-1.content.json`.
+ * in `invites/twilio/match-invite.content.json`.
  */
 export function buildInviteContentVariables(
   input: InviteContentVariablesInput,

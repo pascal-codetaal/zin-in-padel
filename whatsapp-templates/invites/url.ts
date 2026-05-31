@@ -4,7 +4,7 @@ export function resolveInviteTemplateBaseUrl(): string {
     process.env.BASE_URL ??
     process.env.APP_URL ??
     process.env.APP_ORIGIN ??
-    "https://zip.app"
+    "http://zin-in-padel.fly.dev"
   ).replace(/\/+$/, "");
 }
 
