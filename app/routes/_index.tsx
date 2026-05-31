@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Link, useNavigation } from "react-router";
+import { useNavigation } from "react-router";
 import { WaitlistSignupForm } from "~/components/waitlist-signup-form";
 import { parseWaitlistForm } from "~/lib/waitlist-form.server";
 import type { WaitlistFormError } from "~/lib/waitlist-form.shared";
@@ -112,11 +112,6 @@ function LandingHeader() {
           <a href="#faq" className="transition hover:text-foreground">
             FAQ
           </a>
-          {import.meta.env.DEV && (
-            <Link to="/admin" className="transition hover:text-foreground">
-              Admin
-            </Link>
-          )}
         </nav>
         <a
           href="#inschrijven"
@@ -210,10 +205,10 @@ function ChatPreview() {
       from: "bot" as const,
       text: "Zin in padel zaterdag 19u? Tom en Lisa (je maatjes) zijn als eerste uitgenodigd.",
     },
-    { from: "you" as const, text: "Top — P250 tot P350, heren in Gent." },
+    { from: "you" as const, text: "Top — 200 tot 400, heren in Gent." },
     {
       from: "bot" as const,
-      text: "Tom en Lisa kunnen niet. Ik zoek verder binnen P250–P350 bij je club…",
+      text: "Tom en Lisa kunnen niet. Ik zoek verder binnen 200–400 bij je club…",
     },
     {
       from: "bot" as const,
@@ -314,7 +309,7 @@ function ProductSection() {
     {
       step: "03",
       title: "Jij kiest het niveau",
-      text: "Stel in welk P-bereik mee mag — bijvoorbeeld P250–P350. De bot blijft binnen jouw grenzen.",
+      text: "Stel in welk niveau mee mag — bijvoorbeeld 200 tot 400. De bot blijft binnen jouw grenzen.",
     },
     {
       step: "04",
