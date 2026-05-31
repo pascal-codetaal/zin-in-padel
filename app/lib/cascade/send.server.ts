@@ -24,12 +24,11 @@ import {
 } from "~/lib/db.server";
 import { getClubsByIds } from "~/lib/clubs.server";
 import { sendWhatsAppMessage } from "~/lib/whatsapp-messaging.server";
-import { isTwilioConfigured, isTwilioMock } from "~/lib/twilio-config.server";
 import { findApprovedWhatsAppTemplate } from "~/lib/whatsapp-templates-db.server";
 import { formatScheduledAt } from "~/lib/match-defaults";
 import { formatInviteMessage } from "./format";
 import { buildInviteContentVariables } from "@whatsapp-templates/invites/variables";
-import { INVITE_TEMPLATE_KEY_BY_PHASE } from "@whatsapp-templates/registry";
+import { INVITE_WHATSAPP_TEMPLATE_ID } from "@whatsapp-templates/registry";
 import { openSlotsOf, type Match, type MatchInvite } from "~/types/domain";
 import type { FiringPhase } from "./types";
 
@@ -226,8 +225,30 @@ async function dispatchOne(args: {
     declineUrl,
   });
 
+  const templateRow = await findApprovedWhatsAppTemplate(
+    INVITE_WHATSAPP_TEMPLATE_ID,
+  );
+  const contentVariables = templateRow
+    ? buildInviteContentVariables({
+        match: matchView,
+        recipient,
+        organiser,
+        acceptUrl,
+        declineUrl,
+      })
+    : null;
+
   try {
-    await sendWhatsAppMessage(user.id, body, { deliverViaApi });
+    await sendWhatsAppMessage(user.id, body, {
+      deliverViaApi,
+      twilioTemplate:
+        templateRow?.contentSid && contentVariables
+          ? {
+              contentSid: templateRow.contentSid,
+              contentVariables,
+            }
+          : undefined,
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     await prisma.matchInvitedPlayer.update({

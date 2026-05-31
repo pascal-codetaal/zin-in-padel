@@ -23,7 +23,7 @@ Copy and Twilio Content payloads for outbound WhatsApp. **Registration state** (
 | `approvalStatus` | `draft` → `received` / `pending` → `approved` or `rejected` |
 | `rejectionReason` | From Twilio when Meta rejects |
 
-Cascade invites use an approved template when `approvalStatus === 'approved'` and `contentSid` is set; otherwise they fall back to plain text (`formatInviteMessage`).
+All cascade invites use the single approved `invite_phase_1` template when `approvalStatus === 'approved'` and `contentSid` is set; otherwise they fall back to plain text (`formatInviteMessage`).
 
 ## Commands
 

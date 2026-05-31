@@ -3,7 +3,7 @@
  *
  * Run:
  *   npx tsx scripts/register-whatsapp-template.ts invite_phase_1
- *   npx tsx scripts/register-whatsapp-template.ts invite_phase_2 --no-submit
+ *   npx tsx scripts/register-whatsapp-template.ts invite_phase_1 --no-submit
  *   npx tsx scripts/register-whatsapp-template.ts --all
  */
 import "dotenv/config";

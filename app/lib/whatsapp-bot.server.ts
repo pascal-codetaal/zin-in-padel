@@ -14,6 +14,8 @@ import {
   tryResolvePendingFriend,
 } from "~/lib/friends.server";
 import { mastra } from "~/lib/mastra";
+import { deleteAgentThread } from "~/lib/mastra/memory.server";
+import { isStaleOpenAiThreadError } from "~/lib/mastra/stale-thread.server";
 import { RequestContext } from "@mastra/core/request-context";
 import type { TwilioInboundMessage } from "~/lib/twilio.server";
 import {
@@ -104,6 +106,18 @@ function buildAgentMessage(
   return lines.filter(Boolean).join("\n");
 }
 
+async function finalizeAgentReply(
+  text: string,
+  userId: string,
+): Promise<string> {
+  let reply = text;
+  if (reply.includes(DONE_MARKER)) {
+    reply = reply.replace(DONE_MARKER, "").trim();
+    await updateUser(userId, { activeFlow: null });
+  }
+  return reply || messages.unknownCommand;
+}
+
 async function runPadelAssistantAgent(
   user: User,
   inboundBody: string,
@@ -113,18 +127,26 @@ async function runPadelAssistantAgent(
   const requestContext = new RequestContext();
   requestContext.set("userId", user.id);
   requestContext.set("appOrigin", resolveAppOriginFromRequest(appOrigin));
-  const result = await agent.generate(inboundBody, {
+  const generateOptions = {
     memory: { thread: user.id, resource: "padel-assistant" },
     requestContext,
-  });
+  };
 
-  let text = result.text ?? "";
-  if (text.includes(DONE_MARKER)) {
-    text = text.replace(DONE_MARKER, "").trim();
-    await updateUser(user.id, { activeFlow: null });
+  try {
+    const result = await agent.generate(inboundBody, generateOptions);
+    return finalizeAgentReply(result.text ?? "", user.id);
+  } catch (error) {
+    if (!isStaleOpenAiThreadError(error)) throw error;
+
+    console.warn(
+      "[padel-assistant] stale OpenAI thread memory — clearing and retrying",
+      { userId: user.id, waId: user.waId },
+    );
+    await deleteAgentThread(user.id);
+
+    const result = await agent.generate(inboundBody, generateOptions);
+    return finalizeAgentReply(result.text ?? "", user.id);
   }
-
-  return text || messages.unknownCommand;
 }
 
 /**
