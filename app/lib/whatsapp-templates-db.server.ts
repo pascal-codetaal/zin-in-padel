@@ -86,11 +86,11 @@ export async function loadContentPayload(
   const filePath = path.join(templatesRoot, def.contentSourcePath);
   const raw = await readFile(filePath, "utf8");
   const payload = JSON.parse(raw) as TwilioContentCreatePayload;
-  return patchInviteTemplateBaseUrl(payload);
+  return patchTemplateBaseUrl(payload);
 }
 
-/** Replace sample host in CTA URLs with BASE_URL / APP_ORIGIN at registration time. */
-function patchInviteTemplateBaseUrl(
+/** Replace sample host in any CTA URLs with BASE_URL / APP_ORIGIN at registration time. */
+function patchTemplateBaseUrl(
   payload: TwilioContentCreatePayload,
 ): TwilioContentCreatePayload {
   const base = resolveInviteTemplateBaseUrl();

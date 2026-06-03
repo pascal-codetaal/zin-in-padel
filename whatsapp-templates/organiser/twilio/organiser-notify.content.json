@@ -1,0 +1,20 @@
+{
+  "friendly_name": "zip_organiser_notify_v1",
+  "language": "nl",
+  "variables": {
+    "1": "Tom doet mee met je padelmatch bij Padel Vlaanderen Brussel (vrijdag 5 juni — 19:00). 🎾",
+    "2": "AAA111BBB222CCC333DDD4"
+  },
+  "types": {
+    "twilio/call-to-action": {
+      "body": "🎾 Update over je padelmatch\n\n{{1}}\n\nStuur STOP om geen berichten meer te ontvangen.",
+      "actions": [
+        {
+          "type": "URL",
+          "title": "Open match",
+          "url": "https://zip.app/match/{{2}}"
+        }
+      ]
+    }
+  }
+}
