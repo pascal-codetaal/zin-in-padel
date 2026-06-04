@@ -34,6 +34,8 @@ import {
   openSlotsOf,
   type PadelLevel,
 } from "~/types/domain";
+import { parseDutchDateTime } from "~/lib/dutch-datetime.server";
+import { formatScheduledAt } from "~/lib/match-defaults";
 
 /* ---------------------------------- Schemas ------------------------------- */
 
@@ -207,53 +209,13 @@ export const parseDutchDateTimeTool = createTool({
     note: z.string().optional(),
   }),
   execute: async ({ weekday, day, hour, minute }) => {
-    const now = new Date();
-    let target: Date | null = null;
-    let note: string | undefined;
-
-    if (typeof day === "number") {
-      // Find the next occurrence of `day` (today or up to ~62 days ahead).
-      for (let i = 0; i < 62; i++) {
-        const candidate = new Date(now);
-        candidate.setDate(now.getDate() + i);
-        if (candidate.getDate() === day) {
-          candidate.setHours(hour, minute, 0, 0);
-          if (candidate.getTime() <= now.getTime() && i === 0) continue;
-          if (weekday) {
-            const wIdx = dutchWeekdays.indexOf(weekday);
-            if (candidate.getDay() !== wIdx) {
-              continue;
-            }
-          }
-          target = candidate;
-          break;
-        }
-      }
-      if (!target && weekday) {
-        note =
-          "Geen volgende datum gevonden die dag-van-maand én weekdag combineert; probeer alleen op weekdag.";
-      }
-    }
-
-    if (!target && weekday) {
-      const wIdx = dutchWeekdays.indexOf(weekday);
-      const t = new Date(now);
-      const offset = (wIdx - t.getDay() + 7) % 7 || 7;
-      t.setDate(t.getDate() + offset);
-      t.setHours(hour, minute, 0, 0);
-      target = t;
-    }
-
-    if (!target) {
-      throw new Error("Geef minstens `day` of `weekday` mee.");
-    }
-
-    return {
-      iso: target.toISOString(),
-      iso8601: target.toISOString(),
-      weekdayResolved: dutchWeekdays[target.getDay()]!,
-      note,
-    };
+    const { iso, weekdayResolved, note } = parseDutchDateTime({
+      weekday,
+      day,
+      hour,
+      minute,
+    });
+    return { iso, iso8601: iso, weekdayResolved, note };
   },
 });
 
@@ -504,13 +466,7 @@ export const finalizeMatchTool = createTool({
         ? `bij ${clubs.map((c) => c.name).join(" / ")}`
         : null,
       finalized.scheduledAt
-        ? `op ${new Date(finalized.scheduledAt).toLocaleString("nl-BE", {
-            weekday: "long",
-            day: "numeric",
-            month: "long",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}`
+        ? `op ${formatScheduledAt(finalized.scheduledAt)}`
         : null,
     ].filter(Boolean);
 

@@ -1,3 +1,9 @@
+import {
+  getZonedParts,
+  zonedWallTimeToInstant,
+  zonedWeekday,
+} from "~/lib/timezone";
+
 const dutchWeekdays = [
   "zondag",
   "maandag",
@@ -23,29 +29,36 @@ export type ParseDutchDateTimeResult = {
   note?: string;
 };
 
-/** Next upcoming datetime from Dutch fragments (e.g. "vrijdag 29, 11:00"). */
+/** Next upcoming datetime from Dutch fragments (e.g. "vrijdag 29, 11:00"), in Brussels time. */
 export function parseDutchDateTime(
   input: ParseDutchDateTimeInput,
 ): ParseDutchDateTimeResult {
   const { weekday, day, hour, minute } = input;
   const now = new Date();
+  const today = getZonedParts(now);
+  // Calendar cursor anchored at Brussels "today", advanced in pure UTC-calendar
+  // space so day arithmetic never drifts across DST.
+  const base = Date.UTC(today.year, today.month - 1, today.day);
+  const weekdayIdx = weekday ? dutchWeekdays.indexOf(weekday) : -1;
   let target: Date | null = null;
   let note: string | undefined;
 
   if (typeof day === "number") {
     for (let i = 0; i < 62; i++) {
-      const candidate = new Date(now);
-      candidate.setDate(now.getDate() + i);
-      if (candidate.getDate() === day) {
-        candidate.setHours(hour, minute, 0, 0);
-        if (candidate.getTime() <= now.getTime() && i === 0) continue;
-        if (weekday) {
-          const wIdx = dutchWeekdays.indexOf(weekday);
-          if (candidate.getDay() !== wIdx) continue;
-        }
-        target = candidate;
-        break;
-      }
+      const cal = new Date(base);
+      cal.setUTCDate(cal.getUTCDate() + i);
+      if (cal.getUTCDate() !== day) continue;
+      if (weekday && cal.getUTCDay() !== weekdayIdx) continue;
+      const candidate = zonedWallTimeToInstant({
+        year: cal.getUTCFullYear(),
+        month: cal.getUTCMonth() + 1,
+        day: cal.getUTCDate(),
+        hour,
+        minute,
+      });
+      if (candidate.getTime() <= now.getTime()) continue;
+      target = candidate;
+      break;
     }
     if (!target && weekday) {
       note =
@@ -54,21 +67,27 @@ export function parseDutchDateTime(
   }
 
   if (!target && weekday) {
-    const wIdx = dutchWeekdays.indexOf(weekday);
-    const t = new Date(now);
-    const offset = (wIdx - t.getDay() + 7) % 7 || 7;
-    t.setDate(t.getDate() + offset);
-    t.setHours(hour, minute, 0, 0);
-    target = t;
+    const offset = (weekdayIdx - new Date(base).getUTCDay() + 7) % 7 || 7;
+    const cal = new Date(base);
+    cal.setUTCDate(cal.getUTCDate() + offset);
+    target = zonedWallTimeToInstant({
+      year: cal.getUTCFullYear(),
+      month: cal.getUTCMonth() + 1,
+      day: cal.getUTCDate(),
+      hour,
+      minute,
+    });
   }
 
   if (!target) {
     throw new Error("Geef minstens `day` of `weekday` mee.");
   }
 
+  const resolved = getZonedParts(target);
   return {
     iso: target.toISOString(),
-    weekdayResolved: dutchWeekdays[target.getDay()]!,
+    weekdayResolved:
+      dutchWeekdays[zonedWeekday(resolved.year, resolved.month, resolved.day)]!,
     note,
   };
 }
