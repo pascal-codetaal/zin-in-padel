@@ -19,7 +19,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 export function meta() {
   return [
-    { title: "Match-overzicht — PadelMatch" },
+    { title: "PadelMatch | Overzicht" },
     {
       name: "description",
       content: "Bekijk hoe je match is ingevuld voordat je uitnodigingen verstuurt",

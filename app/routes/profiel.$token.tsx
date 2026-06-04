@@ -128,21 +128,9 @@ export function useProfielData() {
   return value;
 }
 
-export function meta({ loaderData }: Route.MetaArgs) {
-  const name = loaderData
-    ? formatPersonName({
-        firstName: loaderData.user.firstName,
-        lastName: loaderData.user.lastName,
-        profileName: loaderData.user.profileName,
-        fallback: "speler",
-      })
-    : undefined;
+export function meta() {
   return [
-    {
-      title: name
-        ? `Profiel van ${name} — PadelMatch`
-        : "Mijn profiel — PadelMatch",
-    },
+    { title: "PadelMatch | Profiel" },
     {
       name: "description",
       content:

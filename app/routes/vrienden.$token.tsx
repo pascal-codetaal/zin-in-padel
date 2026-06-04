@@ -24,20 +24,9 @@ import { formatPersonName } from "~/lib/person-name";
 import { getReferralShareForUser } from "~/lib/referrals.server";
 import { REFERRAL_CAMPAIGN } from "~/lib/referrals.shared";
 
-export function meta({ loaderData }: Route.MetaArgs) {
-  const name = loaderData
-    ? formatPersonName({
-        firstName: loaderData.user.firstName,
-        lastName: loaderData.user.lastName,
-        profileName: loaderData.user.profileName,
-      })
-    : undefined;
+export function meta() {
   return [
-    {
-      title: name
-        ? `Vrienden van ${name} — PadelMatch`
-        : "Mijn vrienden — PadelMatch",
-    },
+    { title: "PadelMatch | Vrienden" },
     {
       name: "description",
       content: "Beheer je voorkeursspelers en nodig ze uit via WhatsApp",

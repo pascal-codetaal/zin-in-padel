@@ -69,21 +69,8 @@ type MatchCardData = {
   canSkipPhase: boolean;
 };
 
-export function meta({ loaderData }: Route.MetaArgs) {
-  const name = loaderData
-    ? formatPersonName({
-        firstName: loaderData.firstName,
-        lastName: loaderData.lastName,
-        profileName: loaderData.profileName,
-      })
-    : undefined;
-  return [
-    {
-      title: name
-        ? `Matches van ${name} — PadelMatch`
-        : "Mijn matches — PadelMatch",
-    },
-  ];
+export function meta() {
+  return [{ title: "PadelMatch | Matchen" }];
 }
 
 export async function loader({ request, params }: Route.LoaderArgs) {

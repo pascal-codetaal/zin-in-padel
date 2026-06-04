@@ -137,21 +137,9 @@ export function useMatchWizardData() {
   return value;
 }
 
-export function meta({ loaderData }: Route.MetaArgs) {
-  const name = loaderData
-    ? formatPersonName({
-        firstName: loaderData.organizer.firstName,
-        lastName: loaderData.organizer.lastName,
-        profileName: loaderData.organizer.profileName,
-        fallback: "speler",
-      })
-    : undefined;
+export function meta() {
   return [
-    {
-      title: name
-        ? `Nieuwe match van ${name} — PadelMatch`
-        : "Nieuwe match — PadelMatch",
-    },
+    { title: "PadelMatch | Nieuwe match" },
     {
       name: "description",
       content: "Plan een nieuwe padel-match en nodig spelers uit",
