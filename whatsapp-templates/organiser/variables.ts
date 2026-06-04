@@ -1,8 +1,8 @@
 export type OrganiserNotifyContentVariablesInput = {
   /** Fully-rendered Dutch notice line (see `organiser/notify.ts`). */
   body: string;
-  /** Organiser manage token; drives the `/match/{{2}}` CTA deep link. */
-  matchToken: string;
+  /** Relative match path after `/match/`, e.g. `{manageToken}/{matchId}`. */
+  matchPath: string;
 };
 
 /**
@@ -14,6 +14,6 @@ export function buildOrganiserNotifyContentVariables(
 ): Record<string, string> {
   return {
     "1": input.body,
-    "2": input.matchToken,
+    "2": input.matchPath,
   };
 }

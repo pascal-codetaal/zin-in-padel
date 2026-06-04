@@ -3,7 +3,7 @@
   "language": "nl",
   "variables": {
     "1": "Tom doet mee met je padelmatch bij Padel Vlaanderen Brussel (vrijdag 5 juni — 19:00). 🎾",
-    "2": "AAA111BBB222CCC333DDD4"
+    "2": "AAA111BBB222CCC333DDD4/match-123"
   },
   "types": {
     "twilio/call-to-action": {

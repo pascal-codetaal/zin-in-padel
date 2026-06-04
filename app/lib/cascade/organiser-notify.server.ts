@@ -4,9 +4,10 @@
  *
  * Delivers via Twilio (`deliverViaApi: true`). When the `organiser-notify`
  * template is approved, the rendered notice text is sent as Content variable
- * {{1}} with the manage token as {{2}} (so it works outside the 24h session
- * window). Until approval lands, `findApprovedWhatsAppTemplate` returns null
- * and the send falls back to freeform — identical to the cascade invite path.
+ * {{1}} with `{manageToken}/{matchId}` as {{2}} (so it works outside the 24h
+ * session window). Until approval lands, `findApprovedWhatsAppTemplate`
+ * returns null and the send falls back to freeform — identical to the cascade
+ * invite path.
  *
  * Match-detail link is built from `BASE_URL` + organiser.manageToken so the
  * organiser can tap straight through to the roster panel.
@@ -75,6 +76,7 @@ export async function notifyOrganiser(input: {
       : "je match";
   const when = formatScheduledAt(match.scheduledAt);
   const matchToken = organiser.manageToken;
+  const matchPath = `${matchToken}/${match.id}`;
   const matchUrl = `${getBaseUrl()}/match/${matchToken}/${match.id}`;
 
   const templateRow = await findApprovedWhatsAppTemplate(
@@ -96,7 +98,7 @@ export async function notifyOrganiser(input: {
             contentSid: templateRow.contentSid,
             contentVariables: buildOrganiserNotifyContentVariables({
               body: line,
-              matchToken,
+              matchPath,
             }),
           }
         : undefined,
