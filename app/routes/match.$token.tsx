@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { data, Link, redirect, useFetcher } from "react-router";
+import { PlayerAppHeader } from "~/components/player-app-header";
+import { formatPersonName } from "~/lib/person-name";
 import {
   findMatchesByOrganizer,
   findUserByManageToken,
@@ -17,7 +19,6 @@ import {
   type PadelLevel,
 } from "~/types/domain";
 import { displayFriendName } from "~/lib/friend-name.server";
-import { formatPersonName } from "~/lib/person-name";
 import {
   addConfirmedSlotToMatch,
   cancelMatchAsOrganiser,
@@ -250,29 +251,18 @@ export async function action({ request, params }: Route.ActionArgs) {
 }
 
 export default function MatchesList({ loaderData }: Route.ComponentProps) {
-  const { token, matches, createdId } = loaderData;
+  const { token, matches, createdId, firstName, lastName, profileName } =
+    loaderData;
+  const displayName = formatPersonName({
+    firstName,
+    lastName,
+    profileName,
+    fallback: "speler",
+  });
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-3xl items-center justify-between gap-3 px-4 sm:px-6">
-          <Link
-            to={`/maatjes/${token}`}
-            className="flex items-center gap-2 font-display text-base font-bold"
-          >
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-hero text-primary-foreground shadow-glow">
-              <BallIcon className="h-3.5 w-3.5" />
-            </span>
-            Mijn matches
-          </Link>
-          <Link
-            to={`/maatjes/${token}`}
-            className="text-xs font-medium text-muted-foreground transition hover:text-foreground"
-          >
-            Vrienden →
-          </Link>
-        </div>
-      </header>
+      <PlayerAppHeader token={token} displayName={displayName} />
 
       <main className="mx-auto max-w-3xl px-4 pb-32 pt-6 sm:px-6">
         {createdId && (
@@ -727,25 +717,5 @@ function FixedNewMatchFooter({ token }: { token: string }) {
         </div>
       </div>
     </div>
-  );
-}
-
-function BallIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <circle cx="12" cy="12" r="9" />
-      <path d="M5.4 6.2C8.6 8.6 8.6 15.4 5.4 17.8" />
-      <path d="M18.6 6.2c-3.2 2.4-3.2 9.2 0 11.6" />
-    </svg>
   );
 }

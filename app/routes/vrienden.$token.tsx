@@ -8,6 +8,7 @@ import {
   useNavigation,
 } from "react-router";
 import { AddFromContacts } from "~/components/add-from-contacts";
+import { PlayerAppHeader } from "~/components/player-app-header";
 import type { Route } from "./+types/vrienden.$token";
 import {
   findUserByManageToken,
@@ -197,6 +198,12 @@ export default function MaatjesPage({
   const [copiedRef, setCopiedRef] = useState<string | null>(null);
 
   const isSubmitting = navigation.state !== "idle";
+  const displayName = formatPersonName({
+    firstName: user.firstName,
+    lastName: user.lastName,
+    profileName: user.profileName,
+    fallback: "speler",
+  });
 
   async function copyInvite(text: string, ref: string) {
     try {
@@ -210,39 +217,7 @@ export default function MaatjesPage({
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-6">
-          <Link
-            to="/"
-            className="flex items-center gap-2 font-display text-lg font-bold"
-          >
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-hero text-primary-foreground shadow-glow">
-              <MessageIcon className="h-4 w-4" />
-            </span>
-            PadelMatch
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link
-              to={`/match/${token}`}
-              className="text-sm font-medium text-muted-foreground transition hover:text-foreground"
-            >
-              Matches
-            </Link>
-            <Link
-              to={`/match/nieuw/${token}`}
-              className="text-sm font-medium text-accent-foreground transition hover:text-foreground"
-            >
-              Match aanmaken
-            </Link>
-            <Link
-              to={`/profiel/${token}`}
-              className="text-sm font-medium text-muted-foreground transition hover:text-foreground"
-            >
-              Profiel →
-            </Link>
-          </div>
-        </div>
-      </header>
+      <PlayerAppHeader token={token} displayName={displayName} />
 
       <main className="relative mx-auto max-w-3xl px-6 py-10">
         <div className="pointer-events-none absolute inset-0 bg-gradient-radial" />

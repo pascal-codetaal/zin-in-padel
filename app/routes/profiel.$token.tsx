@@ -6,6 +6,7 @@ import {
   useRouteLoaderData,
 } from "react-router";
 import type { Route } from "./+types/profiel.$token";
+import { PlayerAppHeader } from "~/components/player-app-header";
 import { findUserByManageToken } from "~/lib/db.server";
 import { isProfielStepComplete } from "~/lib/profiel-completion";
 import { formatPersonName } from "~/lib/person-name";
@@ -156,33 +157,22 @@ export default function ProfielLayout({ loaderData }: Route.ComponentProps) {
   const { token, user } = loaderData;
   const location = useLocation();
   const currentSlug = currentStepFromPath(location.pathname);
+  const displayName = formatPersonName({
+    firstName: user.firstName,
+    lastName: user.lastName,
+    profileName: user.profileName,
+    fallback: "speler",
+  });
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 pt-3 sm:px-6">
-          <Link
-            to={`/profiel/${token}`}
-            className="flex items-center gap-2 font-display text-base font-bold"
-          >
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-hero text-primary-foreground shadow-glow">
-              <MessageIcon className="h-3.5 w-3.5" />
-            </span>
-            PadelMatch
-          </Link>
-          <Link
-            to={`/maatjes/${token}`}
-            className="text-xs font-medium text-muted-foreground transition hover:text-foreground"
-          >
-            Vrienden →
-          </Link>
-        </div>
+      <PlayerAppHeader token={token} displayName={displayName}>
         {currentSlug !== null && (
-          <div className="mx-auto max-w-3xl px-4 pb-3 pt-3 sm:px-6">
+          <div className="mx-auto max-w-3xl px-4 pb-3 pt-1 sm:px-6">
             <Stepper user={user} currentSlug={currentSlug} token={token} />
           </div>
         )}
-      </header>
+      </PlayerAppHeader>
 
       <main className="mx-auto max-w-3xl px-4 pb-32 pt-6 sm:px-6">
         <Outlet />
@@ -298,24 +288,6 @@ function StepBadge({ state, index }: { state: StepState; index: number }) {
 }
 
 /* ---------- Icons ---------- */
-
-function MessageIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
-    </svg>
-  );
-}
 
 function CheckIcon({
   className,

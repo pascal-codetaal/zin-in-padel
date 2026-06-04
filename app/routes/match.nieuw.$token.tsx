@@ -6,6 +6,7 @@ import {
   useRouteLoaderData,
 } from "react-router";
 import type { Route } from "./+types/match.nieuw.$token";
+import { PlayerAppHeader } from "~/components/player-app-header";
 import { findUserByManageToken } from "~/lib/db.server";
 import { formatPersonName } from "~/lib/person-name";
 import type { Match, User } from "~/types/domain";
@@ -161,36 +162,25 @@ export function meta({ loaderData }: Route.MetaArgs) {
 /* ---------- Layout ---------- */
 
 export default function MatchNieuwLayout({ loaderData }: Route.ComponentProps) {
-  const { token } = loaderData;
+  const { token, organizer } = loaderData;
   const location = useLocation();
   const currentSlug = currentStepFromPath(location.pathname);
+  const displayName = formatPersonName({
+    firstName: organizer.firstName,
+    lastName: organizer.lastName,
+    profileName: organizer.profileName,
+    fallback: "speler",
+  });
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 pt-3 sm:px-6">
-          <Link
-            to={`/match/nieuw/${token}`}
-            className="flex items-center gap-2 font-display text-base font-bold"
-          >
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-hero text-primary-foreground shadow-glow">
-              <BallIcon className="h-3.5 w-3.5" />
-            </span>
-            Nieuwe match
-          </Link>
-          <Link
-            to={`/maatjes/${token}`}
-            className="text-xs font-medium text-muted-foreground transition hover:text-foreground"
-          >
-            Vrienden →
-          </Link>
-        </div>
+      <PlayerAppHeader token={token} displayName={displayName}>
         {currentSlug !== null && (
-          <div className="mx-auto max-w-3xl px-4 pb-3 pt-3 sm:px-6">
+          <div className="mx-auto max-w-3xl px-4 pb-3 pt-1 sm:px-6">
             <Stepper currentSlug={currentSlug} />
           </div>
         )}
-      </header>
+      </PlayerAppHeader>
 
       <main className="mx-auto max-w-3xl px-4 pb-32 pt-6 sm:px-6">
         <Outlet />
@@ -291,26 +281,6 @@ function StepBadge({ state, index }: { state: StepState; index: number }) {
 }
 
 /* ---------- Icons ---------- */
-
-function BallIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <circle cx="12" cy="12" r="9" />
-      <path d="M5.4 6.2C8.6 8.6 8.6 15.4 5.4 17.8" />
-      <path d="M18.6 6.2c-3.2 2.4-3.2 9.2 0 11.6" />
-    </svg>
-  );
-}
 
 function CheckIcon({
   className,
