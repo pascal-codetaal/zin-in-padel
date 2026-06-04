@@ -14,10 +14,12 @@ import {
   findPlayerRefByFuzzyName,
   playerRefsOnCourtFromRoster,
 } from "~/lib/match-roster.server";
+import { inviteFieldsForPlayer } from "~/lib/favorites-page.server";
 import {
   displayFriendName,
   findUserForPlayerPhone,
 } from "~/lib/friend-name.server";
+import { formatPersonName } from "~/lib/person-name";
 import type { Player } from "~/types/domain";
 
 export {
@@ -38,6 +40,13 @@ export async function getMatchPickerPlayers(
   if (!user) return [];
 
   const db = await getDatabase();
+  const twilioWhatsAppFrom = process.env.TWILIO_WHATSAPP_FROM;
+  const inviterName = formatPersonName({
+    firstName: user.firstName,
+    lastName: user.lastName,
+    profileName: user.profileName,
+    fallback: "Ik",
+  });
   const players: MatchPickerPlayer[] = [];
 
   for (const ref of user.favoritePlayerRefs) {
@@ -45,31 +54,52 @@ export async function getMatchPickerPlayers(
       (await findPlayerByRef(ref)) ?? db.players.find((p) => p.ref === ref);
 
     if (!player) {
+      const name = displayFriendName(
+        user.favoriteNames,
+        ref,
+        undefined,
+        db.users,
+        "Onbekende speler",
+      );
+      const invite = inviteFieldsForPlayer(
+        { name, phone: ref },
+        inviterName,
+        twilioWhatsAppFrom,
+        false,
+      );
       players.push({
         ref,
-        name: displayFriendName(
-          user.favoriteNames,
-          ref,
-          undefined,
-          db.users,
-          "Onbekende speler",
-        ),
+        name,
         level: null,
+        isAppUser: false,
+        ...invite,
       });
       continue;
     }
 
     const matchedUser = findUserForPlayerPhone(db.users, player.phone);
+    const name = displayFriendName(
+      user.favoriteNames,
+      player.ref,
+      player,
+      db.users,
+      "Onbekende speler",
+    );
+    const optedIn = matchedUser?.optedIn ?? false;
+    const invite = matchedUser
+      ? { inviteUrl: null, inviteForwardText: null }
+      : inviteFieldsForPlayer(
+          { name, phone: player.phone },
+          inviterName,
+          twilioWhatsAppFrom,
+          optedIn,
+        );
     players.push({
       ref: player.ref,
-      name: displayFriendName(
-        user.favoriteNames,
-        player.ref,
-        player,
-        db.users,
-        "Onbekende speler",
-      ),
+      name,
       level: matchedUser?.level ?? null,
+      isAppUser: Boolean(matchedUser),
+      ...invite,
     });
   }
 
@@ -148,13 +178,20 @@ export function parseInvitedRefsForm(
   form: FormData,
   favoriteRefs: string[],
   onCourtRefs: Iterable<string>,
+  players: MatchPickerPlayer[],
 ): string[] {
   const allowed = new Set(favoriteRefs);
   const onCourt = new Set(onCourtRefs);
+  const appUserRefs = new Set(
+    players.filter((p) => p.isAppUser).map((p) => p.ref),
+  );
   return form
     .getAll("invitedFriendRefs")
     .map((v) => v.toString())
-    .filter((ref) => allowed.has(ref) && !onCourt.has(ref));
+    .filter(
+      (ref) =>
+        allowed.has(ref) && !onCourt.has(ref) && appUserRefs.has(ref),
+    );
 }
 
 export async function applyConfirmedSlots(

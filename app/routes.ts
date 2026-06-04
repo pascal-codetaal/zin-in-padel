@@ -23,6 +23,7 @@ export default [
     route("maatjes", "routes/match.nieuw.$token.vrienden.tsx"),
     route("wanneer", "routes/match.nieuw.$token.wanneer.tsx"),
     route("formaat", "routes/match.nieuw.$token.formaat.tsx"),
+    route("uitnodigen", "routes/match.nieuw.$token.uitnodigen.tsx"),
     route("uitnodigingen", "routes/match.nieuw.$token.uitnodigingen.tsx"),
     route("bevestigen", "routes/match.nieuw.$token.bevestigen.tsx"),
     route("overzicht", "routes/match.nieuw.$token.overzicht.tsx"),

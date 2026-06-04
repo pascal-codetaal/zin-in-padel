@@ -1,8 +1,5 @@
 import { Form, Link, redirect, useNavigation } from "react-router";
-import {
-  prevMatchStep,
-  useMatchWizardData,
-} from "./match.nieuw.$token";
+import { prevWizardStep, useMatchWizardData } from "./match.nieuw.$token";
 import { requireDraftFor } from "~/lib/match-wizard.server";
 import {
   finalizeMatchDraft,
@@ -25,7 +22,6 @@ import { displayFriendName } from "~/lib/friend-name.server";
 import type { Route } from "./+types/match.nieuw.$token.bevestigen";
 
 const STEP_SLUG = "bevestigen" as const;
-const PREV_SLUG = prevMatchStep(STEP_SLUG)!;
 
 export async function loader({ params }: Route.LoaderArgs) {
   const { user, draft } = await requireDraftFor(params.token);
@@ -50,6 +46,7 @@ export async function loader({ params }: Route.LoaderArgs) {
       totalSlots: draft.totalSlots,
       confirmedSlotNames: draft.confirmedSlotNames,
       openSlots,
+      inviteFriendsEnabled: draft.inviteFriendsEnabled,
       fallbackToLevelRange: draft.fallbackToLevelRange,
       fallbackLevelMin: draft.fallbackLevelMin,
       fallbackLevelMax: draft.fallbackLevelMax,
@@ -91,6 +88,9 @@ export default function BevestigenStep({
   const { draft, clubs, invitedPlayers } = loaderData;
   const navigation = useNavigation();
   const isSubmitting = navigation.state !== "idle";
+  const prevSlug = prevWizardStep(STEP_SLUG, {
+    inviteFriendsEnabled: draft.inviteFriendsEnabled,
+  })!;
 
   return (
     <>
@@ -150,20 +150,20 @@ export default function BevestigenStep({
             editTo={`/match/nieuw/${token}/maatjes`}
           />
           <SummaryRow
-            label="Uitnodigingen"
+            label="Zoeklagen"
             value={renderCascade(draft)}
-            editTo={`/match/nieuw/${token}/uitnodigingen`}
+            editTo={`/match/nieuw/${token}/uitnodigen`}
           />
         </ul>
 
         {invitedPlayers.length === 0 &&
-          !draft.fallbackToLevelRange &&
-          !draft.fallbackToEveryone && (
+          draft.inviteFriendsEnabled &&
+          !draft.fallbackToLevelRange && (
             <p className="rounded-2xl border border-amber-300/50 bg-amber-50 px-4 py-3 text-xs text-amber-900">
-              Je hebt niemand geselecteerd én geen fallback aangezet. Niemand zal
-              een uitnodiging krijgen.{" "}
+              Je hebt niemand geselecteerd én geen zoeklaag op niveau. Niemand
+              zal een uitnodiging krijgen.{" "}
               <Link
-                to={`/match/nieuw/${token}/maatjes`}
+                to={`/match/nieuw/${token}/uitnodigen`}
                 className="font-medium underline"
               >
                 Pas aan →
@@ -186,7 +186,7 @@ export default function BevestigenStep({
         }}
         secondary={{
           kind: "link",
-          to: `/match/nieuw/${token}/${PREV_SLUG}`,
+          to: `/match/nieuw/${token}/${prevSlug}`,
           label: "← Terug",
         }}
       />

@@ -29,7 +29,8 @@ export type FavoritePlayerView = {
   inviteForwardText: string | null;
 };
 
-function inviteFieldsForPlayer(
+/** WhatsApp invite for friends not yet on PadelMatch (or without opt-in). */
+export function inviteFieldsForPlayer(
   player: { name: string; phone: string },
   inviterName: string,
   twilioWhatsAppFrom: string | undefined,

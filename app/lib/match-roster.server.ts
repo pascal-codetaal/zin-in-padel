@@ -68,7 +68,12 @@ export function filterInvitableFriendRefs(
   return friendRefs.filter((ref) => !onCourtRefs.has(ref));
 }
 
-/** Default: all maatjes not on court; keep a non-empty partial set after explicit save. */
+/** Friends who can receive an in-app match invite (PadelMatch account required). */
+export function isInvitableAppUser(player: MatchPickerPlayer): boolean {
+  return player.isAppUser;
+}
+
+/** Default: all app-user maatjes not on court; keep a non-empty partial set after explicit save. */
 export function resolveMaatjesInvitedRefs(
   players: MatchPickerPlayer[],
   onCourtRefs: Iterable<string>,
@@ -76,9 +81,12 @@ export function resolveMaatjesInvitedRefs(
 ): string[] {
   const onCourt = new Set(onCourtRefs);
   const allInvitable = players
-    .filter((p) => !onCourt.has(p.ref))
+    .filter((p) => !onCourt.has(p.ref) && isInvitableAppUser(p))
     .map((p) => p.ref);
-  const saved = filterInvitableFriendRefs(savedRefs, onCourt);
+  const saved = filterInvitableFriendRefs(savedRefs, onCourt).filter((ref) => {
+    const player = players.find((p) => p.ref === ref);
+    return player !== undefined && isInvitableAppUser(player);
+  });
 
   if (allInvitable.length === 0) return [];
 

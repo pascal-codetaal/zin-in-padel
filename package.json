@@ -10,7 +10,7 @@
     "preinstall": "npx only-allow pnpm",
     "build": "prisma generate && react-router build",
     "postinstall": "prisma generate",
-    "dev": "react-router dev",
+    "dev": "prisma generate && react-router dev",
     "worker:start": "tsx scripts/worker.ts",
     "mastra:dev": "NODE_OPTIONS='--dns-result-order=ipv4first' mastra dev --dir app/lib/mastra --env .env --request-context-presets presets.json",
     "start": "node scripts/start-server.mjs",

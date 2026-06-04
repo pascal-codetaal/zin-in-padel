@@ -230,6 +230,15 @@ export function formatPadelLevel(level: PadelLevel): string {
   return `P${level}`;
 }
 
+/** Badge on friend tiles in the match wizard. */
+export function formatPadelLevelLabel(
+  level: PadelLevel | null,
+  isAppUser = true,
+): string {
+  if (!isAppUser) return "Gast";
+  return level !== null ? formatPadelLevel(level) : "Ongekend";
+}
+
 /** Compact rating for UI badges, e.g. P270 → "2,7". */
 export function formatPadelLevelCompact(level: PadelLevel): string {
   return (level / 100).toLocaleString("nl-BE", {

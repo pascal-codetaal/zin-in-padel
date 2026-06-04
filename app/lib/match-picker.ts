@@ -4,6 +4,12 @@ export type MatchPickerPlayer = {
   ref: string;
   name: string;
   level: PadelLevel | null;
+  /** Has a PadelMatch account linked to this friend's phone. */
+  isAppUser: boolean;
+  /** wa.me link with onboarding message (non-app users). */
+  inviteUrl: string | null;
+  /** Message to copy when WhatsApp is unavailable. */
+  inviteForwardText: string | null;
 };
 
 /** Three maatje slots on the court (excl. organizer). */

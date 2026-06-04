@@ -7,11 +7,37 @@ import {
   resolveMaatjesInvitedRefs,
 } from "./match-roster.server";
 
+const noInvite = { inviteUrl: null, inviteForwardText: null } as const;
+
 const players: MatchPickerPlayer[] = [
-  { ref: "+32470111111", name: "Arnaud Goossens", level: 300 },
-  { ref: "+32470222222", name: "Matthee Van", level: 200 },
-  { ref: "+32470333333", name: "Victor", level: 400 },
-  { ref: "+32470444444", name: "Piet Janssens", level: null },
+  {
+    ref: "+32470111111",
+    name: "Arnaud Goossens",
+    level: 300,
+    isAppUser: true,
+    ...noInvite,
+  },
+  {
+    ref: "+32470222222",
+    name: "Matthee Van",
+    level: 200,
+    isAppUser: true,
+    ...noInvite,
+  },
+  {
+    ref: "+32470333333",
+    name: "Victor",
+    level: 400,
+    isAppUser: true,
+    ...noInvite,
+  },
+  {
+    ref: "+32470444444",
+    name: "Piet Janssens",
+    level: null,
+    isAppUser: false,
+    ...noInvite,
+  },
 ];
 
 describe("findPlayerRefByFuzzyName", () => {
@@ -59,11 +85,10 @@ describe("filterInvitableFriendRefs", () => {
 describe("resolveMaatjesInvitedRefs", () => {
   const onCourt = ["+32470111111"];
 
-  it("defaults to all maatjes not on court when nothing saved", () => {
+  it("defaults to app-user maatjes not on court when nothing saved", () => {
     expect(resolveMaatjesInvitedRefs(players, onCourt, [])).toEqual([
       "+32470222222",
       "+32470333333",
-      "+32470444444",
     ]);
   });
 
@@ -74,7 +99,13 @@ describe("resolveMaatjesInvitedRefs", () => {
         "+32470333333",
         "+32470444444",
       ]),
-    ).toEqual(["+32470222222", "+32470333333", "+32470444444"]);
+    ).toEqual(["+32470222222", "+32470333333"]);
+  });
+
+  it("drops non-app-user refs from a saved selection", () => {
+    expect(
+      resolveMaatjesInvitedRefs(players, onCourt, ["+32470444444"]),
+    ).toEqual(["+32470222222", "+32470333333"]);
   });
 
   it("keeps a partial saved selection", () => {

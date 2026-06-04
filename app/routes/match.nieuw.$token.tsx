@@ -17,17 +17,42 @@ export type MatchStepSlug =
   | "maatjes"
   | "wanneer"
   | "formaat"
-  | "uitnodigingen"
+  | "uitnodigen"
   | "bevestigen";
 
 export const MATCH_STEPS: { slug: MatchStepSlug; shortTitle: string }[] = [
   { slug: "wanneer", shortTitle: "Wanneer" },
   { slug: "formaat", shortTitle: "Formaat" },
   { slug: "spelers", shortTitle: "Huidige spelers" },
-  { slug: "maatjes", shortTitle: "Vrienden selecteren" },
-  { slug: "uitnodigingen", shortTitle: "Uitnodigingen" },
+  { slug: "uitnodigen", shortTitle: "Uitnodigen" },
+  { slug: "maatjes", shortTitle: "Vrienden uitnodigen" },
   { slug: "bevestigen", shortTitle: "Overzicht" },
 ];
+
+type WizardNavDraft = Pick<Match, "inviteFriendsEnabled"> | null;
+
+/** Next step; skips vrienden selecteren when friends are disabled. */
+export function nextWizardStep(
+  slug: MatchStepSlug,
+  draft: WizardNavDraft,
+): MatchStepSlug | null {
+  if (slug === "uitnodigen") {
+    return draft?.inviteFriendsEnabled ? "maatjes" : "bevestigen";
+  }
+  return nextMatchStep(slug);
+}
+
+/** Previous step; skips vrienden selecteren when friends are disabled. */
+export function prevWizardStep(
+  slug: MatchStepSlug,
+  draft: WizardNavDraft,
+): MatchStepSlug | null {
+  if (slug === "bevestigen") {
+    return draft?.inviteFriendsEnabled ? "maatjes" : "uitnodigen";
+  }
+  if (slug === "maatjes") return "uitnodigen";
+  return prevMatchStep(slug);
+}
 
 export function findMatchStepIndex(slug: MatchStepSlug): number {
   return MATCH_STEPS.findIndex((s) => s.slug === slug);
@@ -52,10 +77,10 @@ export function isMatchStepComplete(
   if (!draft) return false;
   if (slug === "spelers") return true;
   if (slug === "maatjes") return true;
+  if (slug === "uitnodigen") return true;
   if (slug === "wanneer")
     return draft.scheduledAt !== null && draft.clubIds.length > 0;
   if (slug === "formaat") return true; // always has a value
-  if (slug === "uitnodigingen") return true;
   if (slug === "bevestigen") return draft.status !== "draft";
   return false;
 }
