@@ -80,13 +80,15 @@ model UserPreferredClub {
 /* -------------------------------------------------------------------------- */
 
 model WaitlistSignup {
-  id         String   @id
-  phone      String   @unique
-  tvMemberId Int
-  clubId     String?
-  consent    Boolean
-  createdAt  DateTime
-  updatedAt  DateTime
+  id                 String   @id
+  phone              String   @unique
+  tvMemberId         Int
+  clubId             String?
+  consent            Boolean
+  consentAt          DateTime @default(now())
+  consentTextVersion String   @default("waitlist-v1")
+  createdAt          DateTime
+  updatedAt          DateTime
 
   member TvMember @relation(fields: [tvMemberId], references: [id])
   club   Club?    @relation(fields: [clubId], references: [id])

@@ -1,0 +1,3 @@
+ALTER TABLE "WaitlistSignup"
+  ADD COLUMN "consentAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  ADD COLUMN "consentTextVersion" TEXT NOT NULL DEFAULT 'waitlist-v1';

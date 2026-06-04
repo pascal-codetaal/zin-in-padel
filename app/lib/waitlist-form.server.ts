@@ -1,5 +1,6 @@
 import { findPadelstatsMemberById } from "~/lib/padelstats-catalog.server";
 import { parsePhoneFromText } from "~/lib/phone.server";
+import { WAITLIST_CONSENT_TEXT_VERSION } from "~/lib/waitlist-consent.shared";
 import type { WaitlistFormError } from "~/lib/waitlist-form.shared";
 
 export type { WaitlistFormError } from "~/lib/waitlist-form.shared";
@@ -10,6 +11,7 @@ export type WaitlistFormInput = {
   tvMemberId: number;
   clubId: string | null;
   consent: boolean;
+  consentTextVersion: string;
 };
 
 export async function parseWaitlistForm(
@@ -56,6 +58,7 @@ export async function parseWaitlistForm(
       tvMemberId,
       clubId,
       consent,
+      consentTextVersion: WAITLIST_CONSENT_TEXT_VERSION,
     },
   };
 }

@@ -54,9 +54,11 @@ export function PadelstatsMemberAutocomplete({ selected, onSelect }: Props) {
       setError(false);
       setSearched(false);
       try {
-        const res = await fetch(
-          `/api/padelstats/members/search?q=${encodeURIComponent(q)}`,
-        );
+        const res = await fetch("/api/padelstats/members/search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ q }),
+        });
         const data = (await res.json()) as { members?: PadelstatsMemberHit[] };
         if (!res.ok) {
           setError(true);

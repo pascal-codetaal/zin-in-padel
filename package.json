@@ -31,6 +31,7 @@
     "clubs:padelstats:all": "tsx scripts/fetch-club-members-padelstats.ts --all --quiet -j 6 --delay 300 -o data/all-club-members.json",
     "clubs:padelstats:retry": "tsx scripts/fetch-club-members-padelstats.ts --retry-errors --quiet -j 3 --delay 500",
     "clubs:padelstats:import": "tsx scripts/import-club-members-padelstats.ts",
+    "members:sync-tv": "tsx scripts/sync-tv-members-from-padelstats.ts",
     "clubs:tv": "tsx scripts/fetch-club-members-tv.ts",
     "clubs:tv:test": "tsx scripts/fetch-club-members-tv.ts --club-id 8041",
     "clubs:tv:all": "tsx scripts/fetch-club-members-tv.ts --all -j 2 -o data/all-club-members-tv.json",

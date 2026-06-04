@@ -6,6 +6,7 @@ import {
   WAITLIST_ERROR_MESSAGES,
   type WaitlistFormError,
 } from "~/lib/waitlist-form.shared";
+import { WAITLIST_CONSENT_LABEL } from "~/lib/waitlist-consent.shared";
 
 type Props = {
   error?: WaitlistFormError;
@@ -81,7 +82,7 @@ export function WaitlistSignupForm({
           name="website"
           tabIndex={-1}
           autoComplete="off"
-          className="absolute -left-[9999px] h-0 w-0 opacity-0"
+          className="pointer-events-none absolute h-0 w-0 opacity-0"
           aria-hidden
         />
 
@@ -92,15 +93,20 @@ export function WaitlistSignupForm({
 
         <label className="block space-y-1.5">
           <span className="text-sm font-medium">Mobiel nummer</span>
-          <input
-            type="tel"
-            name="phone"
-            required
-            autoComplete="tel"
-            inputMode="tel"
-            className="w-full rounded-xl border border-input bg-background px-4 py-3 text-base"
-            placeholder="0470 12 34 56"
-          />
+          <div className="flex overflow-hidden rounded-xl border border-input bg-background">
+            <span className="flex items-center border-r border-input px-4 text-base text-muted-foreground">
+              +32
+            </span>
+            <input
+              type="tel"
+              name="phone"
+              required
+              autoComplete="tel-national"
+              inputMode="tel"
+              className="min-w-0 flex-1 bg-transparent px-4 py-3 text-base outline-none"
+              placeholder="470 12 34 56"
+            />
+          </div>
         </label>
 
         <label className="flex cursor-pointer gap-3 text-sm">
@@ -111,8 +117,16 @@ export function WaitlistSignupForm({
             className="mt-1 h-4 w-4 rounded border-input"
           />
           <span className="text-muted-foreground">
-            Ik geef toestemming om mijn gegevens te bewaren voor de wachtlijst
-            en om me te contacteren over de lancering.
+            {WAITLIST_CONSENT_LABEL} Lees hoe we met je gegevens omgaan in onze{" "}
+            <a
+              href="/privacy"
+              className="font-medium text-primary hover:underline"
+              target="_blank"
+              rel="noreferrer"
+            >
+              privacyverklaring
+            </a>
+            .
           </span>
         </label>
 

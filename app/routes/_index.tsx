@@ -24,25 +24,27 @@ function SignupAnchorLink({
   className?: string;
   children: ReactNode;
 }) {
+  const classes = className.trim();
+
   return (
     <>
-      <a href="#inschrijven-mobile" className={`lg:hidden ${className}`.trim()}>
+      <a href="#inschrijven-mobile" className={`${classes} lg:hidden`.trim()}>
         {children}
       </a>
-      <a href="#inschrijven" className={`hidden lg:inline ${className}`.trim()}>
+      <a href="#inschrijven" className={`${classes} hidden lg:inline-flex`.trim()}>
         {children}
       </a>
     </>
   );
 }
 
-export function meta({}: Route.MetaArgs) {
+export function meta() {
   return [
-    { title: "Zin in Padel — Automatisch padel matchen via WhatsApp" },
+    { title: "Zin in Padel, automatisch padel matchen via WhatsApp" },
     {
       name: "description",
       content:
-        "Herken je het probleem om vlot een match te vinden of in te vullen? Chat of snelle interface, automatische uitnodigingen op Padel Vlaanderen-niveau — de bot leert je voorkeuren.",
+        "Een match vol krijgen klinkt simpel, maar in de praktijk blijft het vaak zoeken. Onze WhatsApp-bot nodigt spelers uit op niveau, volgt op en leert je voorkeuren.",
     },
   ];
 }
@@ -119,7 +121,7 @@ function LandingHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-5 sm:px-6 lg:px-8">
-        <a href="#" className="flex shrink-0 items-center gap-2 font-display text-lg font-bold">
+        <a href="/" className="flex shrink-0 items-center gap-2 font-display text-lg font-bold">
           <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-hero text-sm text-primary-foreground shadow-glow">
             🎾
           </span>
@@ -165,13 +167,13 @@ function HeroSection({ mobileSignup }: { mobileSignup: ReactNode }) {
               Volledig automatisch via WhatsApp
             </p>
             <h1 className="mt-5 font-display text-4xl font-bold leading-[1.05] tracking-tight text-balance sm:text-5xl lg:text-[3.25rem]">
-              Herken je het probleem om{" "}
+              Een match vol krijgen klinkt simpel,{" "}
               <span className="bg-gradient-hero bg-clip-text text-transparent">
-                vlot een match te vinden of in te vullen?
+                maar blijft vaak zoeken.
               </span>
             </h1>
             <p className="mt-5 text-lg leading-relaxed text-muted-foreground text-pretty">
-              Wij regelen je match volledig automatisch. Onze bot start met je
+              Wij helpen je match automatisch vol krijgen. Onze bot start met je
               favorieten, nodigt daarna spelers uit op niveau van Padel
               Vlaanderen en gaat last minute verder zoeken tot er vier zijn.
               Chat je match samen in WhatsApp, of gebruik onze snelle interface
@@ -231,14 +233,14 @@ function ChatPreview() {
       from: "bot" as const,
       text: "Zin in padel zaterdag 19u? Ik nodig eerst Tom en Lisa (je favorieten) uit.",
     },
-    { from: "you" as const, text: "Top — 200 tot 400, heren in Gent." },
+    { from: "you" as const, text: "Top, 200 tot 400, heren in Gent." },
     {
       from: "bot" as const,
       text: "Tom en Lisa kunnen niet. Ik zoek verder op Padel Vlaanderen-niveau bij je club…",
     },
     {
       from: "bot" as const,
-      text: "Last minute nog 1 speler nodig — ik breid de zoekactie uit. Match rond ✅ 19:00.",
+      text: "Last minute nog 1 speler nodig, ik breid de zoekactie uit. Match rond ✅ 19:00.",
     },
   ];
 
@@ -256,9 +258,9 @@ function ChatPreview() {
         </div>
       </div>
       <div className="space-y-2.5 px-3 py-4">
-        {messages.map((m, i) => (
+        {messages.map((m) => (
           <div
-            key={i}
+            key={m.text}
             className={`flex ${m.from === "you" ? "justify-end" : "justify-start"}`}
           >
             <div
@@ -281,7 +283,7 @@ function ProblemSection() {
   const items = [
     {
       title: "Posts in groepen",
-      text: "Je plaatst overal dezelfde vraag en hoopt dat iemand reageert — vaak zonder resultaat.",
+      text: "Je plaatst overal dezelfde vraag en hoopt dat iemand reageert, vaak zonder resultaat.",
     },
     {
       title: "Opvolgen kost tijd",
@@ -301,11 +303,11 @@ function ProblemSection() {
     >
       <SectionLabel>Het probleem</SectionLabel>
       <h2 className="mt-3 max-w-2xl font-display text-3xl font-bold tracking-tight md:text-4xl">
-        Vlot een match vinden of in te vullen blijft voor veel spelers moeilijk
+        Je weet wanneer je wil spelen, maar dan begint de zoektocht naar spelers.
       </h2>
       <p className="mt-4 max-w-2xl text-muted-foreground">
-        Herken je dit? Schrijf je dan in — we bouwen een assistent die het
-        zoeken en filteren voor je overneemt.
+        Herkenbaar? Schrijf je dan in, we bouwen een assistent die spelers
+        zoekt, uitnodigt en opvolgt tot je match rond is.
       </p>
       <ul className="mt-10 grid gap-5 md:grid-cols-3">
         {items.map((item) => (
@@ -329,7 +331,7 @@ function ProductSection() {
     {
       step: "01",
       title: "Favorieten eerst",
-      text: "De bot start met je vaste maten uit te nodigen — zij krijgen als eerste de kans.",
+      text: "De bot start met je vaste maten uit te nodigen, zij krijgen als eerste de kans.",
     },
     {
       step: "02",
@@ -339,12 +341,12 @@ function ProductSection() {
     {
       step: "03",
       title: "Last minute uitbreiden",
-      text: "Komt de baan nog niet vol? De zoekactie wordt verder gezet tot er vier spelers zijn.",
+      text: "Komt de baan nog niet vol? De zoekactie wordt verder gezet tot er vier spelers zijn. Zodra de match vol zit, krijgt iedereen in de match een bericht.",
     },
     {
       step: "04",
       title: "Volledig automatisch",
-      text: "Uitnodigen, opvolgen en filteren met AI — in plaats van posten in groepen en zelf achter reacties aan te gaan.",
+      text: "Uitnodigen, opvolgen en filteren met AI, in plaats van posten in groepen en zelf achter reacties aan te gaan.",
     },
   ];
 
@@ -352,11 +354,12 @@ function ProductSection() {
     <section id="product" className="py-16 md:py-24">
       <SectionLabel>Onze oplossing</SectionLabel>
       <h2 className="mt-3 max-w-2xl font-display text-3xl font-bold tracking-tight md:text-4xl">
-        Wij regelen je match — jij zegt ja of nee
+        Wij helpen je match vol krijgen, jij zegt ons wanneer je wil spelen en
+        wij starten de zoektocht naar de spelers
       </h2>
       <p className="mt-4 max-w-2xl text-muted-foreground">
         Een WhatsApp-chatbot die vrienden en spelers uitnodigt via een slim
-        algoritme — en steeds slimmer wordt naarmate je meer speelt. Geen
+        algoritme, en steeds slimmer wordt naarmate je meer speelt. Geen
         aparte app installeren: koppel je telefoonnummer aan je Tennis & Padel
         Vlaanderen-account en je bent klaar.
       </p>
@@ -387,7 +390,7 @@ function MatchWaysSection() {
   const ways = [
     {
       title: "Chat met de bot",
-      text: "Vertel wanneer je wilt spelen, met wie en op welk niveau — de bot begrijpt gewone taal en regelt de rest.",
+      text: "Vertel wanneer je wilt spelen, met wie en op welk niveau, de bot begrijpt gewone taal en regelt de rest.",
     },
     {
       title: "Snelle interface",
@@ -438,7 +441,7 @@ function HowItWorksSection() {
     },
     {
       title: "Start je match",
-      text: "Via WhatsApp-chat of de snelle interface — jij kiest. De bot nodigt uit en vult aan.",
+      text: "Via WhatsApp-chat of de snelle interface, jij kiest. De bot nodigt uit en vult aan.",
     },
     {
       title: "Geef feedback",
@@ -484,10 +487,10 @@ function FaqSection() {
   const faqs = [
     {
       q: "Moet ik een app installeren?",
-      a: "Nee. Je werkt via WhatsApp en een snelle webinterface om een match te configureren. Je koppelt je nummer aan je Tennis & Padel Vlaanderen-padelaccount — geen download uit de app store.",
+      a: "Nee. Je werkt via WhatsApp en een snelle webinterface om een match te configureren. Je koppelt je nummer aan je Tennis & Padel Vlaanderen-padelaccount, geen download uit de app store.",
     },
     {
-      q: "Chat of interface — wat kies ik best?",
+      q: "Chat of interface, wat kies ik best?",
       a: "Beide kan. In WhatsApp stel je je match in met gewone taal. In de snelle interface zet je alles in één keer klaar. De bot regelt daarna op dezelfde manier de uitnodigingen.",
     },
     {
@@ -496,7 +499,7 @@ function FaqSection() {
     },
     {
       q: "Is dit al live?",
-      a: "We zijn in opbouw. Schrijf je in — we contacteren je via WhatsApp zodra de bot voor jouw club klaarstaat.",
+      a: "We zijn in opbouw. Schrijf je in, we contacteren je via WhatsApp zodra de bot voor jouw club klaarstaat.",
     },
     {
       q: "Hoe zoekt de bot spelers?",
@@ -512,7 +515,7 @@ function FaqSection() {
     },
     {
       q: "Wat gebeurt er met mijn gegevens?",
-      a: "Alleen voor de wachtlijst en contact over de lancering. Geen verkoop aan derden.",
+      a: "We gebruiken je TV-profiel, club en mobiel nummer alleen voor de wachtlijst, koppeling aan het juiste profiel en contact over de lancering. Geen verkoop aan derden. Details staan in de privacyverklaring.",
     },
   ];
 
@@ -544,15 +547,15 @@ function CtaSection() {
   return (
     <section
       className={landingSectionClass(
-        "mt-4 border border-primary/20 bg-primary py-14 text-center text-primary-foreground",
+        "mt-4 flex flex-col items-center border border-primary/20 bg-primary py-14 text-center text-primary-foreground",
       )}
     >
       <h2 className="font-display text-2xl font-bold tracking-tight md:text-3xl">
-        Herken je het probleem?
+        Nog te vaak aan het zoeken om je match vol te krijgen?
       </h2>
       <p className="mx-auto mt-3 max-w-lg text-sm text-primary-foreground/85 md:text-base">
         Schrijf je in op de wachtlijst. We bouwen de WhatsApp-bot die voor jou
-        zoekt, filtert en uitnodigt — zonder groepsposts.
+        zoekt, filtert en uitnodigt, zonder groepsposts.
       </p>
       <SignupAnchorLink className="mt-6 inline-flex rounded-full bg-accent px-8 py-3.5 text-base font-semibold text-accent-foreground shadow-glow transition hover:opacity-95">
         Naar het formulier
@@ -581,9 +584,13 @@ function LandingFooter() {
   return (
     <footer className="border-t border-border py-10">
       <div className="mx-auto flex w-full max-w-6xl flex-col justify-between gap-4 px-5 py-10 text-sm text-muted-foreground sm:px-6 lg:px-8 md:flex-row">
-        <p>© {new Date().getFullYear()} Zin in Padel — gebouwd in Vlaanderen</p>
+        <p>© {new Date().getFullYear()} Zin in Padel, gebouwd in Vlaanderen</p>
         <p>
           <SignupAnchorLink className="hover:text-foreground">Inschrijven</SignupAnchorLink>
+          {" · "}
+          <a href="/privacy" className="hover:text-foreground">
+            Privacy
+          </a>
           {" · "}
           <a href="mailto:hallo@zin-in-padel.be" className="hover:text-foreground">
             Contact

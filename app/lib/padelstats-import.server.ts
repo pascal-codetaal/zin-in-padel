@@ -7,6 +7,7 @@ import {
 } from "~/lib/clubs-catalog.server";
 import type { PadelstatsMember as PadelstatsMemberDto } from "~/lib/padelstats-api.server";
 import { prisma } from "~/lib/prisma.server";
+import { upsertTvMemberFromPadelstats } from "~/lib/tv-member-sync.server";
 
 export type ClubMembersExportRow = {
   catalogClub: { id: string; name: string; city: string };
@@ -204,6 +205,12 @@ export async function importPadelstatsRosters(options: {
           },
         }),
       ),
+    );
+  }
+
+  for (const batch of chunk(uniqueMembers, MEMBER_UPSERT_BATCH)) {
+    await Promise.all(
+      batch.map((m) => upsertTvMemberFromPadelstats(m.id, now)),
     );
   }
 

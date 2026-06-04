@@ -47,6 +47,8 @@ export async function upsertWaitlistSignup(
     tvMemberId: input.tvMemberId,
     clubId: input.clubId,
     consent: input.consent,
+    consentAt: now,
+    consentTextVersion: input.consentTextVersion,
     updatedAt: now,
   };
 
