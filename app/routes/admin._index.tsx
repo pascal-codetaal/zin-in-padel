@@ -233,7 +233,7 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
                             href={user.maatjesPath}
                             className="text-xs font-medium text-emerald-600 hover:underline dark:text-emerald-400"
                           >
-                            Maatjes
+                            Vrienden
                           </a>
                           <a
                             href={`/profiel/${user.manageToken}`}
@@ -251,7 +251,7 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
                             href={`/match/nieuw/${user.manageToken}`}
                             className="text-xs font-medium text-emerald-600 hover:underline dark:text-emerald-400"
                           >
-                            + Match
+                            Match aanmaken
                           </a>
                         </div>
                       </Td>

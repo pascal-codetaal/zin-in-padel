@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router";
+import { useEffect, useMemo, useState } from "react";
 import {
+  isMaatjeCourtFull,
   MAATJE_SLOT_COUNT,
   type MaatjeSlots,
   type MatchPickerPlayer,
 } from "~/lib/match-picker";
+import { Link } from "react-router";
 import {
   formatPadelLevel,
   type PadelLevel,
@@ -16,7 +17,16 @@ export type MatchCourtPickerProps = {
   players: MatchPickerPlayer[];
   defaultSlots: MaatjeSlots;
   maatjesHref: string;
+  onCourtStateChange?: (state: {
+    filledCount: number;
+    courtFull: boolean;
+  }) => void;
 };
+
+function firstEmptySlotIndex(slots: MaatjeSlots): number | null {
+  const idx = slots.findIndex((ref) => ref === null);
+  return idx === -1 ? null : idx;
+}
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -33,6 +43,7 @@ export function MatchCourtPicker({
   players,
   defaultSlots,
   maatjesHref,
+  onCourtStateChange,
 }: MatchCourtPickerProps) {
   const validRefs = useMemo(
     () => new Set(players.map((p) => p.ref)),
@@ -46,7 +57,10 @@ export function MatchCourtPicker({
   }, [defaultSlots, validRefs]);
 
   const [slots, setSlots] = useState<MaatjeSlots>(initialSlots);
-  const [activeSlot, setActiveSlot] = useState<number | null>(null);
+  const [activeSlot, setActiveSlot] = useState<number | null>(() => {
+    const firstEmpty = initialSlots.findIndex((ref) => ref === null);
+    return firstEmpty === -1 ? null : firstEmpty;
+  });
 
   const playerByRef = useMemo(
     () => new Map(players.map((p) => [p.ref, p])),
@@ -54,27 +68,32 @@ export function MatchCourtPicker({
   );
 
   const filledCount = slots.filter(Boolean).length + 1;
+  const courtFull = isMaatjeCourtFull(slots);
+
+  useEffect(() => {
+    onCourtStateChange?.({ filledCount, courtFull });
+  }, [filledCount, courtFull, onCourtStateChange]);
+
+  useEffect(() => {
+    if (courtFull) setActiveSlot(null);
+  }, [courtFull]);
 
   function assignPlayer(ref: string) {
     if (activeSlot === null) return;
-    setSlots((prev) => {
-      const next: MaatjeSlots = [...prev];
-      for (let i = 0; i < MAATJE_SLOT_COUNT; i++) {
-        if (next[i] === ref) next[i] = null;
-      }
-      next[activeSlot] = ref;
-      return next;
-    });
-    setActiveSlot(null);
+    const next: MaatjeSlots = [...slots];
+    for (let i = 0; i < MAATJE_SLOT_COUNT; i++) {
+      if (next[i] === ref) next[i] = null;
+    }
+    next[activeSlot] = ref;
+    setSlots(next);
+    setActiveSlot(firstEmptySlotIndex(next));
   }
 
   function clearSlot(index: number) {
-    setSlots((prev) => {
-      const next: MaatjeSlots = [...prev];
-      next[index] = null;
-      return next;
-    });
-    if (activeSlot === index) setActiveSlot(null);
+    const next: MaatjeSlots = [...slots];
+    next[index] = null;
+    setSlots(next);
+    setActiveSlot(index);
   }
 
   const availableForPick =
@@ -133,7 +152,7 @@ export function MatchCourtPicker({
           </p>
           {availableForPick.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-border bg-secondary/30 px-4 py-4 text-center text-sm text-muted-foreground">
-              Geen maatjes beschikbaar.{" "}
+              Geen vrienden beschikbaar.{" "}
               <Link to={maatjesHref} className="font-medium underline">
                 Voeg toe →
               </Link>
@@ -159,19 +178,13 @@ export function MatchCourtPicker({
               ))}
             </ul>
           )}
-          <button
-            type="button"
-            onClick={() => setActiveSlot(null)}
-            className="text-xs font-medium text-muted-foreground transition hover:text-foreground"
-          >
-            Annuleren
-          </button>
         </div>
-      ) : (
-        <p className="text-center text-sm text-muted-foreground">
-          Tik een lege plek (+) of een speler op de baan om te wijzigen
+      ) : courtFull ? (
+        <p className="rounded-2xl border border-amber-300/50 bg-amber-50 px-4 py-3 text-center text-sm text-amber-900">
+          De baan is vol — je hoeft niemand meer uit te nodigen. Haal een speler
+          van de baan om verder te gaan.
         </p>
-      )}
+      ) : null}
 
       {slots.map((ref, i) => (
         <input

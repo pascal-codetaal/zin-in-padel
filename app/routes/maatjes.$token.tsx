@@ -30,8 +30,8 @@ export function meta({ loaderData }: Route.MetaArgs) {
   return [
     {
       title: name
-        ? `Maatjes van ${name} — PadelMatch`
-        : "Mijn maatjes — PadelMatch",
+        ? `Vrienden van ${name} — PadelMatch`
+        : "Mijn vrienden — PadelMatch",
     },
     {
       name: "description",
@@ -215,7 +215,7 @@ export default function MaatjesPage({
               to={`/match/nieuw/${token}`}
               className="text-sm font-medium text-accent-foreground transition hover:text-foreground"
             >
-              + Match
+              Match aanmaken
             </Link>
             <Link
               to={`/profiel/${token}`}
@@ -237,7 +237,7 @@ export default function MaatjesPage({
           <h1 className="mt-2 text-4xl font-bold text-balance">
             Jouw{" "}
             <span className="bg-gradient-hero bg-clip-text text-transparent">
-              padelmaatjes
+              padelvrienden
             </span>
           </h1>
           <p className="mt-3 text-lg text-muted-foreground">
@@ -328,7 +328,7 @@ export default function MaatjesPage({
               <div className="mt-4 rounded-3xl border border-dashed border-border bg-secondary/40 px-6 py-12 text-center">
                 <UsersIcon className="mx-auto h-10 w-10 text-muted-foreground" />
                 <p className="mt-3 text-muted-foreground">
-                  Nog geen maatjes. Voeg je eerste speler hierboven toe.
+                  Nog geen vrienden. Voeg je eerste speler hierboven toe.
                 </p>
               </div>
             ) : (

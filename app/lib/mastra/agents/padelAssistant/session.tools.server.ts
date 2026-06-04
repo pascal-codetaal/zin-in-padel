@@ -24,7 +24,7 @@ function requireUserId(context: { requestContext?: { get(key: string): unknown }
 export const optInTool = createTool({
   id: "opt-in",
   description:
-    "Meld de gebruiker aan (JA): zet optedIn=true, start onboarding, reset profiel. Gebruik bij JA of wanneer iemand zich wil registreren. Geeft profielPageUrl en maatjesPageUrl terug om te delen.",
+    "Meld de gebruiker aan (JA): zet optedIn=true, start onboarding, reset profiel. Gebruik bij JA of wanneer iemand zich wil registreren. Geeft profielPageUrl en maatjesPageUrl (vriendenpagina) terug om te delen.",
   inputSchema: z.object({}),
   outputSchema: z.object({
     ok: z.boolean(),
@@ -73,7 +73,7 @@ export const optOutTool = createTool({
 export const setActiveFlowTool = createTool({
   id: "set-active-flow",
   description:
-    "Zet de actieve WhatsApp-flow: onboarding, favorites (maatjes toevoegen), match_creation (match plannen), of null om te wissen.",
+    "Zet de actieve WhatsApp-flow: onboarding, favorites (vrienden toevoegen), match_creation (match plannen), of null om te wissen.",
   inputSchema: z.object({
     flow: activeFlowSchema
       .nullable()

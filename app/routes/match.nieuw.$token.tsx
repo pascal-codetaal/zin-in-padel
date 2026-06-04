@@ -21,12 +21,12 @@ export type MatchStepSlug =
   | "bevestigen";
 
 export const MATCH_STEPS: { slug: MatchStepSlug; shortTitle: string }[] = [
-  { slug: "spelers", shortTitle: "Spelers" },
-  { slug: "maatjes", shortTitle: "Uitnodig" },
   { slug: "wanneer", shortTitle: "Wanneer" },
   { slug: "formaat", shortTitle: "Formaat" },
-  { slug: "uitnodigingen", shortTitle: "Cascade" },
-  { slug: "bevestigen", shortTitle: "Bevestig" },
+  { slug: "spelers", shortTitle: "Huidige spelers" },
+  { slug: "maatjes", shortTitle: "Vrienden selecteren" },
+  { slug: "uitnodigingen", shortTitle: "Uitnodigingen" },
+  { slug: "bevestigen", shortTitle: "Overzicht" },
 ];
 
 export function findMatchStepIndex(slug: MatchStepSlug): number {
@@ -157,12 +157,12 @@ export default function MatchNieuwLayout({ loaderData }: Route.ComponentProps) {
             to={`/maatjes/${token}`}
             className="text-xs font-medium text-muted-foreground transition hover:text-foreground"
           >
-            Maatjes →
+            Vrienden →
           </Link>
         </div>
         {currentSlug !== null && (
           <div className="mx-auto max-w-3xl px-4 pb-3 pt-3 sm:px-6">
-            <Stepper currentSlug={currentSlug} token={token} />
+            <Stepper currentSlug={currentSlug} />
           </div>
         )}
       </header>
@@ -183,28 +183,17 @@ function currentStepFromPath(pathname: string): MatchStepSlug | null {
     : null;
 }
 
-function Stepper({
-  currentSlug,
-  token,
-}: {
-  currentSlug: MatchStepSlug;
-  token: string;
-}) {
+function Stepper({ currentSlug }: { currentSlug: MatchStepSlug }) {
   const currentIndex = findMatchStepIndex(currentSlug);
   return (
-    <ol className="grid grid-cols-6 gap-0.5">
+    <ol className="grid grid-cols-6 gap-0.5" aria-label="Stappen match aanmaken">
       {MATCH_STEPS.map((step, i) => {
         const isActive = step.slug === currentSlug;
         const isDone = i < currentIndex;
         const state: StepState = isActive ? "active" : isDone ? "done" : "todo";
         return (
           <li key={step.slug}>
-            <StepChip
-              to={`/match/nieuw/${token}/${step.slug}`}
-              label={step.shortTitle}
-              index={i + 1}
-              state={state}
-            />
+            <StepChip label={step.shortTitle} index={i + 1} state={state} />
           </li>
         );
       })}
@@ -215,28 +204,25 @@ function Stepper({
 type StepState = "active" | "done" | "todo";
 
 function StepChip({
-  to,
   label,
   index,
   state,
 }: {
-  to: string;
   label: string;
   index: number;
   state: StepState;
 }) {
   const base =
-    "flex w-full flex-col items-center gap-1 rounded-xl border px-1 py-1.5 text-center transition";
+    "flex w-full flex-col items-center gap-1 rounded-xl border px-1 py-1.5 text-center";
   const variant =
     state === "active"
       ? "border-accent bg-accent/15 text-foreground shadow-sm"
       : state === "done"
-        ? "border-border bg-card text-foreground hover:bg-secondary/60"
-        : "border-border bg-card text-muted-foreground hover:bg-secondary/60";
+        ? "border-border bg-card text-foreground"
+        : "border-border bg-card text-muted-foreground";
 
   return (
-    <Link
-      to={to}
+    <div
       aria-current={state === "active" ? "step" : undefined}
       className={`${base} ${variant}`}
     >
@@ -244,7 +230,7 @@ function StepChip({
       <span className="w-full truncate text-[10px] font-medium leading-tight">
         {label}
       </span>
-    </Link>
+    </div>
   );
 }
 

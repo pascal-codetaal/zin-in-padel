@@ -145,7 +145,7 @@ export async function tryAddFriendsFromSharedContacts(
   if (added.length === 1) {
     parts.push(`${added[0]} toegevoegd.`);
   } else if (added.length > 1) {
-    parts.push(`${added.length} maatjes toegevoegd:\n${added.map((a) => `• ${a}`).join("\n")}`);
+    parts.push(`${added.length} vrienden toegevoegd:\n${added.map((a) => `• ${a}`).join("\n")}`);
   }
   if (duplicates.length > 0) {
     const dupLabel =

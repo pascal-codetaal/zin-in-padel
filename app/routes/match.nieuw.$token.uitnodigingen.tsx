@@ -100,13 +100,13 @@ export default function UitnodigingenStep({
             Wie krijgt een uitnodiging?
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            We sturen in golven: eerst je maatjes, daarna de optionele lagen.
+            We sturen in golven: eerst je vrienden, daarna de optionele lagen.
           </p>
         </header>
 
         <CascadeStep
           number={1}
-          title="Je maatjes"
+          title="Je vrienden"
           sub={`${draft.invitedCount} geselecteerd in de vorige stap`}
           locked
         />

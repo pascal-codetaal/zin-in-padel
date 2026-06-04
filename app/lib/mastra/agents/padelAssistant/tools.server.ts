@@ -36,7 +36,7 @@ const sideSchema = z.enum(["left", "right"]);
 export const readProfileTool = createTool({
   id: "read-profile",
   description:
-    "Lees het profiel van de actieve gebruiker: niveau, vrienden, clubvoorkeuren, matchvoorkeur, openstaande vriend-aanvraag en persoonlijke links (profielPageUrl, maatjesPageUrl). Gebruik search-clubs om clubs te zoeken.",
+    "Lees het profiel van de actieve gebruiker: niveau, vrienden, clubvoorkeuren, matchvoorkeur, openstaande vriend-aanvraag en persoonlijke links (profielPageUrl, maatjesPageUrl = vriendenpagina). Gebruik search-clubs om clubs te zoeken.",
   inputSchema: z.object({}),
   outputSchema: z.object({
     profielPageUrl: z
@@ -49,7 +49,7 @@ export const readProfileTool = createTool({
       .string()
       .nullable()
       .describe(
-        "Persoonlijke link om maatjes in de browser te beheren; null als niet beschikbaar",
+        "Persoonlijke link om vrienden in de browser te beheren (/maatjes/…); null als niet beschikbaar",
       ),
     currentUser: z
       .object({

@@ -83,7 +83,7 @@ export function MatchInvitePicker({
 
       {players.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-border bg-secondary/30 px-4 py-6 text-center text-sm text-muted-foreground">
-          Nog geen maatjes.{" "}
+          Nog geen vrienden.{" "}
           <Link to={maatjesHref} className="font-medium text-foreground underline">
             Voeg er eerst toe →
           </Link>

@@ -60,7 +60,7 @@ const dutchWeekdays = [
 /**
  * Read everything the match-creator agent needs about the active user in a
  * single call: profile, favorite players (with names), preferred clubs, and
- * a personal maatjes-page URL.
+ * a personal vriendenpagina-URL (veld maatjesPageUrl, route /maatjes/…).
  */
 export const readMatchProfileTool = createTool({
   id: "read-match-profile",

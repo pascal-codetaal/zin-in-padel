@@ -27,7 +27,7 @@ const MATCH_PREFERENCE_OPTIONS: {
 }[] = [
   {
     value: "friends_only",
-    label: "Alleen maatjes",
+    label: "Alleen vrienden",
     sub: "Spelers uit je eigen lijst",
   },
   {

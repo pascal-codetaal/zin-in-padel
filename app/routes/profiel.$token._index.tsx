@@ -47,7 +47,7 @@ export default function ProfielWelcome() {
             Hoi {displayName} 👋
           </h1>
           <p className="mt-2 text-base text-muted-foreground">
-            Vier korte vragen, dan vinden we maatjes die bij je passen.
+            Vier korte vragen, dan vinden we vrienden die bij je passen.
           </p>
         </div>
 
@@ -89,7 +89,7 @@ export default function ProfielWelcome() {
             <span>
               <span className="block text-sm font-medium">Klaar om te spelen?</span>
               <span className="block text-xs text-muted-foreground">
-                Plan een nieuwe match en nodig je maatjes uit.
+                Plan een nieuwe match en nodig je vrienden uit.
               </span>
             </span>
             <span className="text-xl">→</span>

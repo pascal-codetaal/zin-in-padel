@@ -45,7 +45,7 @@ export function formatCascadeLabel(draft: {
   fallbackToEveryone: boolean;
   fallbackEveryoneDelayMinutes: number;
 }): string {
-  const parts: string[] = ["Maatjes (nu)"];
+  const parts: string[] = ["Vrienden (nu)"];
   if (draft.fallbackToLevelRange) {
     const min = draft.fallbackLevelMin
       ? formatPadelLevel(draft.fallbackLevelMin)
@@ -113,7 +113,7 @@ export async function loadDraftOverviewData(
     invitedLabel:
       invitedPlayers.length === 0
         ? "Nog niemand geselecteerd"
-        : `${invitedPlayers.length} maatjes (${invitedPlayers
+        : `${invitedPlayers.length} vrienden (${invitedPlayers
             .map((p) => p.name)
             .slice(0, 4)
             .join(", ")}${invitedPlayers.length > 4 ? "…" : ""})`,

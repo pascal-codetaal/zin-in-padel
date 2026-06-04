@@ -102,7 +102,7 @@ export default function MaatjesStep({ loaderData }: Route.ComponentProps) {
         <header>
           <h2 className="text-2xl font-bold leading-tight">Wie nodig je uit?</h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Kies maatjes die je via WhatsApp wilt vragen voor de open plekken op
+            Kies vrienden die je via WhatsApp wilt vragen voor de open plekken op
             de baan.
           </p>
         </header>
@@ -120,7 +120,7 @@ export default function MaatjesStep({ loaderData }: Route.ComponentProps) {
         primary={{
           type: "submit",
           form: FORM_ID,
-          label: "Volgende: wanneer & waar →",
+          label: "Volgende: uitnodigingen →",
           busyLabel: "Opslaan…",
           busy: isSubmitting,
         }}

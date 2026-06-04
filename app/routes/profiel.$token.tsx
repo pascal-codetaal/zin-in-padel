@@ -174,7 +174,7 @@ export default function ProfielLayout({ loaderData }: Route.ComponentProps) {
             to={`/maatjes/${token}`}
             className="text-xs font-medium text-muted-foreground transition hover:text-foreground"
           >
-            Maatjes →
+            Vrienden →
           </Link>
         </div>
         {currentSlug !== null && (

@@ -11,12 +11,12 @@ import { formatScheduledAt } from "~/lib/match-defaults";
 import type { Route } from "./+types/match.nieuw.$token._index";
 
 const STEP_BULLETS = [
-  { title: "Spelers", sub: "Wie speelt al mee op de baan" },
-  { title: "Uitnodigen", sub: "Vraag maatjes voor open plekken" },
-  { title: "Wanneer & waar", sub: "Datum, uur en club" },
+  { title: "Wanneer", sub: "Datum, uur en club" },
   { title: "Formaat", sub: "Mixed, heren of dames" },
-  { title: "Invite-cascade", sub: "Eerst vrienden, dan breder" },
-  { title: "Bevestigen", sub: "Overzicht en versturen" },
+  { title: "Huidige spelers", sub: "Wie speelt al mee op de baan" },
+  { title: "Vrienden selecteren", sub: "Vraag vrienden voor open plekken" },
+  { title: "Uitnodigingen", sub: "Eerst vrienden, dan breder zoeken" },
+  { title: "Overzicht", sub: "Controleren en match aanmaken" },
 ];
 
 export async function loader({ params }: Route.LoaderArgs) {
@@ -76,8 +76,8 @@ export default function MatchWelcome({ loaderData }: Route.ComponentProps) {
             Plan een potje 🎾
           </h1>
           <p className="mt-2 text-base text-muted-foreground">
-            Hoi {organizerName}! Eerst wie er al meespeelt,
-            dan wie je nog uitnodigt.
+            Hoi {organizerName}! Eerst wanneer en waar, dan wie er
+            al meespeelt en wie je uitnodigt.
           </p>
         </div>
 
