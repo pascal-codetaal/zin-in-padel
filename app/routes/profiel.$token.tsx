@@ -7,6 +7,7 @@ import {
 } from "react-router";
 import type { Route } from "./+types/profiel.$token";
 import { PlayerAppHeader } from "~/components/player-app-header";
+import { ScrollCenteredStepper } from "~/components/scroll-centered-stepper";
 import { findUserByManageToken } from "~/lib/db.server";
 import { isProfielStepComplete } from "~/lib/profiel-completion";
 import { formatPersonName } from "~/lib/person-name";
@@ -151,10 +152,17 @@ export default function ProfielLayout({ loaderData }: Route.ComponentProps) {
     profileName: user.profileName,
     fallback: "speler",
   });
+  const centerLabel = currentSlug
+    ? PROFIEL_STEPS.find((s) => s.slug === currentSlug)?.shortTitle
+    : "Profiel";
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <PlayerAppHeader token={token} displayName={displayName}>
+      <PlayerAppHeader
+        token={token}
+        displayName={displayName}
+        centerLabel={centerLabel}
+      >
         {currentSlug !== null && (
           <div className="mx-auto max-w-3xl px-4 pb-3 pt-1 sm:px-6">
             <Stepper user={user} currentSlug={currentSlug} token={token} />
@@ -188,23 +196,32 @@ function Stepper({
   token: string;
 }) {
   return (
-    <ol className="grid grid-cols-4 gap-1">
-      {PROFIEL_STEPS.map((step, i) => {
-        const isActive = step.slug === currentSlug;
-        const isDone = isStepComplete(step.slug, user);
-        const state: StepState = isActive ? "active" : isDone ? "done" : "todo";
-        return (
-          <li key={step.slug}>
-            <StepChip
-              to={`/profiel/${token}/${step.slug}`}
-              label={step.shortTitle}
-              index={i + 1}
-              state={state}
-            />
-          </li>
-        );
-      })}
-    </ol>
+    <ScrollCenteredStepper activeKey={currentSlug}>
+      <ol
+        className="flex min-w-max gap-1 md:grid md:min-w-0 md:w-full md:grid-cols-4"
+        aria-label="Stappen profiel"
+      >
+        {PROFIEL_STEPS.map((step, i) => {
+          const isActive = step.slug === currentSlug;
+          const isDone = isStepComplete(step.slug, user);
+          const state: StepState = isActive ? "active" : isDone ? "done" : "todo";
+          return (
+            <li
+              key={step.slug}
+              className="w-19 shrink-0 md:w-auto md:shrink"
+              data-active-step={isActive ? "true" : undefined}
+            >
+              <StepChip
+                to={`/profiel/${token}/${step.slug}`}
+                label={step.shortTitle}
+                index={i + 1}
+                state={state}
+              />
+            </li>
+          );
+        })}
+      </ol>
+    </ScrollCenteredStepper>
   );
 }
 
