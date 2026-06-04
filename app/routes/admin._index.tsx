@@ -7,6 +7,7 @@ import {
 } from "~/lib/waitlist.server";
 import { getReferralAdminSummary } from "~/lib/referrals.server";
 import { formatPadelLevel, isPadelLevel } from "~/types/domain";
+import { APP_TIME_ZONE } from "~/lib/timezone";
 
 export function meta() {
   return [
@@ -66,6 +67,7 @@ function StatusBadge({
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString("nl-NL", {
+    timeZone: APP_TIME_ZONE,
     dateStyle: "medium",
     timeStyle: "short",
   });

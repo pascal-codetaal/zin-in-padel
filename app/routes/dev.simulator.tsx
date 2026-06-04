@@ -9,6 +9,7 @@ import {
   useSearchParams,
 } from "react-router";
 import { formatPersonName } from "~/lib/person-name";
+import { APP_TIME_ZONE } from "~/lib/timezone";
 import type { Route } from "./+types/dev.simulator";
 import { assertDevOnly } from "~/lib/dev-guard.server";
 import { inboundFromUser } from "~/lib/dev-inbound.server";
@@ -255,6 +256,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 function formatTime(iso: string) {
   return new Date(iso).toLocaleString("nl-NL", {
+    timeZone: APP_TIME_ZONE,
     day: "numeric",
     month: "short",
     hour: "2-digit",
