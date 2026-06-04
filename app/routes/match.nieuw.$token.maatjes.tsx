@@ -9,8 +9,8 @@ import { requireDraftFor } from "~/lib/match-wizard.server";
 import { MAX_COURT_SLOTS } from "~/lib/match-picker";
 import {
   applyInvitedRefs,
-  filterInvitableFriendRefs,
   getMatchPickerPlayers,
+  resolveMaatjesInvitedRefs,
   maatjeSlotsFromDraft,
   onCourtRefsForInviteStep,
   parseInvitedRefsForm,
@@ -44,9 +44,10 @@ export async function loader({ params }: Route.LoaderArgs) {
     slotRefs: slots,
   });
   const openSlots = Math.max(0, MAX_COURT_SLOTS - draft.confirmedSlotNames.length);
-  const invitedFriendRefs = filterInvitableFriendRefs(
+  const invitedFriendRefs = resolveMaatjesInvitedRefs(
+    players,
+    onCourtRefs,
     draft.invitedFriendRefs,
-    new Set(onCourtRefs),
   );
 
   return {

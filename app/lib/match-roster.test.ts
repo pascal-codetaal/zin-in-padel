@@ -4,6 +4,7 @@ import {
   filterInvitableFriendRefs,
   findPlayerRefByFuzzyName,
   playerRefsOnCourtFromRoster,
+  resolveMaatjesInvitedRefs,
 } from "./match-roster.server";
 
 const players: MatchPickerPlayer[] = [
@@ -52,5 +53,33 @@ describe("filterInvitableFriendRefs", () => {
       onCourt,
     );
     expect(invited).toEqual(["+32470333333", "+32470444444"]);
+  });
+});
+
+describe("resolveMaatjesInvitedRefs", () => {
+  const onCourt = ["+32470111111"];
+
+  it("defaults to all maatjes not on court when nothing saved", () => {
+    expect(resolveMaatjesInvitedRefs(players, onCourt, [])).toEqual([
+      "+32470222222",
+      "+32470333333",
+      "+32470444444",
+    ]);
+  });
+
+  it("defaults to all when saved list already covers everyone invitable", () => {
+    expect(
+      resolveMaatjesInvitedRefs(players, onCourt, [
+        "+32470222222",
+        "+32470333333",
+        "+32470444444",
+      ]),
+    ).toEqual(["+32470222222", "+32470333333", "+32470444444"]);
+  });
+
+  it("keeps a partial saved selection", () => {
+    expect(
+      resolveMaatjesInvitedRefs(players, onCourt, ["+32470333333"]),
+    ).toEqual(["+32470333333"]);
   });
 });

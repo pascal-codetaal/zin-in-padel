@@ -21,6 +21,7 @@ export {
   filterInvitableFriendRefs,
   findPlayerRefByFuzzyName,
   playerRefsOnCourtFromRoster,
+  resolveMaatjesInvitedRefs,
 } from "~/lib/match-roster.server";
 
 export type { MaatjeSlots, MatchPickerPlayer } from "~/lib/match-picker";
@@ -157,6 +158,7 @@ export async function applyConfirmedSlots(
   const { updateMatchDraft } = await import("~/lib/db.server");
   await updateMatchDraft(matchId, {
     confirmedSlotNames: buildConfirmedSlotNames(organizerName, slots, players),
+    invitedFriendRefs: [],
   });
 }
 

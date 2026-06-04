@@ -1,0 +1,46 @@
+X PIETER • Match
+	- Volgorde aanpassen van stappen + hernoemen tabs
+		waar, formaat, spelers, uitnodigen
+	- tabs niet aanklikbaar maken 
+	- "Wie speelt mee", automatisch pre-avatar selecteren
+	- uitnodiging ook zonder vrienden (uitschakelen)
+	- bugje: Annuleer knop bij "Wanneer"
+	- Bevesting/overzicht => maak eenvoudiger/duidelijker
+
+• Match detail
+	- match kunnen annuleren
+	- agent berichten moeten naar daar refereren
+	- ook na match aanmaken linken naar deze pagina
+	- organisator kan iedereen annuleren (flow bekijken)
+	- speler kan enkel zichzelf annueleren (flow bekijken)
+	- Spelers die cancellen moeten opgelijst staan
+	- meta/info veld waar bv playtomic link zit naar match
+
+• Header
+ 	- versimpelen
+
+• features
+ 	- blacklisting matches
+ 	- blacklist users
+
+• onboarding
+	features
+	- kunnen aanduiden wanneer ik niet speel
+	- kunnen aanduiden wanneer ik geen melding krijg
+
+• Whatsapp
+	- kunnen vragen wat de openstaande matches zijn
+	- melding sturen als match vol zit en uitleg dat organisator de rest gaat regelen
+
+• use cases
+ - Verzenden van uitnodigingen - controleer flow als er meerdere spelers accepteren (boven het aantal lege slots)
+ - wanneer je accepteert maar te laat was (vol), opnieuw uitnodiging krijgen als iemand cancelled
+
+ Bugs
+ 	- bij vrienden toevoegen kan je gelijk welke naam overschrijven gekoppeld aan nummer (nickname uitnodiging moet los staan van player/user)
+x JORIS 	- padel uitnodiging link accepteren => status van ingevulled plekken niet juist (bij reload wel in orde)
+ 	- Dubbele vraag bij aanmaken van match via whatsapp
+ 	- timezone issue whatsapp bericht vs dashboard (uur van wedstrijd)
+
+ Agent:
+ 	- afschermen tegen misbruik

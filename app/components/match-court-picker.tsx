@@ -6,7 +6,7 @@ import {
   type MatchPickerPlayer,
 } from "~/lib/match-picker";
 import {
-  formatPadelLevelCompact,
+  formatPadelLevel,
   type PadelLevel,
 } from "~/types/domain";
 
@@ -224,38 +224,40 @@ function CourtSlotButton({
   const filled = Boolean(name);
   return (
     <div className="flex flex-col items-center gap-1.5">
-      <button
-        type="button"
-        onClick={onSelect}
-        aria-pressed={isActive}
-        className={`rounded-full transition ${
-          isActive ? "ring-2 ring-primary ring-offset-2" : ""
-        }`}
-      >
+      <div className="relative">
+        <button
+          type="button"
+          onClick={onSelect}
+          aria-pressed={isActive}
+          className={`rounded-full transition ${
+            isActive ? "ring-2 ring-primary ring-offset-2" : ""
+          }`}
+        >
+          {filled && name ? (
+            <PlayerAvatar name={name} variant="confirmed" />
+          ) : (
+            <span className="inline-flex h-14 w-14 items-center justify-center rounded-full border-2 border-dashed border-primary/50 bg-primary/5 text-xl font-medium text-primary">
+              +
+            </span>
+          )}
+        </button>
         {filled && name ? (
-          <PlayerAvatar name={name} variant="confirmed" />
-        ) : (
-          <span className="inline-flex h-14 w-14 items-center justify-center rounded-full border-2 border-dashed border-primary/50 bg-primary/5 text-xl font-medium text-primary">
-            +
-          </span>
-        )}
-      </button>
+          <button
+            type="button"
+            onClick={onClear}
+            aria-label={`${name} van de baan halen`}
+            className="absolute -right-0.5 -top-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full border-2 border-card bg-destructive text-destructive-foreground shadow-sm transition hover:bg-destructive/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <XIcon className="h-3.5 w-3.5" />
+          </button>
+        ) : null}
+      </div>
       {filled && name ? (
         <>
           <span className="w-full truncate text-center text-xs font-medium">
             {name}
           </span>
           {level !== null && <LevelBadge level={level} />}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onClear();
-            }}
-            className="text-[10px] font-medium text-muted-foreground transition hover:text-destructive"
-          >
-            Verwijder
-          </button>
         </>
       ) : (
         <span className="text-[10px] text-muted-foreground">Plek {slotIndex + 2}</span>
@@ -287,7 +289,26 @@ function PlayerAvatar({
 function LevelBadge({ level }: { level: PadelLevel }) {
   return (
     <span className="inline-flex rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold tabular-nums text-accent-foreground">
-      {formatPadelLevelCompact(level)}
+      {formatPadelLevel(level)}
     </span>
+  );
+}
+
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
   );
 }

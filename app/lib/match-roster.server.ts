@@ -67,3 +67,25 @@ export function filterInvitableFriendRefs(
 ): string[] {
   return friendRefs.filter((ref) => !onCourtRefs.has(ref));
 }
+
+/** Default: all maatjes not on court; keep a non-empty partial set after explicit save. */
+export function resolveMaatjesInvitedRefs(
+  players: MatchPickerPlayer[],
+  onCourtRefs: Iterable<string>,
+  savedRefs: string[],
+): string[] {
+  const onCourt = new Set(onCourtRefs);
+  const allInvitable = players
+    .filter((p) => !onCourt.has(p.ref))
+    .map((p) => p.ref);
+  const saved = filterInvitableFriendRefs(savedRefs, onCourt);
+
+  if (allInvitable.length === 0) return [];
+
+  const allInSaved =
+    saved.length === allInvitable.length &&
+    allInvitable.every((ref) => saved.includes(ref));
+
+  if (saved.length === 0 || allInSaved) return allInvitable;
+  return saved;
+}

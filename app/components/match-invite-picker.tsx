@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import type { MatchPickerPlayer } from "~/lib/match-picker";
 import {
-  formatPadelLevelCompact,
+  formatPadelLevel,
   type PadelLevel,
 } from "~/types/domain";
 
@@ -37,14 +37,18 @@ export function MatchInvitePicker({
     [players, onCourt],
   );
 
-  const initialInvited = useMemo(() => {
-    const poolRefs = new Set(invitePool.map((p) => p.ref));
+  const invitedFromLoader = useMemo(() => {
+    const poolRefSet = new Set(invitePool.map((p) => p.ref));
     return new Set(
-      defaultInvitedRefs.filter((ref) => poolRefs.has(ref)),
+      defaultInvitedRefs.filter((ref) => poolRefSet.has(ref)),
     );
   }, [defaultInvitedRefs, invitePool]);
 
-  const [invited, setInvited] = useState<Set<string>>(initialInvited);
+  const [invited, setInvited] = useState(invitedFromLoader);
+
+  useEffect(() => {
+    setInvited(invitedFromLoader);
+  }, [invitedFromLoader]);
 
   function toggle(ref: string) {
     setInvited((prev) => {
@@ -62,6 +66,10 @@ export function MatchInvitePicker({
   function selectNone() {
     setInvited(new Set());
   }
+
+  const allSelected =
+    invitePool.length > 0 && invited.size === invitePool.length;
+  const manualSelected = !allSelected;
 
   return (
     <div className="space-y-4">
@@ -86,21 +94,34 @@ export function MatchInvitePicker({
         </p>
       ) : openSlots === 0 ? null : (
         <>
-          <div className="flex items-center justify-end gap-2 text-xs">
+          <div
+            role="group"
+            aria-label="Allen uitnodigen of zelf kiezen"
+            className="grid grid-cols-2 gap-1 rounded-full border border-border bg-secondary/50 p-1"
+          >
             <button
               type="button"
               onClick={selectAll}
-              className="font-medium text-muted-foreground transition hover:text-foreground"
+              aria-pressed={allSelected}
+              className={`inline-flex h-10 items-center justify-center rounded-full px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                allSelected
+                  ? "bg-accent text-accent-foreground shadow-sm"
+                  : "text-muted-foreground hover:bg-background/60 hover:text-foreground"
+              }`}
             >
               Allen uitnodigen
             </button>
-            <span className="text-border">·</span>
             <button
               type="button"
               onClick={selectNone}
-              className="font-medium text-muted-foreground transition hover:text-foreground"
+              aria-pressed={manualSelected}
+              className={`inline-flex h-10 items-center justify-center rounded-full px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                manualSelected
+                  ? "bg-card text-foreground shadow-sm ring-1 ring-border"
+                  : "text-muted-foreground hover:bg-background/60 hover:text-foreground"
+              }`}
             >
-              Geen
+              Ik kies zelf
             </button>
           </div>
 
@@ -133,7 +154,7 @@ export function MatchInvitePicker({
                     </span>
                     {player.level !== null && (
                       <span className="inline-flex rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold tabular-nums text-accent-foreground">
-                        {formatPadelLevelCompact(player.level)}
+                        {formatPadelLevel(player.level)}
                       </span>
                     )}
                     {isOn && (
