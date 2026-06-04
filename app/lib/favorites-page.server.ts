@@ -5,7 +5,7 @@ import {
 } from "~/lib/db.server";
 import { buildFriendInviteContent } from "~/lib/friend-invite-message.server";
 import {
-  displayFriendName,
+  canonicalRefName,
   findUserForPlayerPhone,
 } from "~/lib/friend-name.server";
 import { findOptedInUserForPhone } from "~/lib/friend-invite.server";
@@ -14,7 +14,12 @@ import type { Player } from "~/types/domain";
 
 export type FavoritePlayerView = {
   ref: string;
+  /** Resolved display name: viewer's nickname → owner's real name → stub. */
   name: string;
+  /** Viewer's own nickname for this friend, or null when none is set. */
+  nickname: string | null;
+  /** Underlying name without the nickname (owner's real name → stub). */
+  canonicalName: string;
   phone: string;
   isAppUser: boolean;
   optedIn: boolean;
@@ -74,13 +79,14 @@ export async function getFavoritePlayersForUser(
       db.players.find((p) => p.ref === ref);
 
     if (!player) {
-      const name = displayFriendName(
-        user.favoriteNames,
+      const canonicalName = canonicalRefName(
         ref,
         undefined,
         db.users,
         "Onbekende speler",
       );
+      const nickname = user.favoriteNames[ref] ?? null;
+      const name = nickname ?? canonicalName;
       const invite = inviteFieldsForPlayer(
         { name, phone: ref },
         inviterName,
@@ -90,6 +96,8 @@ export async function getFavoritePlayersForUser(
       players.push({
         ref,
         name,
+        nickname,
+        canonicalName,
         phone: ref,
         isAppUser: false,
         optedIn: false,
@@ -100,13 +108,14 @@ export async function getFavoritePlayersForUser(
 
     const matchedUser = findUserForPlayerPhone(db.users, player.phone);
     const optedIn = matchedUser?.optedIn ?? false;
-    const name = displayFriendName(
-      user.favoriteNames,
+    const canonicalName = canonicalRefName(
       player.ref,
       player,
       db.users,
       "Onbekende speler",
     );
+    const nickname = user.favoriteNames[player.ref] ?? null;
+    const name = nickname ?? canonicalName;
     const invite = inviteFieldsForPlayer(
       { name, phone: player.phone },
       inviterName,
@@ -117,6 +126,8 @@ export async function getFavoritePlayersForUser(
     players.push({
       ref: player.ref,
       name,
+      nickname,
+      canonicalName,
       phone: player.phone,
       isAppUser: Boolean(matchedUser),
       optedIn,
