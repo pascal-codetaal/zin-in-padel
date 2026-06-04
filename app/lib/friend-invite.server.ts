@@ -62,7 +62,7 @@ export async function buildFriendInviteFollowUp(input: {
   if (!content) return null;
 
   return {
-    friendName: input.friendName.trim() || "je maatje",
+    friendName: input.friendName.trim() || "je vriend",
     ...content,
   };
 }
@@ -93,7 +93,7 @@ export function formatFriendInviteFollowUpsMessage(
 ${f.shareUrl}`;
   });
 
-  return `Deze maatjes gebruiken Zin in Padel nog niet. Stuur elk een persoonlijk bericht via WhatsApp (tik op de link, controleer de tekst, Verzenden):
+  return `Deze vrienden gebruiken Zin in Padel nog niet. Stuur elk een persoonlijk bericht via WhatsApp (tik op de link, controleer de tekst, Verzenden):
 
 ${blocks.join("\n\n")}`;
 }

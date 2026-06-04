@@ -142,13 +142,13 @@ export default function BevestigenStep({
             label="Uitgenodigd"
             value={
               invitedPlayers.length === 0
-                ? "Geen maatjes geselecteerd"
+                ? "Geen vrienden geselecteerd"
                 : `${invitedPlayers.length} uitgenodigd, eerste 'ja' krijgt de plek (${invitedPlayers.map((p) => p.name).slice(0, 3).join(", ")}${invitedPlayers.length > 3 ? "…" : ""})`
             }
             editTo={`/match/nieuw/${token}/maatjes`}
           />
           <SummaryRow
-            label="Invite-cascade"
+            label="Uitnodigingen"
             value={renderCascade(draft)}
             editTo={`/match/nieuw/${token}/uitnodigingen`}
           />
@@ -229,7 +229,7 @@ function renderCascade(draft: {
   fallbackToEveryone: boolean;
   fallbackEveryoneDelayMinutes: number;
 }): string {
-  const parts: string[] = ["Maatjes (nu)"];
+  const parts: string[] = ["Vrienden (nu)"];
   if (draft.fallbackToLevelRange) {
     const min = draft.fallbackLevelMin
       ? formatPadelLevel(draft.fallbackLevelMin)

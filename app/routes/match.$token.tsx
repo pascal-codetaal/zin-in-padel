@@ -268,7 +268,7 @@ export default function MatchesList({ loaderData }: Route.ComponentProps) {
             to={`/maatjes/${token}`}
             className="text-xs font-medium text-muted-foreground transition hover:text-foreground"
           >
-            Maatjes →
+            Vrienden →
           </Link>
         </div>
       </header>
@@ -676,7 +676,7 @@ function renderCascade(match: MatchCardData): React.ReactNode {
     return "Match vol — cascade gestopt";
   }
   const segments: { phase: 1 | 2 | 3; text: string }[] = [
-    { phase: 1, text: "Maatjes (nu)" },
+    { phase: 1, text: "Vrienden (nu)" },
   ];
   if (match.fallbackToLevelRange) {
     const min = match.fallbackLevelMin

@@ -182,7 +182,7 @@ function HeroSection({ mobileSignup }: { mobileSignup: ReactNode }) {
           <ul className="grid gap-3 md:grid-cols-3">
             <HeroPillar
               title="Chat of snelle setup"
-              text="Praat met de bot zoals met een maatje, of vul moment, niveau en club in via een compact scherm."
+              text="Praat met de bot zoals met een vriend, of vul moment, niveau en club in via een compact scherm."
             />
             <HeroPillar
               title="Geen groepsposts"

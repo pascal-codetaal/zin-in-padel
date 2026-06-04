@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Form, Link, redirect, useNavigation } from "react-router";
+import { isMaatjeCourtFull } from "~/lib/match-picker";
 import { MatchCourtPicker } from "~/components/match-court-picker";
 import {
   nextMatchStep,
@@ -46,6 +48,9 @@ export async function action({ request, params }: Route.ActionArgs) {
   const form = await request.formData();
   const players = await getMatchPickerPlayers(user.id);
   const slots = parseMaatjeSlotsForm(form, user.favoritePlayerRefs);
+  if (isMaatjeCourtFull(slots)) {
+    return { ok: false as const, error: "court_full" };
+  }
   const organizerName = formatPersonName({
     firstName: user.firstName,
     lastName: user.lastName,
@@ -63,6 +68,10 @@ export default function SpelersStep({ loaderData }: Route.ComponentProps) {
   const { players, defaultSlots, organizerLevel, organizerName } = loaderData;
   const navigation = useNavigation();
   const isSubmitting = navigation.state !== "idle";
+  const [courtFull, setCourtFull] = useState(
+    () => isMaatjeCourtFull(defaultSlots),
+  );
+  const cannotContinue = courtFull || players.length === 0;
 
   return (
     <>
@@ -77,12 +86,12 @@ export default function SpelersStep({ loaderData }: Route.ComponentProps) {
 
         {players.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-border bg-secondary/30 px-4 py-6 text-center text-sm text-muted-foreground">
-            Nog geen maatjes in je lijst.{" "}
+            Nog geen vrienden in je lijst.{" "}
             <Link
               to={`/maatjes/${token}`}
               className="font-medium text-foreground underline"
             >
-              Voeg maatjes toe →
+              Voeg vrienden toe →
             </Link>
           </p>
         ) : (
@@ -92,6 +101,7 @@ export default function SpelersStep({ loaderData }: Route.ComponentProps) {
             players={players}
             defaultSlots={defaultSlots}
             maatjesHref={`/maatjes/${token}`}
+            onCourtStateChange={({ courtFull: full }) => setCourtFull(full)}
           />
         )}
       </Form>
@@ -100,9 +110,10 @@ export default function SpelersStep({ loaderData }: Route.ComponentProps) {
         primary={{
           type: "submit",
           form: FORM_ID,
-          label: "Volgende: uitnodigen →",
+          label: "Volgende: vrienden selecteren →",
           busyLabel: "Opslaan…",
           busy: isSubmitting,
+          disabled: cannotContinue,
         }}
         secondary={
           PREV_SLUG

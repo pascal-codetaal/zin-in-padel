@@ -109,7 +109,7 @@ export default function BasisStep({ actionData }: Route.ComponentProps) {
             <h2 className="text-2xl font-bold leading-tight">Man of vrouw?</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               De P-klassementen verschillen — zo tonen we het juiste niveau en
-              matchen we je met passende maatjes.
+              matchen we je met passende vrienden.
             </p>
           </header>
 

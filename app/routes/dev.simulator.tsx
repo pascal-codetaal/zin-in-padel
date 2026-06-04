@@ -491,7 +491,7 @@ export default function DevSimulator({ loaderData }: Route.ComponentProps) {
               to={`/maatjes/${selectedUser.manageToken}`}
               className="mt-1 block text-xs text-emerald-600 hover:underline dark:text-emerald-400"
             >
-              Mijn maatjes →
+              Mijn vrienden →
             </Link>
           )}
           <h1 className="mt-2 text-base font-semibold tracking-tight">
