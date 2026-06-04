@@ -144,6 +144,8 @@ export type Match = {
   confirmedSlotNames: string[];
   /** Friend refs invited explicitly (subset of organizer.favoritePlayerRefs). */
   invitedFriendRefs: string[];
+  /** Phase 1: invite selected friends via WhatsApp (wizard default on). */
+  inviteFriendsEnabled: boolean;
   /**
    * Full invite lifecycle for this match — single source of truth for who was
    * invited, in which cascade phase, and how they responded. The set of
