@@ -25,7 +25,7 @@ export const MATCH_STEPS: { slug: MatchStepSlug; shortTitle: string }[] = [
   { slug: "wanneer", shortTitle: "Wanneer" },
   { slug: "formaat", shortTitle: "Formaat" },
   { slug: "spelers", shortTitle: "Huidige spelers" },
-  { slug: "uitnodigen", shortTitle: "Uitnodigen" },
+  { slug: "uitnodigen", shortTitle: "Uitnodigingsplan" },
   { slug: "maatjes", shortTitle: "Vrienden uitnodigen" },
   { slug: "bevestigen", shortTitle: "Overzicht" },
 ];

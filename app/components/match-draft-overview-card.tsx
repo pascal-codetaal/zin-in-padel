@@ -64,7 +64,7 @@ export function MatchDraftOverviewCard({
             editTo={editable ? `/match/nieuw/${token}/maatjes` : undefined}
           />
           <OverviewField
-            label="Uitnodigen"
+            label="Uitnodigingsplan"
             value={data.cascadeLabel}
             editTo={editable ? `/match/nieuw/${token}/uitnodigen` : undefined}
             className="sm:col-span-2"
