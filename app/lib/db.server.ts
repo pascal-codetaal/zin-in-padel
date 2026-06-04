@@ -574,6 +574,37 @@ export async function removeFavoriteFromUser(
   });
 }
 
+/**
+ * Set (or clear, with `null`) the viewer's private nickname for an existing
+ * favorite. No-op when the favorite does not exist — the Player/User name is
+ * never touched, only this user's label.
+ */
+export async function setFavoriteNickname(
+  userId: string,
+  ref: PlayerRef,
+  name: string | null,
+): Promise<User> {
+  return prisma.$transaction(async (tx) => {
+    const user = await tx.user.findUnique({ where: { id: userId } });
+    if (!user) throw new Error(`User not found: ${userId}`);
+
+    await tx.userFavorite.updateMany({
+      where: { userId, playerRef: ref },
+      data: { name },
+    });
+    await tx.user.update({
+      where: { id: userId },
+      data: { updatedAt: new Date() },
+    });
+
+    const row = await tx.user.findUniqueOrThrow({
+      where: { id: userId },
+      include: USER_INCLUDE,
+    });
+    return userRowToDomain(row);
+  });
+}
+
 /* -------------------------------------------------------------------------- */
 /*  Profile                                                                   */
 /* -------------------------------------------------------------------------- */

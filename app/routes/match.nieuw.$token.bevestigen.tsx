@@ -21,22 +21,24 @@ import {
   type PadelLevel,
 } from "~/types/domain";
 import { StepFooter } from "~/components/step-footer";
+import { displayFriendName } from "~/lib/friend-name.server";
 import type { Route } from "./+types/match.nieuw.$token.bevestigen";
 
 const STEP_SLUG = "bevestigen" as const;
 const PREV_SLUG = prevMatchStep(STEP_SLUG)!;
 
 export async function loader({ params }: Route.LoaderArgs) {
-  const { draft } = await requireDraftFor(params.token);
+  const { user, draft } = await requireDraftFor(params.token);
   const [clubs, db] = await Promise.all([
     getClubsByIds(draft.clubIds),
     getDatabase(),
   ]);
   const invitedPlayers = draft.invitedFriendRefs.map((ref) => {
     const p = db.players.find((p) => p.ref === ref);
-    return p
-      ? { ref: p.ref, name: p.name }
-      : { ref, name: "Onbekende speler" };
+    return {
+      ref,
+      name: displayFriendName(user.favoriteNames, ref, p, db.users, "Onbekende speler"),
+    };
   });
   const openSlots = openSlotsOf(draft);
 

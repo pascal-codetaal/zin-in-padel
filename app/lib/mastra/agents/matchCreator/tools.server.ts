@@ -26,12 +26,12 @@ import {
   playerRefsOnCourtFromRoster,
 } from "~/lib/match-picker.server";
 import { formatPersonName } from "~/lib/person-name";
+import { displayFriendName } from "~/lib/friend-name.server";
 import {
   ALL_PADEL_LEVELS,
   acceptedPlayerRefsOf,
   formatMatchFormat,
   openSlotsOf,
-  resolveFavoriteName,
   type PadelLevel,
 } from "~/types/domain";
 
@@ -118,7 +118,7 @@ export const readMatchProfileTool = createTool({
           .filter((p) => user.favoritePlayerRefs.includes(p.ref))
           .map((p) => ({
             ref: p.ref,
-            name: resolveFavoriteName(user.favoriteNames, p.ref, p.name, p.name),
+            name: displayFriendName(user.favoriteNames, p.ref, p, db.users, p.name),
             phone: p.phone,
           }))
       : [];
@@ -485,7 +485,15 @@ export const finalizeMatchTool = createTool({
     const clubs = await getClubsByIds(draft.clubIds);
     const db = await getDatabase();
     const inviteeNames = finalized.invitedFriendRefs
-      .map((ref) => db.players.find((p) => p.ref === ref)?.name ?? ref)
+      .map((ref) =>
+        displayFriendName(
+          user.favoriteNames,
+          ref,
+          db.players.find((p) => p.ref === ref),
+          db.users,
+          ref,
+        ),
+      )
       .join(", ");
 
     const openSlots = openSlotsOf(finalized);

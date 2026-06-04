@@ -85,6 +85,7 @@ export async function notifyOrganiser(input: {
       clubName,
       when,
       matchUrl,
+      favoriteNames: organiser.favoriteNames,
     });
     await sendWhatsAppMessage(organiser.id, body, {
       deliverViaApi: true,
@@ -113,12 +114,13 @@ async function renderNotice(input: {
   clubName: string;
   when: string;
   matchUrl: string;
+  favoriteNames: Record<string, string>;
 }): Promise<{ body: string; line: string }> {
-  const { notice, clubName, when, matchUrl } = input;
+  const { notice, clubName, when, matchUrl, favoriteNames } = input;
 
   switch (notice.kind) {
     case "invitee-accepted": {
-      const firstName = await resolveFirstName(notice.playerRef);
+      const firstName = await resolveFirstName(notice.playerRef, favoriteNames);
       return {
         body: formatInviteeAcceptedNotice({ firstName, clubName, when, matchUrl }),
         line: formatInviteeAcceptedLine({ firstName, clubName, when }),
@@ -146,19 +148,27 @@ async function renderNotice(input: {
   }
 }
 
-async function resolveFirstName(playerRef: string): Promise<string> {
+async function resolveFirstName(
+  playerRef: string,
+  favoriteNames: Record<string, string>,
+): Promise<string> {
+  const nickname = favoriteNames[playerRef];
+  if (nickname) {
+    const first = nickname.split(/\s+/)[0];
+    if (first) return first;
+  }
   const player = await findPlayerByRef(playerRef);
+  // A registered owner's real name beats the Player stub (which may hold a
+  // stale label a friend-adder typed).
+  const user = await findUserByPhone(player?.phone ?? playerRef);
+  if (user) {
+    const userFirst =
+      user.firstName?.trim() || user.profileName.split(/\s+/)[0]?.trim();
+    if (userFirst) return userFirst;
+  }
   if (player?.name) {
     const first = player.name.split(/\s+/)[0];
     if (first) return first;
-  }
-  const user = await findUserByPhone(player?.phone ?? playerRef);
-  if (user) {
-    return (
-      user.firstName?.trim() ||
-      user.profileName.split(/\s+/)[0] ||
-      "Iemand"
-    );
   }
   return "Iemand";
 }

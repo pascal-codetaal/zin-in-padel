@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   data,
   Form,
   Link,
   redirect,
+  useFetcher,
   useNavigation,
 } from "react-router";
 import { AddFromContacts } from "~/components/add-from-contacts";
@@ -11,6 +12,7 @@ import type { Route } from "./+types/vrienden.$token";
 import {
   findUserByManageToken,
   removeFavoriteFromUser,
+  setFavoriteNickname,
 } from "~/lib/db.server";
 import { addFriend } from "~/lib/friends.server";
 import {
@@ -159,6 +161,14 @@ export async function action({ request, params }: Route.ActionArgs) {
     if (!ref) return { ok: false as const, error: "missing_ref" };
     await removeFavoriteFromUser(user.id, ref);
     return redirect(`/maatjes/${token}`);
+  }
+
+  if (intent === "rename") {
+    const ref = form.get("ref")?.toString();
+    if (!ref) return { ok: false as const, error: "missing_ref" };
+    const nickname = form.get("nickname")?.toString().trim() ?? "";
+    await setFavoriteNickname(user.id, ref, nickname || null);
+    return { ok: true as const };
   }
 
   return { ok: false as const, error: "unknown_intent" };
@@ -433,12 +443,69 @@ function PlayerCard({
 }) {
   const inviteUrl = player.inviteUrl;
   const inviteForwardText = player.inviteForwardText;
+  const fetcher = useFetcher();
+  const [editing, setEditing] = useState(false);
+  const cancelRef = useRef(false);
+
+  // While a rename is in flight, optimistically show the submitted value.
+  const pending = fetcher.formData?.get("nickname");
+  const displayName =
+    pending != null
+      ? String(pending).trim() || player.canonicalName
+      : player.name;
+
+  function submitNickname(value: string) {
+    const next = value.trim();
+    if (next === (player.nickname ?? "")) return;
+    fetcher.submit(
+      { intent: "rename", ref: player.ref, nickname: next },
+      { method: "post" },
+    );
+  }
 
   return (
     <li className="rounded-2xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="font-semibold">{player.name}</p>
+        <div className="min-w-0 flex-1">
+          {editing ? (
+            <input
+              name="nickname"
+              type="text"
+              autoFocus
+              defaultValue={player.nickname ?? ""}
+              placeholder={player.canonicalName}
+              aria-label={`Bijnaam voor ${player.canonicalName}`}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  e.currentTarget.blur();
+                } else if (e.key === "Escape") {
+                  cancelRef.current = true;
+                  e.currentTarget.blur();
+                }
+              }}
+              onBlur={(e) => {
+                const value = e.currentTarget.value;
+                setEditing(false);
+                if (cancelRef.current) {
+                  cancelRef.current = false;
+                  return;
+                }
+                submitNickname(value);
+              }}
+              className="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-base font-semibold outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              title="Tik om de bijnaam te wijzigen"
+              className="group flex max-w-full items-center gap-1.5 rounded-md text-left font-semibold outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <span className="truncate">{displayName}</span>
+              <PencilIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground opacity-40 transition group-hover:opacity-100" />
+            </button>
+          )}
           <p className="mt-0.5 text-sm text-muted-foreground">
             {formatPhone(player.phone) || player.phone}
           </p>
@@ -602,6 +669,25 @@ function CheckIcon({ className }: { className?: string }) {
       aria-hidden="true"
     >
       <path d="M20 6 9 17l-5-5" />
+    </svg>
+  );
+}
+
+function PencilIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
     </svg>
   );
 }

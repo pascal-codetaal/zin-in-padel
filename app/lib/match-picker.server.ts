@@ -14,9 +14,11 @@ import {
   findPlayerRefByFuzzyName,
   playerRefsOnCourtFromRoster,
 } from "~/lib/match-roster.server";
-import { phonesEquivalent } from "~/lib/phone-match.server";
-import type { Player, User } from "~/types/domain";
-import { resolveFavoriteName } from "~/types/domain";
+import {
+  displayFriendName,
+  findUserForPlayerPhone,
+} from "~/lib/friend-name.server";
+import type { Player } from "~/types/domain";
 
 export {
   filterInvitableFriendRefs,
@@ -27,17 +29,6 @@ export {
 
 export type { MaatjeSlots, MatchPickerPlayer } from "~/lib/match-picker";
 export { MAATJE_SLOT_COUNT, MAX_COURT_SLOTS } from "~/lib/match-picker";
-
-function findUserForPlayerPhone(
-  users: User[],
-  playerPhone: string,
-): User | undefined {
-  return users.find(
-    (u) =>
-      phonesEquivalent(playerPhone, u.phone) ||
-      phonesEquivalent(playerPhone, u.waId),
-  );
-}
 
 /** Favorite players enriched with P-level when they are a PadelMatch user. */
 export async function getMatchPickerPlayers(
@@ -56,10 +47,11 @@ export async function getMatchPickerPlayers(
     if (!player) {
       players.push({
         ref,
-        name: resolveFavoriteName(
+        name: displayFriendName(
           user.favoriteNames,
           ref,
           undefined,
+          db.users,
           "Onbekende speler",
         ),
         level: null,
@@ -70,10 +62,11 @@ export async function getMatchPickerPlayers(
     const matchedUser = findUserForPlayerPhone(db.users, player.phone);
     players.push({
       ref: player.ref,
-      name: resolveFavoriteName(
+      name: displayFriendName(
         user.favoriteNames,
         player.ref,
-        player.name,
+        player,
+        db.users,
         "Onbekende speler",
       ),
       level: matchedUser?.level ?? null,

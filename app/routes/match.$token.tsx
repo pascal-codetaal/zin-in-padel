@@ -16,6 +16,7 @@ import {
   type MatchStatus,
   type PadelLevel,
 } from "~/types/domain";
+import { displayFriendName } from "~/lib/friend-name.server";
 import { formatPersonName } from "~/lib/person-name";
 import {
   addConfirmedSlotToMatch,
@@ -108,13 +109,13 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     const acceptedRefs = acceptedPlayerRefsOf(m);
     const acceptedRoster: AcceptedRosterEntry[] = acceptedRefs.map((ref) => ({
       playerRef: ref,
-      name: playersByRef.get(ref)?.name ?? ref,
+      name: displayFriendName(user.favoriteNames, ref, playersByRef.get(ref), db.users, ref),
     }));
     const declines: DeclineEntry[] = m.invitedPlayers
       .filter((i) => i.status === "declined")
       .map((i) => ({
         playerRef: i.playerRef,
-        name: playersByRef.get(i.playerRef)?.name ?? i.playerRef,
+        name: displayFriendName(user.favoriteNames, i.playerRef, playersByRef.get(i.playerRef), db.users, i.playerRef),
       }));
 
     // Friends the organiser picked who never got an invite: either no User
@@ -126,14 +127,14 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         if (!u) {
           return {
             playerRef: ref,
-            name: playersByRef.get(ref)?.name ?? ref,
+            name: displayFriendName(user.favoriteNames, ref, playersByRef.get(ref), db.users, ref),
             reason: "not-registered",
           };
         }
         if (!u.optedIn) {
           return {
             playerRef: ref,
-            name: playersByRef.get(ref)?.name ?? ref,
+            name: displayFriendName(user.favoriteNames, ref, playersByRef.get(ref), db.users, ref),
             reason: "opted-out",
           };
         }
@@ -161,8 +162,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         matchClubs.length === 0
           ? ""
           : [...new Set(matchClubs.map((c) => c.city))].join(" · "),
-      invitedNames: m.invitedFriendRefs.map(
-        (ref) => playersByRef.get(ref)?.name ?? ref,
+      invitedNames: m.invitedFriendRefs.map((ref) =>
+        displayFriendName(user.favoriteNames, ref, playersByRef.get(ref), db.users, ref),
       ),
       confirmedSlotNames: m.confirmedSlotNames,
       acceptedRoster,
