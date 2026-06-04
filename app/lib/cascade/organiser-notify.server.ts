@@ -27,6 +27,8 @@ import {
   formatCascadeExhaustedNotice,
   formatInviteeAcceptedLine,
   formatInviteeAcceptedNotice,
+  formatInviteeLeftLine,
+  formatInviteeLeftNotice,
   formatMatchFullLine,
   formatMatchFullNotice,
 } from "@whatsapp-templates/organiser/notify";
@@ -73,7 +75,7 @@ export async function notifyOrganiser(input: {
       : "je match";
   const when = formatScheduledAt(match.scheduledAt);
   const matchToken = organiser.manageToken;
-  const matchUrl = `${getBaseUrl()}/match/${matchToken}`;
+  const matchUrl = `${getBaseUrl()}/match/${matchToken}/${match.id}`;
 
   const templateRow = await findApprovedWhatsAppTemplate(
     ORGANISER_NOTIFY_WHATSAPP_TEMPLATE_ID,
@@ -124,6 +126,13 @@ async function renderNotice(input: {
       return {
         body: formatInviteeAcceptedNotice({ firstName, clubName, when, matchUrl }),
         line: formatInviteeAcceptedLine({ firstName, clubName, when }),
+      };
+    }
+    case "invitee-left": {
+      const firstName = await resolveFirstName(notice.playerRef, favoriteNames);
+      return {
+        body: formatInviteeLeftNotice({ firstName, clubName, when, matchUrl }),
+        line: formatInviteeLeftLine({ firstName, clubName, when }),
       };
     }
     case "match-full":

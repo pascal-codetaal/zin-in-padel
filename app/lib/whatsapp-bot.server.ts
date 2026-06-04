@@ -99,7 +99,7 @@ function buildAgentMessage(
       playtomicPrefill.matchPageUrl
         ? `matchWizardUrl: ${playtomicPrefill.matchPageUrl}`
         : "",
-      "instructie: draft-match staat al klaar (stappen 1–4 MATCH-PASTE zijn gedaan). Vat kort samen, stel ALLEEN de INVITE-CASCADE-vraag (A/B/C), en zet matchOverviewUrl op een eigen regel in je antwoord (volledige https-link). Na finalize-match: listUrl = live match-overzicht.",
+      "instructie: draft-match staat al klaar (stappen 1–4 MATCH-PASTE zijn gedaan). Vat kort samen, stel ALLEEN de INVITE-CASCADE-vraag (A/B/C), en zet matchOverviewUrl op een eigen regel in je antwoord (volledige https-link). Na finalize-match: listUrl = dedicated live match-overzicht.",
     );
   }
 

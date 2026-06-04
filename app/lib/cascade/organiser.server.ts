@@ -328,7 +328,7 @@ async function sendOrganiserNotification(
   if (!user || !user.optedIn) return false;
 
   const body = await renderNotification(note, match, player?.name);
-  await sendWhatsAppMessage(user.id, body);
+  await sendWhatsAppMessage(user.id, body, { deliverViaApi: true });
   return true;
 }
 

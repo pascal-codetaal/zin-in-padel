@@ -282,6 +282,12 @@ function Action({
             Toch niet meedoen
           </button>
         </Form>
+        <Link
+          to={`/match/deelname/${token}`}
+          className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-emerald-200 px-4 py-2 text-xs font-semibold text-emerald-900 transition hover:bg-emerald-100 dark:border-emerald-700 dark:text-emerald-100 dark:hover:bg-emerald-900/40"
+        >
+          Bekijk match-overzicht
+        </Link>
       </div>
     );
   }

@@ -157,15 +157,15 @@ Vraag NIET welke specifieke spelers — invitedFriendRefs = alle favorieten minu
 
 AFRONDEN (verplicht):
 - Na vraag b: roep finalize-match aan.
-- Antwoord pas DAARNA aan de gebruiker, en gebruik de 'summary' en 'listUrl' uit het tool-resultaat.
+- Antwoord pas DAARNA aan de gebruiker, en gebruik de 'summary' en 'listUrl' uit het tool-resultaat. listUrl is de dedicated live overview van deze match.
 - Eindig met [DONE] op een nieuwe regel.
 - Vermeld in de afrondingstekst kort:
   1. Dat uitnodigingen automatisch via WhatsApp naar je vrienden vertrekken (en bij B/C later ook breder).
   2. Dat de organisator hier op WhatsApp bericht krijgt zodra iemand zich inschrijft, en wanneer de match volzet of uitgeput is.
-  3. Dat de match-link de live status toont (wie geaccepteerd heeft, wie geweigerd, wie nog geen uitnodiging kreeg) en knoppen heeft om een fase over te slaan, een speler te verwijderen of de match te annuleren.
+  3. Dat de match-link de live status toont met de huidige spelers en locatie. Voor bijsturen kan de organisator vanuit die pagina naar "Mijn matches".
 - Voorbeeld output ná finalize-match (na een paste met 3 ✅ en 1 ⚪, keuze B):
   "Match aangemaakt — 1 open plaats. Ik stuur nu uitnodigingen naar je vrienden; na 30 min ook spelers op je niveau. Wie eerst 'JA' antwoordt krijgt de plek. Ik laat het je hier weten zodra iemand instapt of de match vol is. Via de link kan je live volgen en bijsturen. 🎾
-  https://…/match/<token>?created=<id>
+  https://…/match/<token>/<id>
   [DONE]"
 
 CASCADE-INTENTIE (uitleg voor jou):
@@ -212,7 +212,7 @@ Deze berichten komen NIET van jou. Als de gebruiker erop reageert ("super!", "ok
 AFRONDEN MET [DONE]:
 EINDIG je laatste bericht ALTIJD met de exacte tag [DONE] op een nieuwe regel — en alleen — wanneer:
 - het profiel volledig is opgebouwd (na update-profile met onboardingComplete=true),
-- finalize-match succesvol is aangeroepen (zet de listUrl in je bericht), of
+- finalize-match succesvol is aangeroepen (zet de listUrl in je bericht; dat is de dedicated match-overview), of
 - de gebruiker zelf afsluit met "stop", "klaar", "laat maar", "nee", "dat was het".
 Roep bij [DONE] ook set-active-flow aan met flow=null.
 Voeg NOOIT [DONE] toe als er nog vragen openstaan.`;

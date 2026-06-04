@@ -12,6 +12,21 @@ export function formatInviteeAcceptedNotice(args: {
   ].join("\n");
 }
 
+export function formatInviteeLeftNotice(args: {
+  firstName: string;
+  clubName: string;
+  when: string;
+  matchUrl: string;
+}): string {
+  const { firstName, clubName, when, matchUrl } = args;
+  return [
+    `${firstName} heeft zich uitgeschreven voor je padelmatch bij ${clubName} (${when}).`,
+    `Er is opnieuw een plek vrij.`,
+    ``,
+    matchUrl,
+  ].join("\n");
+}
+
 export function formatMatchFullNotice(args: {
   clubName: string;
   when: string;
@@ -57,6 +72,15 @@ export function formatInviteeAcceptedLine(args: {
 }): string {
   const { firstName, clubName, when } = args;
   return `${firstName} doet mee met je padelmatch bij ${clubName} (${when}). 🎾`;
+}
+
+export function formatInviteeLeftLine(args: {
+  firstName: string;
+  clubName: string;
+  when: string;
+}): string {
+  const { firstName, clubName, when } = args;
+  return `${firstName} heeft zich uitgeschreven voor je padelmatch bij ${clubName} (${when}). Er is opnieuw een plek vrij.`;
 }
 
 export function formatMatchFullLine(args: {

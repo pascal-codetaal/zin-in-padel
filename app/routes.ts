@@ -27,6 +27,8 @@ export default [
     route("bevestigen", "routes/match.nieuw.$token.bevestigen.tsx"),
     route("overzicht", "routes/match.nieuw.$token.overzicht.tsx"),
   ]),
+  route("match/deelname/:token", "routes/match.deelname.$token.tsx"),
+  route("match/:token/:matchId", "routes/match.$token.$matchId.tsx"),
   route("match/:token", "routes/match.$token.tsx"),
   route("i/:token", "routes/i.$token.tsx"),
   route("i/:token/nee", "routes/i.$token.nee.tsx"),

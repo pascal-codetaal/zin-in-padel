@@ -32,3 +32,13 @@ export function buildMatchListUrl(request: Request, manageToken: string): string
   const url = new URL(request.url);
   return `${url.origin}/match/${manageToken}`;
 }
+
+/** Dedicated live overview for one organiser match. */
+export function buildMatchDetailUrl(
+  request: Request,
+  manageToken: string,
+  matchId: string,
+): string {
+  const url = new URL(request.url);
+  return `${url.origin}/match/${manageToken}/${matchId}`;
+}

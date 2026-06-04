@@ -289,6 +289,7 @@ export default function MatchesList({ loaderData }: Route.ComponentProps) {
               <MatchCard
                 key={m.id}
                 match={m}
+                token={token}
                 highlight={m.id === createdId}
               />
             ))}
@@ -314,9 +315,11 @@ function EmptyState() {
 
 function MatchCard({
   match,
+  token,
   highlight,
 }: {
   match: MatchCardData;
+  token: string;
   highlight: boolean;
 }) {
   const cancelFetcher = useFetcher<typeof action>();
@@ -428,47 +431,56 @@ function MatchCard({
         </div>
       )}
 
-      {match.status !== "cancelled" && (
-        <div className="mt-3 flex flex-wrap items-center justify-end gap-3">
-          {match.canSkipPhase && (
-            <skipFetcher.Form method="post">
-              <input type="hidden" name="intent" value="skip-phase" />
+      <div className="mt-3 flex flex-wrap items-center justify-end gap-3">
+        <Link
+          to={`/match/${token}/${match.id}`}
+          className="text-xs font-medium text-accent transition hover:text-accent-foreground"
+        >
+          Details →
+        </Link>
+
+        {match.status !== "cancelled" && (
+          <>
+            {match.canSkipPhase && (
+              <skipFetcher.Form method="post">
+                <input type="hidden" name="intent" value="skip-phase" />
+                <input type="hidden" name="matchId" value={match.id} />
+                <button
+                  type="submit"
+                  disabled={skipping}
+                  onClick={(e) => {
+                    if (!confirm("Volgende cascadefase nu starten?"))
+                      e.preventDefault();
+                  }}
+                  className="text-xs font-medium text-accent transition hover:text-accent-foreground disabled:opacity-50"
+                >
+                  {skipping ? "Bezig…" : "Volgende fase nu →"}
+                </button>
+              </skipFetcher.Form>
+            )}
+
+            <cancelFetcher.Form method="post">
+              <input type="hidden" name="intent" value="cancel" />
               <input type="hidden" name="matchId" value={match.id} />
               <button
                 type="submit"
-                disabled={skipping}
+                disabled={cancelling}
                 onClick={(e) => {
-                  if (!confirm("Volgende cascadefase nu starten?"))
+                  if (
+                    !confirm(
+                      "Match annuleren? Alle uitnodigingen worden ingetrokken.",
+                    )
+                  )
                     e.preventDefault();
                 }}
-                className="text-xs font-medium text-accent transition hover:text-accent-foreground disabled:opacity-50"
+                className="text-xs font-medium text-muted-foreground transition hover:text-destructive disabled:opacity-50"
               >
-                {skipping ? "Bezig…" : "Volgende fase nu →"}
+                {cancelling ? "Bezig…" : "Match annuleren"}
               </button>
-            </skipFetcher.Form>
-          )}
-
-          <cancelFetcher.Form method="post">
-            <input type="hidden" name="intent" value="cancel" />
-            <input type="hidden" name="matchId" value={match.id} />
-            <button
-              type="submit"
-              disabled={cancelling}
-              onClick={(e) => {
-                if (
-                  !confirm(
-                    "Match annuleren? Alle uitnodigingen worden ingetrokken.",
-                  )
-                )
-                  e.preventDefault();
-              }}
-              className="text-xs font-medium text-muted-foreground transition hover:text-destructive disabled:opacity-50"
-            >
-              {cancelling ? "Bezig…" : "Match annuleren"}
-            </button>
-          </cancelFetcher.Form>
-        </div>
-      )}
+            </cancelFetcher.Form>
+          </>
+        )}
+      </div>
     </li>
   );
 }

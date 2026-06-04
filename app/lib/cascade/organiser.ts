@@ -174,7 +174,7 @@ export function planRemovePlayer(input: {
  * If we're already mid-cascade (phase scheduled in future), leave the existing
  * schedule alone — the freed slot will be picked up at the natural delay.
  */
-function computePostRemoveNextAt(match: Match, now: Date): string | null {
+export function computePostRemoveNextAt(match: Match, now: Date): string | null {
   const next = nextEligiblePhase(match);
   if (next === null) {
     // No more phases to fire. Keep nextCascadeAt as-is (likely null).

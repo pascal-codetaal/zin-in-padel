@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Form, Link, redirect, useNavigation } from "react-router";
 import {
   prevMatchStep,
@@ -12,16 +13,20 @@ import {
   dispatchOrEnqueueInvites,
   scheduleCascadeFallbackEvents,
 } from "~/lib/cascade/dispatch.server";
-import { getClubsByIds } from "~/lib/clubs.server";
 import { formatScheduledAt } from "~/lib/match-defaults";
 import {
   formatMatchFormat,
   formatPadelLevel,
-  openSlotsOf,
   type PadelLevel,
 } from "~/types/domain";
 import { StepFooter } from "~/components/step-footer";
 import { displayFriendName } from "~/lib/friend-name.server";
+import { buildMatchDetailUrl } from "~/lib/vrienden-url.server";
+import {
+  CourtCard,
+  InfoCard,
+} from "~/components/match-live-overview";
+import { buildLiveMatchOverviewData } from "~/lib/match-live-overview.server";
 import type { Route } from "./+types/match.nieuw.$token.bevestigen";
 
 const STEP_SLUG = "bevestigen" as const;
@@ -29,8 +34,8 @@ const PREV_SLUG = prevMatchStep(STEP_SLUG)!;
 
 export async function loader({ params }: Route.LoaderArgs) {
   const { user, draft } = await requireDraftFor(params.token);
-  const [clubs, db] = await Promise.all([
-    getClubsByIds(draft.clubIds),
+  const [overview, db] = await Promise.all([
+    buildLiveMatchOverviewData(draft, user, null),
     getDatabase(),
   ]);
   const invitedPlayers = draft.invitedFriendRefs.map((ref) => {
@@ -40,7 +45,6 @@ export async function loader({ params }: Route.LoaderArgs) {
       name: displayFriendName(user.favoriteNames, ref, p, db.users, "Onbekende speler"),
     };
   });
-  const openSlots = openSlotsOf(draft);
 
   return {
     draft: {
@@ -49,7 +53,6 @@ export async function loader({ params }: Route.LoaderArgs) {
       format: draft.format,
       totalSlots: draft.totalSlots,
       confirmedSlotNames: draft.confirmedSlotNames,
-      openSlots,
       fallbackToLevelRange: draft.fallbackToLevelRange,
       fallbackLevelMin: draft.fallbackLevelMin,
       fallbackLevelMax: draft.fallbackLevelMax,
@@ -57,7 +60,7 @@ export async function loader({ params }: Route.LoaderArgs) {
       fallbackToEveryone: draft.fallbackToEveryone,
       fallbackEveryoneDelayMinutes: draft.fallbackEveryoneDelayMinutes,
     },
-    clubs: clubs.map((c) => ({ id: c.id, name: c.name, city: c.city })),
+    overview,
     invitedPlayers,
   };
 }
@@ -76,7 +79,9 @@ export async function action({ request, params }: Route.ActionArgs) {
     const finalized = await finalizeMatchDraft(draft.id, "open");
     await dispatchOrEnqueueInvites(finalized.id, new Date());
     await scheduleCascadeFallbackEvents(finalized.id);
-    return redirect(`/match/${params.token}?created=${finalized.id}`);
+    return redirect(
+      buildMatchDetailUrl(request, params.token!, finalized.id),
+    );
   }
 
   return { ok: false as const, error: "unknown_intent" };
@@ -88,9 +93,24 @@ export default function BevestigenStep({
   loaderData,
 }: Route.ComponentProps) {
   const { token } = useMatchWizardData();
-  const { draft, clubs, invitedPlayers } = loaderData;
+  const { draft, overview, invitedPlayers } = loaderData;
   const navigation = useNavigation();
   const isSubmitting = navigation.state !== "idle";
+  const slotLabel =
+    overview.openSlots === 0
+      ? `${overview.totalSlots}/${overview.totalSlots} spelers - volzet`
+      : `${overview.filledSlots}/${overview.totalSlots} spelers - ${overview.openSlots} open`;
+  const locationLabel =
+    overview.clubs.length === 0
+      ? "Nog niet gekozen"
+      : overview.clubs.map((club) => `${club.name} - ${club.city}`).join(" / ");
+  const invitedLabel =
+    invitedPlayers.length === 0
+      ? "Geen vrienden geselecteerd"
+      : `${invitedPlayers.length} uitgenodigd (${invitedPlayers
+          .map((p) => p.name)
+          .slice(0, 4)
+          .join(", ")}${invitedPlayers.length > 4 ? "..." : ""})`;
 
   return (
     <>
@@ -102,59 +122,58 @@ export default function BevestigenStep({
           </p>
         </header>
 
-        <ul className="space-y-2">
-          <SummaryRow
-            label="Wanneer"
-            value={`${formatScheduledAt(draft.scheduledAt)} · ${draft.durationMinutes} min`}
-            editTo={`/match/nieuw/${token}/wanneer`}
-          />
-          <SummaryRow
-            label="Waar"
-            value={
-              clubs.length === 0
-                ? "—"
-                : clubs.map((c) => `${c.name} · ${c.city}`).join(" · ")
-            }
-            editTo={`/match/nieuw/${token}/wanneer`}
-          />
-          <SummaryRow
-            label="Formaat"
-            value={formatMatchFormat(draft.format)}
-            editTo={`/match/nieuw/${token}/formaat`}
-          />
-          <SummaryRow
-            label="Spelen mee"
-            value={
-              draft.confirmedSlotNames.length === 0
-                ? "—"
-                : draft.confirmedSlotNames.join(", ")
-            }
-            editTo={`/match/nieuw/${token}/spelers`}
-          />
-          <SummaryRow
-            label="Open plaatsen"
-            value={
-              draft.openSlots === 0
-                ? `${draft.totalSlots}/${draft.totalSlots} (volzet)`
-                : `${draft.totalSlots - draft.openSlots}/${draft.totalSlots} ingevuld · ${draft.openSlots} open`
-            }
-            editTo={`/match/nieuw/${token}/spelers`}
-          />
-          <SummaryRow
-            label="Uitgenodigd"
-            value={
-              invitedPlayers.length === 0
-                ? "Geen vrienden geselecteerd"
-                : `${invitedPlayers.length} uitgenodigd, eerste 'ja' krijgt de plek (${invitedPlayers.map((p) => p.name).slice(0, 3).join(", ")}${invitedPlayers.length > 3 ? "…" : ""})`
-            }
-            editTo={`/match/nieuw/${token}/maatjes`}
-          />
-          <SummaryRow
-            label="Uitnodigingen"
-            value={renderCascade(draft)}
-            editTo={`/match/nieuw/${token}/uitnodigingen`}
-          />
-        </ul>
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-2">
+            <MatchMetaPill>{formatScheduledAt(draft.scheduledAt)}</MatchMetaPill>
+            <MatchMetaPill>{formatMatchFormat(draft.format)}</MatchMetaPill>
+            <MatchMetaPill>{draft.durationMinutes} min</MatchMetaPill>
+          </div>
+
+          <section className="space-y-3">
+            <div>
+              <h3 className="text-2xl font-bold leading-tight">Wie speelt mee?</h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Zo ziet de baan eruit zodra je de match aanmaakt.
+              </p>
+            </div>
+            <CourtCard
+              match={overview}
+              canRemove={false}
+              isSubmitting={isSubmitting}
+            />
+          </section>
+
+          <section className="grid gap-2 sm:grid-cols-2">
+            <InfoCard label="Locatie">{locationLabel}</InfoCard>
+            <InfoCard label="Details">
+              {formatMatchFormat(draft.format)} · {draft.durationMinutes} min ·{" "}
+              {slotLabel}
+            </InfoCard>
+            <InfoCard label="Uitgenodigd">{invitedLabel}</InfoCard>
+            <InfoCard label="Uitnodigingen">{renderCascade(draft)}</InfoCard>
+          </section>
+
+          <div className="flex flex-wrap justify-end gap-3 text-xs font-medium">
+            <Link
+              to={`/match/nieuw/${token}/wanneer`}
+              className="text-muted-foreground transition hover:text-foreground"
+            >
+              Wanneer/waar aanpassen
+            </Link>
+            <Link
+              to={`/match/nieuw/${token}/spelers`}
+              className="text-muted-foreground transition hover:text-foreground"
+            >
+              Spelers aanpassen
+            </Link>
+            <Link
+              to={`/match/nieuw/${token}/maatjes`}
+              className="text-muted-foreground transition hover:text-foreground"
+            >
+              Vrienden aanpassen
+            </Link>
+          </div>
+        </div>
 
         {invitedPlayers.length === 0 &&
           !draft.fallbackToLevelRange &&
@@ -194,32 +213,11 @@ export default function BevestigenStep({
   );
 }
 
-function SummaryRow({
-  label,
-  value,
-  editTo,
-}: {
-  label: string;
-  value: string;
-  editTo: string;
-}) {
+function MatchMetaPill({ children }: { children: ReactNode }) {
   return (
-    <li className="rounded-2xl border border-border bg-card p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            {label}
-          </p>
-          <p className="mt-1 text-sm">{value}</p>
-        </div>
-        <Link
-          to={editTo}
-          className="flex-none text-xs font-medium text-muted-foreground transition hover:text-foreground"
-        >
-          Bewerken
-        </Link>
-      </div>
-    </li>
+    <span className="inline-flex rounded-full border border-border bg-secondary/40 px-3 py-1 text-xs font-medium text-muted-foreground">
+      {children}
+    </span>
   );
 }
 

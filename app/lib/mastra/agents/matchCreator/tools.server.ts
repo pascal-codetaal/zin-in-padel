@@ -14,7 +14,10 @@ import {
   getDatabase,
   updateMatchDraft,
 } from "~/lib/db.server";
-import { buildMaatjesPageUrl } from "~/lib/vrienden-url.server";
+import {
+  buildMaatjesPageUrl,
+  buildMatchDetailUrl,
+} from "~/lib/vrienden-url.server";
 import {
   dispatchOrEnqueueInvites,
   scheduleCascadeFallbackEvents,
@@ -461,7 +464,11 @@ export const finalizeMatchTool = createTool({
     error: z.string().optional(),
     matchId: z.string().optional(),
     summary: z.string().optional(),
-    listUrl: z.string().nullable().optional(),
+    listUrl: z
+      .string()
+      .nullable()
+      .optional()
+      .describe("Dedicated live overview URL for this match."),
   }),
   execute: async (_input, context) => {
     const userId = context?.requestContext?.get("userId") as string | undefined;
@@ -525,7 +532,12 @@ export const finalizeMatchTool = createTool({
       inviteeNames ? ` Uitgenodigd: ${inviteeNames}.` : ""
     }`;
 
-    const listUrl = `${resolveAppOrigin(context)}/match/${user.manageToken}?created=${finalized.id}`;
+    const appOrigin = resolveAppOrigin(context);
+    const listUrl = buildMatchDetailUrl(
+      new Request(`${appOrigin}/`),
+      user.manageToken,
+      finalized.id,
+    );
 
     return { ok: true, matchId: finalized.id, summary, listUrl };
   },

@@ -769,7 +769,7 @@ export async function findOrCreateDraftMatch(
 
     const now = new Date();
     const matchId = crypto.randomUUID();
-    const initialClubIds = user.preferredClubIds;
+    const initialClubIds = user.preferredClubIds.slice(0, 1);
     await tx.match.create({
       data: {
         id: matchId,

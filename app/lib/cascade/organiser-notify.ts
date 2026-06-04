@@ -19,6 +19,7 @@ import { isMatchFull, openSlotsOf, type Match } from "~/types/domain";
 
 export type OrganiserNotice =
   | { kind: "invitee-accepted"; playerRef: string }
+  | { kind: "invitee-left"; playerRef: string }
   | { kind: "match-full" }
   | { kind: "cascade-exhausted"; openSlots: number };
 

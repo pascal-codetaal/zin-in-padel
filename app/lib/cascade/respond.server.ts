@@ -21,6 +21,7 @@ import {
 import { decideEarlyAdvance } from "./early-advance";
 import { decideAcceptNotices } from "./organiser-notify";
 import { notifyOrganiser } from "./organiser-notify.server";
+import { computePostRemoveNextAt } from "./organiser";
 
 const MATCH_INCLUDE = {
   invitedPlayers: true,
@@ -137,8 +138,20 @@ export async function respondToInvite(input: {
       // cron tick advances the cascade immediately instead of waiting out
       // the delay. The planner remains the single source of truth for the
       // actual transition.
-      const advance = decideEarlyAdvance({ match: updatedMatch, now });
-      if (advance.kind === "advance") {
+      const leaveNextCascadeAt =
+        decision.newStatus === "declined" && invite.status === "accepted"
+          ? computePostRemoveNextAt(match, now)
+          : null;
+      const advance = leaveNextCascadeAt
+        ? null
+        : decideEarlyAdvance({ match: updatedMatch, now });
+      if (leaveNextCascadeAt !== null) {
+        await tx.match.update({
+          where: { id: inviteRow.matchId },
+          data: { nextCascadeAt: new Date(leaveNextCascadeAt) },
+        });
+        updatedMatch.nextCascadeAt = leaveNextCascadeAt;
+      } else if (advance?.kind === "advance") {
         await tx.match.update({
           where: { id: inviteRow.matchId },
           data: { nextCascadeAt: new Date(advance.nextCascadeAt) },
@@ -153,10 +166,17 @@ export async function respondToInvite(input: {
         match: updatedMatch,
         invite: updatedInvite,
         prev: match,
+        previousInviteStatus: invite.status,
       };
     }
 
-    return { decision, match, invite, prev: match };
+    return {
+      decision,
+      match,
+      invite,
+      prev: match,
+      previousInviteStatus: invite.status,
+    };
   });
 
   if (!txResult) return null;
@@ -175,6 +195,16 @@ export async function respondToInvite(input: {
     if (notices.length > 0) {
       await notifyOrganiser({ match: txResult.match, notices });
     }
+  }
+  if (
+    txResult.decision.kind === "apply" &&
+    txResult.decision.newStatus === "declined" &&
+    txResult.previousInviteStatus === "accepted"
+  ) {
+    await notifyOrganiser({
+      match: txResult.match,
+      notices: [{ kind: "invitee-left", playerRef: txResult.invite.playerRef }],
+    });
   }
 
   return {
