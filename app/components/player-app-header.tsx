@@ -36,6 +36,12 @@ function navLinkClass(active: PlayerAppNavSection | null, section: PlayerAppNavS
     : "font-medium text-muted-foreground transition hover:text-foreground";
 }
 
+function navIconBadgeClass(active: boolean) {
+  return active
+    ? "bg-primary text-primary-foreground"
+    : "bg-muted text-muted-foreground";
+}
+
 const SECTION_LABELS: Record<PlayerAppNavSection, string> = {
   matchen: "Matchen",
   vrienden: "Vrienden",
@@ -184,49 +190,55 @@ function PlayerNavLinks({
       <ul className="flex flex-col gap-1">
         <li>
           <Link
-            to={`/match/${token}`}
-            className={`flex rounded-xl px-3 py-3 ${textSize} ${navLinkClass(active, "matchen")}`}
-            onClick={onNavigate}
-          >
-            Matchen
-          </Link>
-        </li>
-        <li>
-          <Link
-            to={`/maatjes/${token}`}
-            className={`flex rounded-xl px-3 py-3 ${textSize} ${navLinkClass(active, "vrienden")}`}
-            onClick={onNavigate}
-          >
-            Vrienden
-          </Link>
-        </li>
-        <li>
-          <Link
-            to={`/match/nieuw/${token}`}
-            className="mt-1 inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-accent px-4 py-3 text-base font-semibold text-accent-foreground shadow-glow transition hover:bg-accent/90"
-            aria-label="Match aanmaken"
-            onClick={onNavigate}
-          >
-            <PlusIcon className="h-4 w-4" />
-            <span>Match</span>
-          </Link>
-        </li>
-        <li>
-          <Link
             to={`/profiel/${token}`}
-            className={`mt-1 flex items-center gap-3 rounded-xl px-3 py-3 ${textSize} ${navLinkClass(active, "profiel")}`}
+            className={`flex items-center gap-3 rounded-xl px-3 py-3 ${textSize} ${navLinkClass(active, "profiel")}`}
             onClick={onNavigate}
           >
             <span
-              className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
-                active === "profiel"
-                  ? "bg-primary text-primary-foreground ring-2 ring-primary/30"
-                  : "bg-secondary text-secondary-foreground"
+              className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${navIconBadgeClass(active === "profiel")} ${
+                active === "profiel" ? "ring-2 ring-primary/30" : ""
               }`}
             >
               {initials(displayName)}
             </span>
             Profiel
+          </Link>
+        </li>
+        <li>
+          <MobileNavItem
+            to={`/match/${token}`}
+            label="Matchen"
+            active={active === "matchen"}
+            textSize={textSize}
+            onNavigate={onNavigate}
+            icon={
+              <BallIcon className="h-4 w-4" aria-hidden />
+            }
+          />
+        </li>
+        <li>
+          <MobileNavItem
+            to={`/maatjes/${token}`}
+            label="Vrienden"
+            active={active === "vrienden"}
+            textSize={textSize}
+            onNavigate={onNavigate}
+            icon={
+              <UsersIcon className="h-4 w-4" aria-hidden />
+            }
+          />
+        </li>
+        <li>
+          <Link
+            to={`/match/nieuw/${token}`}
+            className="mt-1 flex items-center gap-3 rounded-full bg-accent px-3 py-3 text-base font-semibold text-accent-foreground shadow-glow transition hover:bg-accent/90"
+            aria-label="Match aanmaken"
+            onClick={onNavigate}
+          >
+            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-foreground/15">
+              <PlusIcon className="h-4 w-4" />
+            </span>
+            Match
           </Link>
         </li>
       </ul>
@@ -262,16 +274,49 @@ function PlayerNavLinks({
         title="Profiel"
       >
         <span
-          className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold sm:h-9 sm:w-9 sm:text-sm ${
-            active === "profiel"
-              ? "bg-primary text-primary-foreground ring-2 ring-primary/30"
-              : "bg-secondary text-secondary-foreground"
+          className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold sm:h-9 sm:w-9 sm:text-sm ${navIconBadgeClass(active === "profiel")} ${
+            active === "profiel" ? "ring-2 ring-primary/30" : ""
           }`}
         >
           {initials(displayName)}
         </span>
       </Link>
     </>
+  );
+}
+
+function MobileNavItem({
+  to,
+  label,
+  active,
+  textSize,
+  icon,
+  onNavigate,
+}: {
+  to: string;
+  label: string;
+  active: boolean;
+  textSize: string;
+  icon: ReactNode;
+  onNavigate?: () => void;
+}) {
+  return (
+    <Link
+      to={to}
+      className={`flex items-center gap-3 rounded-xl px-3 py-3 ${textSize} ${
+        active
+          ? "font-semibold text-foreground"
+          : "font-medium text-muted-foreground transition hover:text-foreground"
+      }`}
+      onClick={onNavigate}
+    >
+      <span
+        className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${navIconBadgeClass(active)}`}
+      >
+        {icon}
+      </span>
+      {label}
+    </Link>
   );
 }
 
@@ -305,6 +350,26 @@ function CloseIcon({ className }: { className?: string }) {
       aria-hidden
     >
       <path d="M18 6 6 18M6 6l12 12" />
+    </svg>
+  );
+}
+
+function UsersIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </svg>
   );
 }
