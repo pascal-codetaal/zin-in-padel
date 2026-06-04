@@ -14,7 +14,7 @@ race-prone logic in the app:
   silently determine whether real WhatsApps go out.
 
 If this logic lives inside HTTP handlers and queries that touch Twilio,
-Postgres, pg_cron, and pgmq, it becomes effectively untestable. We will
+Postgres, and the job queue, it becomes effectively untestable. We will
 not learn about a phase-transition bug until a real Saturday afternoon
 match fails.
 
@@ -65,7 +65,7 @@ export function formatInviteMessage(
 
 ### Adapters do all the I/O
 A separate adapter layer (`app/lib/cascade/runner.server.ts`) is the only
-place that touches Prisma, pgmq, or Twilio. It:
+place that touches Prisma, the queue, or Twilio. It:
 
 1. Loads the data the pure functions need.
 2. Calls the pure functions.

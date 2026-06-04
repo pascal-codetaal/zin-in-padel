@@ -1,6 +1,7 @@
 /**
- * Phase E entry point: decide between the legacy synchronous mock dispatcher
- * (`dispatchPendingInvites`) and the pgmq enqueue path the cron worker drains.
+ * Invite-dispatch entry point: decide between the synchronous inline
+ * dispatcher (`dispatchPendingInvites`) and the BullMQ enqueue path the
+ * worker process drains.
  *
  * Callers (match finalize + cascade runner) call this single function; the
  * `INVITE_QUEUE_ENABLED` env flag flips behaviour. That way the queue can be
@@ -26,8 +27,9 @@ export type DispatchOrEnqueueResult =
  * - When the queue is disabled: forwards to `dispatchPendingInvites`, which
  *   sends synchronously (mock mode → writes to inbox; real mode → would call
  *   Twilio inline, kept for backwards compat in tests + dev simulator).
- * - When the queue is enabled: inserts one pgmq message per pending invite.
- *   The `/api/cron/send-tick` handler drains the queue and calls Twilio.
+ * - When the queue is enabled: enqueues one BullMQ `invite-sends` job per
+ *   pending invite. The worker process (`scripts/worker.ts`) drains it and
+ *   calls Twilio.
  */
 export async function dispatchOrEnqueueInvites(
   matchId: string,

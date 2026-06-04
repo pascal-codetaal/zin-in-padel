@@ -3,6 +3,13 @@
 Companion to ADR-0002, ADR-0003, ADR-0004. Sequenced so each step is
 verifiable in isolation and PR-able independently.
 
+> **Historical.** This plan was executed; the match/invite domain logic
+> still applies. The invite-send/scheduler layer it describes (`pgmq` +
+> Supabase `pg_cron`, Phases E–F) was later replaced by BullMQ + Redis with
+> a dedicated worker — see ADR-0005 and `docs/invite-queue-system.md` for
+> the current system. Read the Phase E/F sections below as the original
+> plan, not the present state.
+
 ## Phase A — schema + rename (foundation)
 
 ### A1. Rename `invite.server.ts` → `bot-onboarding.server.ts`

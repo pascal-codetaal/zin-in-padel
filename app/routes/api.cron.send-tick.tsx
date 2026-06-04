@@ -1,10 +1,9 @@
 /**
- * Phase E.3 — Supabase cron drainer for the `invite-sends` pgmq queue.
- *
- * Triggered by a Supabase `cron.schedule` row that POSTs to this URL with
- * `Authorization: Bearer ${CRON_SECRET}`. Reads a batch of pgmq messages,
- * sends each invite via Twilio (real or mock), and ACKs / archives based
- * on outcome.
+ * DEPRECATED — returns `410 Gone`. Invite sending now runs on the BullMQ
+ * `invite-sends` worker (`scripts/worker.ts`, the Fly `worker` process); see
+ * ADR-0005. This route used to be the Supabase-cron drainer for the old pgmq
+ * queue. Kept only so any still-scheduled `cron.schedule` row gets a clear
+ * 410 instead of a 404.
  *
  * Auth contract:
  *   - Production: `CRON_SECRET` env required. Requests must match.

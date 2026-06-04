@@ -62,6 +62,11 @@ These migrations no-op on Prisma shadow DBs and run on real Supabase:
 - `20260528120001_invite_send_queue_supabase` — `pgmq`, `pg_cron`, …
 - `20260528120002_supabase_cron_rows` — cron jobs (needs Vault secrets)
 
+> These two migrations are kept for history. The invite queue now runs on
+> BullMQ + Redis (ADR-0005), so the `pgmq`/`pg_cron` objects they create are
+> operationally unused — still apply/resolve them so migration state stays
+> consistent.
+
 On vanilla Postgres, mark them applied without running:
 
 ```bash

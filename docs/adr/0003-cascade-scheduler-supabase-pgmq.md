@@ -1,7 +1,12 @@
 # 0003 — Cascade scheduler: hybrid Supabase Cron + Vercel API + pgmq
 
 ## Status
-Accepted (2026-05-24).
+**Superseded by ADR-0005 (2026-05-28).** Accepted 2026-05-24; implemented,
+then replaced. The hybrid Supabase Cron + Vercel HTTP + `pgmq` design below
+was swapped for BullMQ + Redis driven by a dedicated long-running worker
+process on Fly. The cascade *domain* logic (phases, `nextCascadeAt`, the
+pure core in ADR-0004) is unchanged; only the scheduler/queue/transport
+changed. Kept for the historical rationale behind the pgmq approach.
 
 ## Context
 The cascade system needs:

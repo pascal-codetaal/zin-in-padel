@@ -1,13 +1,14 @@
 /**
  * Cascade invite dispatcher.
  *
- * Phase E.0 (mock mode): writes outbound Message rows via
+ * In mock mode: writes outbound Message rows via
  * `sendWhatsAppMessage(userId, body)` and stamps `MatchInvitedPlayer.sentAt`.
- * No Twilio, no pgmq — the dev simulator surfaces the messages as the
- * invitee's inbox so the accept/decline links are reachable end-to-end.
+ * No Twilio — the dev simulator surfaces the messages as the invitee's
+ * inbox so the accept/decline links are reachable end-to-end.
  *
- * Phase E will swap the mock branch for an enqueue into pgmq; this file's
- * contract (dispatch all pending invites for a match) stays the same.
+ * In real mode the same functions call Twilio. `sendInviteByToken` is the
+ * unit the BullMQ worker invokes per `invite-sends` job; `dispatchPendingInvites`
+ * is the synchronous inline path used when the queue is disabled.
  *
  * Non-User favourites and opted-out Users are silently skipped per the
  * "deliverable invitee set" rule in CONTEXT.md. Their MatchInvitedPlayer
@@ -61,7 +62,7 @@ export type SendInviteOutcome =
 
 /**
  * Send one invite by its token. Used by both the inline dispatcher and the
- * pgmq worker (so the Twilio call + DB stamping live in one place).
+ * BullMQ send worker (so the Twilio call + DB stamping live in one place).
  *
  * Real Twilio mode: throws on Twilio API errors so the worker can NACK and
  * retry. Mock mode never throws because `sendWhatsAppMessage` only writes

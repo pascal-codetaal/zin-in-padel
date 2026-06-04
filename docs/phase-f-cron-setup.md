@@ -1,115 +1,123 @@
-# Phase F — Production cron setup
+# Production setup — Fly worker + Redis
 
-How to wire Supabase pg_cron to drive the cascade scheduler and invite-send
-queue in production.
+How the cascade scheduler and invite-send queue run in production: a
+dedicated **Fly worker process** consuming **BullMQ** queues on Redis.
+
+> Supersedes the old Supabase `pg_cron` + `pgmq` setup (see ADR-0003 →
+> ADR-0005). The `/api/cron/send-tick` endpoint is gone (`410`); the
+> `pg_cron` migration rows, if still installed, are an optional safety-net
+> only (`cascade-tick` scan) and are **not** required.
 
 ## Prereqs
 
-- `pg_cron`, `pgmq`, `pg_net` extensions already enabled (Phase E migrations).
-- App deployed to a stable URL (Vercel, Fly, …).
+- App + worker images deploy to Fly (`fly.toml` defines two process
+  groups: `app` and `worker`).
+- A Redis instance reachable over TLS. Upstash gives you a `rediss://` URL.
+- Supabase Postgres reachable (`DATABASE_URL` pooler, `DIRECT_URL` direct).
 
-## Step 1 — Pick a CRON_SECRET
+## Step 1 — Deploy
 
-Generate a long random string. Anything 32+ chars from `openssl rand -hex 32`
-works.
-
-## Step 2 — Set the secret on the app
-
-On Vercel:
-
-```
-vercel env add CRON_SECRET production
-# paste the value
-vercel deploy --prod
+```bash
+sh scripts/fly-deploy.sh      # launches the app if missing, then `fly deploy`
+# or, once the app exists:
+fly deploy
 ```
 
-On Fly: `fly secrets set CRON_SECRET=...`.
+`fly-deploy.sh` also runs `fly scale count app=1 worker=1` so both process
+groups have a machine. The `app` machine serves HTTP (`pnpm run start`);
+the `worker` machine runs `pnpm run worker:start`.
 
-Verify after deploy:
+## Step 2 — Set secrets
 
-```
-curl -i https://your-app/api/cron/cascade-tick                 # 401
-curl -i -H "Authorization: Bearer $CRON_SECRET" \
-  https://your-app/api/cron/cascade-tick                       # 200
-```
-
-## Step 3 — Stash the URL + secret in Supabase Vault
-
-In the Supabase SQL editor (any project with Vault enabled — it ships with
-every project):
-
-```sql
-select vault.create_secret('https://your-app.vercel.app', 'app_base_url');
-select vault.create_secret('paste-the-CRON_SECRET-here', 'cron_secret');
+```bash
+fly secrets set INVITE_QUEUE_ENABLED=true
+fly secrets set BULLMQ_REDIS_URL='rediss://default:<password>@<host>:<port>'
+fly secrets set DATABASE_URL='postgresql://...:6543/postgres?pgbouncer=true'
+fly secrets set DIRECT_URL='postgresql://...:5432/postgres'
+fly secrets set OPENAI_API_KEY='sk-...'
+fly secrets set TWILIO_ACCOUNT_SID='AC...' TWILIO_AUTH_TOKEN='...' \
+  TWILIO_WHATSAPP_FROM='whatsapp:+...'
 ```
 
-The cron migration reads from `vault.decrypted_secrets` at fire time, so
-rotating either value is a one-line update.
+The worker **refuses to start** unless `INVITE_QUEUE_ENABLED=true` and a
+Redis URL is set (`BULLMQ_REDIS_URL` / `UPSTASH_REDIS_URL` / `REDIS_URL`).
 
-## Step 4 — Apply the migration
+Optional worker tuning (defaults shown):
 
+```bash
+fly secrets set SEND_WORKER_CONCURRENCY=10
+fly secrets set PHASE_WORKER_CONCURRENCY=5
 ```
-pnpm db:migrate:deploy   # via DATABASE_URL
-# or, for direct (session pooler) URL:
+
+Setting secrets restarts the affected machines.
+
+## Step 3 — Apply migrations
+
+```bash
+pnpm db:migrate:deploy
+# or, if the pooler URL can't run DDL:
 pnpm db:migrate:deploy:direct
 ```
 
-This installs two cron rows:
+## Step 4 — Confirm the worker is alive
 
-- `cascade-tick` — every minute, POSTs `/api/cron/cascade-tick`.
-- `send-tick` — every minute, POSTs `/api/cron/send-tick`.
-
-## Step 5 — Confirm jobs are firing
-
-In the Supabase SQL editor:
-
-```sql
-select jobid, jobname, schedule, command, active from cron.job
-where jobname in ('cascade-tick', 'send-tick');
-
--- last 10 runs of each
-select jobname, status, return_message, start_time
-from cron.job_run_details d
-join cron.job j using (jobid)
-where j.jobname in ('cascade-tick', 'send-tick')
-order by start_time desc limit 10;
+```bash
+fly status
+fly machines list           # expect one 'app' and one 'worker' machine
+fly logs -i <worker-machine-id>
 ```
 
-Healthy state: `status='succeeded'`, `return_message` empty.
+Healthy worker logs show:
 
-Then watch the app logs — you should see the `runCascadeTick` and
-`runSendTick` traces fire once per minute.
-
-## Rotating the secret
-
-```sql
-select vault.update_secret(
-  (select id from vault.secrets where name = 'cron_secret'),
-  'new-value'
-);
+```
+Workers started { sendQueue: 'invite-sends', phaseQueue: 'cascade-phase-events', sendConcurrency: 10, phaseConcurrency: 5 }
 ```
 
-Then update `CRON_SECRET` on Vercel and redeploy. The next cron fire after
-both sides agree will succeed; the in-between fires return 401 in app logs.
+## Step 5 — Smoke-test with a real match
 
-## Rolling back
+```bash
+pnpm test:pascal-invites-joris
+```
+
+- Phase-1 invite arrives on `+TEST_JORIS_PHONE` (enqueued at finalize,
+  sent by the worker within seconds).
+- The fallback phases fire automatically when their delayed jobs mature
+  (`fallbackLevelDelayMinutes`, then `+fallbackEveryoneDelayMinutes`). Set
+  small delays in the script to verify quickly.
+
+## How it advances (no cron needed)
+
+- New match → phase-1 invites **enqueued** at finalize; the send worker
+  delivers them.
+- Phase 2 / 3 → **delayed** `cascade-phase-events` jobs enqueued at
+  finalize; the phase worker runs `runCascadeTickForMatch` when each
+  matures, inserting and enqueuing the next ring of invites.
+- Failed Twilio sends → retried up to 5× (exp backoff) by BullMQ, then
+  land in the failed set.
+- Cancelling a match removes its not-yet-run jobs from both queues.
+
+## Legacy Supabase cron (optional, not required)
+
+If the `20260528120002_supabase_cron_rows` migration was applied on
+Supabase, two `pg_cron` rows still POST the HTTP endpoints every minute:
+
+- `send-tick` → now returns `410 Gone`. Harmless, but you can unschedule
+  it.
+- `cascade-tick` → runs a `runCascadeTick` scan; idempotent, so it's a safe
+  redundant driver, but the worker already does this work.
+
+Unschedule them if you want a clean cron table:
 
 ```sql
 select cron.unschedule('cascade-tick');
 select cron.unschedule('send-tick');
 ```
 
-The migration's first statement does the same `unschedule` before
-re-installing, so `prisma migrate deploy` re-runs are safe.
-
 ## Local dev
 
-This migration is **Supabase-only**. On vanilla Postgres mark it as applied
-without running it:
-
-```
-pnpm prisma migrate resolve --applied 20260528120002_supabase_cron_rows
-```
-
-Locally the cascade is driven manually via `/dev/cron-tick` (or the buttons
-in `/dev/simulator`). No `CRON_SECRET` needed unless `NODE_ENV=production`.
+`INVITE_QUEUE_ENABLED` unset → invites send synchronously inline at
+finalize, and the cascade is driven manually via `/dev/cron-tick` (or the
+buttons in `/dev/simulator`). To exercise the real queue locally, point
+`BULLMQ_REDIS_URL` at a local/Upstash Redis, set
+`INVITE_QUEUE_ENABLED=true`, and run `pnpm worker:start` alongside
+`pnpm dev`.

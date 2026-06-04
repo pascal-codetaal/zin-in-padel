@@ -1,10 +1,13 @@
 /**
- * Phase F — Supabase cron driver for the cascade scheduler.
+ * Legacy scan endpoint for the cascade scheduler. Optional safety net — the
+ * primary driver is now the BullMQ `cascade-phase-events` worker (ADR-0005),
+ * which fires delayed per-match jobs. This endpoint still works: it advances
+ * every match whose `nextCascadeAt <= now` by one phase and dispatches (or
+ * enqueues) the resulting phase-2/3 invites. Idempotent job IDs make a
+ * redundant scan safe.
  *
- * Triggered by a Supabase `cron.schedule` row that POSTs to this URL with
- * `Authorization: Bearer ${CRON_SECRET}`. Advances all matches whose
- * `nextCascadeAt <= now` by one phase and dispatches (or enqueues) the
- * resulting phase-2/3 invites.
+ * If still wired, a Supabase `cron.schedule` row POSTs this URL with
+ * `Authorization: Bearer ${CRON_SECRET}`.
  *
  * Auth contract:
  *   - Production: `CRON_SECRET` env required. Requests must match.

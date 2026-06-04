@@ -1,13 +1,13 @@
 /**
  * Dev-only manual cron tick. Simulates one beat of either the cascade
- * scheduler or the invite-send queue worker without depending on pg_cron
- * firing locally.
+ * scheduler or the invite-send queue worker without running the dedicated
+ * worker process locally.
  *
  * Usage:
  *   POST /dev/cron-tick                       — cascade tick, real wall clock
  *   POST /dev/cron-tick?at=ISO                — cascade tick at injected `now`
- *   POST /dev/cron-tick?which=send            — send-queue tick (drains pgmq)
- *   POST /dev/cron-tick?which=send&at=ISO     — send-queue tick at injected `now`
+ *   POST /dev/cron-tick?which=send            — send tick (drains invite-sends)
+ *   POST /dev/cron-tick?which=send&at=ISO     — send tick at injected `now`
  *   GET  /dev/cron-tick                       — JSON trace + form
  *
  * 404s in production.

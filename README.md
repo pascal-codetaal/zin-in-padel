@@ -6,15 +6,16 @@ WhatsApp bot voor padel met een React Router v7 admin-dashboard. Backend-endpoin
 
 - [React Router v7](https://reactrouter.com/) (Framework mode, SSR)
 - TypeScript
-- [Vercel](https://vercel.com/) deployment via [`@vercel/react-router`](https://vercel.com/docs/frameworks/react-router)
+- [Fly.io](https://fly.io/) deployment (Docker, twee process-groups: `app` + `worker`)
 - [Twilio WhatsApp](https://www.twilio.com/docs/whatsapp) webhook
 - [Supabase](https://supabase.com/) Postgres via Prisma
+- [BullMQ](https://docs.bullmq.io/) + Redis (Upstash) voor de invite-wachtrij — zie `docs/invite-queue-system.md`
 
 ## Database (Supabase Postgres)
 
 De app gebruikt **PostgreSQL op Supabase**. Zet in `.env` (zie `.env.example`):
 
-- `DATABASE_URL` — **connection pooler** (poort 6543, `?pgbouncer=true`) voor runtime op Vercel
+- `DATABASE_URL` — **connection pooler** (poort 6543, `?pgbouncer=true`) voor runtime
 - `DIRECT_URL` — directe verbinding (poort 5432) voor Prisma-migraties
 
 Haal beide strings op in Supabase: **Project Settings → Database → Connection string**.
@@ -26,16 +27,7 @@ pnpm prisma:generate
 DATABASE_URL="$DIRECT_URL" pnpm db:migrate:deploy
 ```
 
-Daarna weer de pooler-URL in `DATABASE_URL` voor `pnpm dev` / Vercel.
-
-### Bestaande SQLite-data importeren (eenmalig)
-
-Als je nog `data/app.db` hebt:
-
-```bash
-# Zorg dat DATABASE_URL naar Supabase wijst en schema deployed is
-pnpm db:copy-sqlite
-```
+Daarna weer de pooler-URL in `DATABASE_URL` voor `pnpm dev` / productie.
 
 ### Lokaal ontwikkelen
 
@@ -77,6 +69,10 @@ Kopieer `.env.example` naar `.env`:
 | `TWILIO_AUTH_TOKEN` | Twilio Auth Token |
 | `TWILIO_WHATSAPP_FROM` | WhatsApp-sender, bijv. `whatsapp:+14155238886` |
 | `OPENAI_API_KEY` | OpenAI API key voor de Mastra-agent (favorieten-flow) |
+| `DATABASE_URL` | Supabase Postgres pooler (runtime) |
+| `DIRECT_URL` | Supabase Postgres direct (migraties) |
+| `INVITE_QUEUE_ENABLED` | `true` → invites via BullMQ-wachtrij; leeg/`false` → synchroon inline |
+| `BULLMQ_REDIS_URL` | Redis `rediss://`-URL voor BullMQ (ook `UPSTASH_REDIS_URL`/`REDIS_URL`) |
 
 Inbound antwoorden gaan via **TwiML** op de webhook; proactieve berichten (bv. profiel klaar) via de **Twilio REST API**. Zet `TWILIO_WEBHOOK_URL` op je publieke tunnel-URL als signature-validatie faalt lokaal.
 
@@ -101,7 +97,7 @@ In het [Twilio Console](https://console.twilio.com/) → **Messaging** → **Try
 | **HTTP method** | `POST` |
 
 - **Lokaal:** `https://padelbot-dev.loca.lt/webhooks/twilio/whatsapp`
-- **Vercel:** `https://<project>.vercel.app/webhooks/twilio/whatsapp`
+- **Fly:** `https://<project>.fly.dev/webhooks/twilio/whatsapp`
 
 ## WhatsApp-commando's (Nederlands)
 
@@ -137,7 +133,7 @@ Open [http://localhost:4111](http://localhost:4111). Studio draait naast `pnpm d
 
 **Request context (belangrijk):** tools zoals `get-new-match-link` en `read-profile` hebben de actieve gebruiker nodig. In Studio kies je bovenaan een **preset** (bv. `Pascal (32484085782)` — het telefoonnummer staat in het label). Die preset injecteert `userId` en `appOrigin` in elke tool-aanroep, net zoals de WhatsApp-webhook dat doet via het Twilio-nummer van de gebruiker.
 
-Optioneel in `.env`: `APP_ORIGIN=http://localhost:5173` (standaard voor presets; productie-URL als je links naar Vercel wilt testen).
+Optioneel in `.env`: `APP_ORIGIN=http://localhost:5173` (standaard voor presets; productie-URL als je links naar de productie-app wilt testen).
 
 **Storage-fout "Tenant or user not found":** `DIRECT_URL` wijst vaak naar de Supabase pooler met user `postgres` — dat moet `postgres.<project-ref>` zijn. Zet `DIRECT_URL` gelijk aan je werkende `DATABASE_URL` (`db.*.supabase.co:5432`), of verwijder `DIRECT_URL` tijdelijk. Mastra gebruikt `DATABASE_URL` vóór `DIRECT_URL`.
 
@@ -147,19 +143,26 @@ Voor end-to-end tests zonder Twilio-sandbox of localtunnel:
 
 1. `pnpm dev`
 2. Open [http://localhost:5173/dev/simulator](http://localhost:5173/dev/simulator)
-3. Kies een gebruiker uit de DB (`data/app.db`) of maak een testgebruiker
+3. Kies een gebruiker uit de DB (Supabase Postgres) of maak een testgebruiker
 4. Bekijk het WhatsApp-gesprek en stuur berichten — dezelfde `handleIncomingMessage`-pipeline als de webhook
 
-De simulator **emuleert Twilio** (inbound/outbound in `messages[]`); de bot, Mastra-agent en geheugen (`data/mastra-memory.db`, `thread = user.id`) zijn identiek aan productie. Vereist `OPENAI_API_KEY` voor de favorieten-flow.
+De simulator **emuleert Twilio** (inbound/outbound in `messages[]`); de bot, Mastra-agent en geheugen (Postgres, `mastra_*`-tabellen, `thread = user.id`) zijn identiek aan productie. Vereist `OPENAI_API_KEY` voor de favorieten-flow.
 
 De route is niet beschikbaar als `NODE_ENV=production`.
 
-## Vercel deployment
+## Fly.io deployment
 
-1. Push naar GitHub en importeer het project in [Vercel](https://vercel.com/new).
-2. Framework wordt automatisch herkend (React Router + `@vercel/react-router` preset in `react-router.config.ts`).
-3. Stel dezelfde `TWILIO_*` environment variables in bij Project → Settings → Environment Variables.
-4. Deploy en werk de Twilio webhook-URL bij naar je productie-URL.
+De app draait op [Fly.io](https://fly.io/) met **twee process-groups** (zie `fly.toml`): `app` (HTTP, `pnpm run start`) en `worker` (BullMQ-consumer, `pnpm run worker:start`).
+
+```bash
+sh scripts/fly-deploy.sh   # eerste keer: launch + deploy + scale app=1 worker=1
+# daarna volstaat:
+fly deploy
+```
+
+Secrets instellen (eenmalig): `INVITE_QUEUE_ENABLED`, `BULLMQ_REDIS_URL`, `DATABASE_URL`, `DIRECT_URL`, `OPENAI_API_KEY` en de `TWILIO_*` vars (`fly secrets set …`). Werk daarna de Twilio webhook-URL bij naar je Fly-URL.
+
+Zie `docs/phase-f-cron-setup.md` (waarom) en `docs/phase-f-deploy-checklist.md` (stap-voor-stap).
 
 ```bash
 pnpm build   # lokaal testen
@@ -171,26 +174,33 @@ pnpm start   # productie-build lokaal
 ```
 app/
   routes/
-    _index.tsx                      # Admin dashboard
+    _index.tsx                      # Landingspagina + waitlist-signup
+    admin._index.tsx                # Admin-dashboard
+    match.nieuw.$token.*.tsx        # Match-wizard (stappen)
+    i.$token.tsx / i.$token.nee.tsx # Invite accepteren / weigeren
     dev.simulator.tsx               # Lokale WhatsApp-emulatie (dev only)
     webhooks.twilio.whatsapp.ts     # POST webhook (resource route)
+    api.cron.cascade-tick.tsx       # Legacy scan-endpoint (zie ADR-0005)
   lib/
-    db.server.ts                    # JSON read/write (lokaal)
+    db.server.ts                    # Prisma data-access (users, matches, invites, …)
+    prisma.server.ts                # Prisma client (pg adapter)
     twilio.server.ts                # Form parse + TwiML
     whatsapp-bot.server.ts          # Bot-logica
-    whatsapp-messaging.server.ts    # Outbound (db + toekomstige Twilio API)
-    dev-guard.server.ts             # Dev-only route guard
-    dev-inbound.server.ts           # Synthetic Twilio inbound
-    bot-messages.nl.ts              # Re-export → whatsapp-templates/
+    whatsapp-messaging.server.ts    # Outbound (db + Twilio REST)
+    cascade/                        # Invite-cascade: pure core + adapters + queue
+      decide.ts / audience.ts / plan.ts   # Pure functies (ADR-0004)
+      runner.server.ts / dispatch.server.ts / send.server.ts
+      queue.server.ts               # BullMQ-wachtrijen (ADR-0005)
     mastra/
       index.ts                      # Mastra registry (voor Studio)
-      agent.server.ts               # Favorieten-agent
-      tools.server.ts               # readDb + addFavorite tools
-      memory.server.ts              # LibSQL-backed agent memory
-data/
-  app.db                            # Lokale SQLite-DB (gitignored)
+      memory.server.ts              # Postgres-backed agent-geheugen (mastra_*)
+      agents/padelAssistant/        # Hoofdagent + tools + sessie-tools
+      agents/matchCreator/          # Match-draft/finalize tools
+scripts/
+  worker.ts                         # BullMQ-worker (Fly `worker`-proces)
+data/                               # Geïmporteerde club-/ledendata (JSON, gitignored)
 prisma/
-  schema.prisma                     # Prisma schema (SQLite)
+  schema.prisma                     # Prisma schema (PostgreSQL)
   migrations/                       # Versie-historie
 whatsapp-templates/                 # WhatsApp copy + Twilio Content JSON
   invites/                          # Cascade uitnodigingen (3 fasen)
@@ -209,5 +219,6 @@ Zie `whatsapp-templates/README.md` voor Twilio-registratie (`pnpm templates:seed
 | `pnpm mastra:dev` | Mastra Studio (http://localhost:4111) |
 | `pnpm build` | Production build |
 | `pnpm start` | Serve production build |
+| `pnpm worker:start` | BullMQ-worker (invite-sends + cascade-phase-events) |
 | `pnpm typecheck` | Typegen + TypeScript check |
 | `pnpm prisma migrate dev` | Apply Prisma migrations |
