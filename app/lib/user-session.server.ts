@@ -1,4 +1,5 @@
 import { updateUser } from "~/lib/db.server";
+import { qualifyReferralForUser } from "~/lib/referrals.server";
 import type { ActiveFlow, User } from "~/types/domain";
 
 const PROFILE_RESET = {
@@ -28,12 +29,14 @@ export async function optOutUser(userId: string): Promise<User> {
 
 /** Opt-in + fresh onboarding (matches legacy JA handler). */
 export async function optInUser(userId: string): Promise<User> {
-  return updateUser(userId, {
+  const user = await updateUser(userId, {
     optedIn: true,
     onboardingComplete: false,
     activeFlow: "onboarding",
     ...PROFILE_RESET,
   });
+  await qualifyReferralForUser(userId);
+  return user;
 }
 
 export async function setUserActiveFlow(

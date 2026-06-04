@@ -93,6 +93,20 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-foreground">
+              Vriendenactie en referrals
+            </h2>
+            <p className="mt-2">
+              Wanneer je meedoet aan een vriendenactie gebruiken we je
+              persoonlijke referralcode om te tellen welke nieuwe gebruikers via
+              jouw WhatsApp-link aansluiten. Een vriend telt pas mee nadat die
+              zelf een bericht naar onze bot stuurt en opt-in doet. Op het
+              leaderboard tonen we alleen een beperkte spelersnaam en het aantal
+              aangesloten vrienden, geen telefoonnummers.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-foreground">
               Hoe lang bewaren we ze?
             </h2>
             <p className="mt-2">

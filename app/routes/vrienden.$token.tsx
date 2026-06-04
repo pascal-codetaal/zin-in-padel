@@ -18,6 +18,8 @@ import {
   type FavoritePlayerView,
 } from "~/lib/favorites-page.server";
 import { formatPersonName } from "~/lib/person-name";
+import { getReferralShareForUser } from "~/lib/referrals.server";
+import { REFERRAL_CAMPAIGN } from "~/lib/referrals.shared";
 
 export function meta({ loaderData }: Route.MetaArgs) {
   const name = loaderData
@@ -60,7 +62,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     skippedParam !== null ? Number.parseInt(skippedParam, 10) : null;
 
   const twilioFrom = process.env.TWILIO_WHATSAPP_FROM;
-  const favorites = await getFavoritePlayersForUser(user.id, twilioFrom);
+  const [favorites, referralShare] = await Promise.all([
+    getFavoritePlayersForUser(user.id, twilioFrom),
+    getReferralShareForUser(user.id, twilioFrom),
+  ]);
 
   return {
     token,
@@ -71,6 +76,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       lastName: user.lastName,
     },
     players: favorites.ok ? favorites.players : [],
+    referralShare,
     inviteConfigured: Boolean(twilioFrom),
     batchFeedback:
       batchAdded !== null && !Number.isNaN(batchAdded)
@@ -173,6 +179,7 @@ export default function MaatjesPage({
     token,
     user,
     players,
+    referralShare,
     inviteConfigured,
     batchFeedback,
   } = loaderData;
@@ -255,6 +262,65 @@ export default function MaatjesPage({
                 ` ${batchFeedback.skipped} overgeslagen (ongeldig nummer of al in je lijst).`}
             </p>
           )}
+
+          <section className="mt-8 rounded-3xl border border-primary/20 bg-primary p-6 text-primary-foreground shadow-soft">
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary-foreground/80">
+              {REFERRAL_CAMPAIGN.title}
+            </p>
+            <h2 className="mt-2 text-2xl font-bold">
+              Nodig vrienden uit en klim op het leaderboard
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-primary-foreground/85">
+              Deel je persoonlijke WhatsApp-link. Je vriend telt mee zodra die
+              zelf een bericht naar onze bot stuurt en aansluit.
+            </p>
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              {referralShare.whatsappUrl ? (
+                <a
+                  href={referralShare.whatsappUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex h-11 items-center gap-2 rounded-full bg-accent px-5 text-sm font-semibold text-accent-foreground shadow-glow transition hover:opacity-95"
+                >
+                  <MessageIcon className="h-4 w-4" />
+                  Deel via WhatsApp
+                </a>
+              ) : (
+                <span className="rounded-2xl bg-primary-foreground/10 px-4 py-3 text-sm">
+                  WhatsApp-link nog niet geconfigureerd. Stuur:{" "}
+                  <code>{referralShare.botMessage}</code>
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() =>
+                  copyInvite(
+                    referralShare.whatsappUrl ?? referralShare.botMessage,
+                    "referral-share",
+                  )
+                }
+                className="inline-flex h-11 items-center gap-2 rounded-full border border-primary-foreground/30 px-5 text-sm font-semibold transition hover:bg-primary-foreground/10"
+              >
+                <LinkIcon className="h-4 w-4" />
+                {copiedRef === "referral-share" ? "Gekopieerd!" : "Kopieer link"}
+              </button>
+              <Link
+                to="/vriendenactie"
+                className="text-sm font-semibold underline-offset-4 hover:underline"
+              >
+                Bekijk leaderboard
+              </Link>
+            </div>
+            <p className="mt-4 text-sm text-primary-foreground/85">
+              {referralShare.qualifiedCount === 1
+                ? "1 aangesloten vriend"
+                : `${referralShare.qualifiedCount} aangesloten vrienden`}
+              {referralShare.pendingCount > 0
+                ? `, ${referralShare.pendingCount} in afwachting van opt-in`
+                : ""}
+              .
+            </p>
+          </section>
 
           <section className="mt-8 rounded-3xl border border-border bg-card p-6 shadow-soft">
             <h2 className="text-lg font-semibold">Contact toevoegen</h2>
@@ -365,6 +431,9 @@ function PlayerCard({
   copiedRef: string | null;
   onCopyInvite: (text: string, ref: string) => void;
 }) {
+  const inviteUrl = player.inviteUrl;
+  const inviteForwardText = player.inviteForwardText;
+
   return (
     <li className="rounded-2xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -381,10 +450,10 @@ function PlayerCard({
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        {player.inviteUrl && player.inviteForwardText ? (
+        {inviteUrl && inviteForwardText ? (
           <>
             <a
-              href={player.inviteUrl}
+              href={inviteUrl}
               target="_blank"
               rel="noreferrer"
               className="inline-flex h-9 items-center gap-2 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
@@ -394,9 +463,7 @@ function PlayerCard({
             </a>
             <button
               type="button"
-              onClick={() =>
-                onCopyInvite(player.inviteForwardText!, player.ref)
-              }
+              onClick={() => onCopyInvite(inviteForwardText, player.ref)}
               className="inline-flex h-9 items-center gap-2 rounded-full border border-border bg-background px-4 text-sm font-medium transition hover:bg-secondary"
             >
               <LinkIcon className="h-3.5 w-3.5" />
@@ -423,7 +490,7 @@ function PlayerCard({
         </Form>
       </div>
 
-      {player.inviteUrl && player.inviteForwardText && (
+      {inviteUrl && inviteForwardText && (
         <p className="mt-3 text-xs text-muted-foreground">
           Je opent een chat met {player.name}. Het bericht staat klaar — controleer
           het en tik op Verzenden. Zo komt de uitnodiging van jou, niet van ons
@@ -474,7 +541,7 @@ function MessageIcon({ className }: { className?: string }) {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      aria-hidden
+      aria-hidden="true"
     >
       <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
     </svg>
@@ -492,7 +559,7 @@ function UsersIcon({ className }: { className?: string }) {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      aria-hidden
+      aria-hidden="true"
     >
       <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
       <circle cx="9" cy="7" r="4" />
@@ -513,7 +580,7 @@ function LinkIcon({ className }: { className?: string }) {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      aria-hidden
+      aria-hidden="true"
     >
       <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
       <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
@@ -532,7 +599,7 @@ function CheckIcon({ className }: { className?: string }) {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      aria-hidden
+      aria-hidden="true"
     >
       <path d="M20 6 9 17l-5-5" />
     </svg>

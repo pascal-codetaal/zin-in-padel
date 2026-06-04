@@ -18,6 +18,7 @@ datasource db {
 model User {
   id                 String   @id
   manageToken        String   @unique
+  referralCode       String?  @unique
   waId               String   @unique
   phone              String
   profileName        String
@@ -42,6 +43,8 @@ model User {
   preferredClubs   UserPreferredClub[]
   messages         Message[]
   organizedMatches Match[]             @relation("MatchOrganizer")
+  referralsMade    ReferralAttribution[] @relation("ReferralInviter")
+  referralReceived ReferralAttribution?  @relation("ReferralReferred")
 }
 
 model Player {
@@ -75,6 +78,25 @@ model UserPreferredClub {
 
   @@id([userId, clubId])
   @@index([clubId])
+}
+
+model ReferralAttribution {
+  id             String    @id
+  campaignSlug   String
+  inviterId      String
+  referredUserId String    @unique
+  status         String    @default("pending")
+  attributedAt   DateTime
+  qualifiedAt    DateTime?
+  disqualifiedAt DateTime?
+
+  inviter      User @relation("ReferralInviter", fields: [inviterId], references: [id], onDelete: Cascade)
+  referredUser User @relation("ReferralReferred", fields: [referredUserId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignSlug, inviterId, referredUserId])
+  @@index([campaignSlug, status, qualifiedAt])
+  @@index([inviterId])
+  @@index([attributedAt])
 }
 
 /* -------------------------------------------------------------------------- */
@@ -242,6 +264,8 @@ model Club {
   padelstatsMemberships ClubPadelstatsMembership[]
   tvMemberships         ClubTvMembership[]
   waitlistSignups       WaitlistSignup[]
+
+  @@index([padelstatsClubId])
 }
 
 model PadelstatsMember {

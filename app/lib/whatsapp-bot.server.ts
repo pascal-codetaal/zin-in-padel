@@ -29,6 +29,7 @@ import {
   formatPlaytomicClubChoiceMessage,
   type PlaytomicPrefillResult,
 } from "~/lib/playtomic-paste.server";
+import { recordReferralFromMessage } from "~/lib/referrals.server";
 import { optOutUser } from "~/lib/user-session.server";
 import type { User } from "~/types/domain";
 
@@ -291,6 +292,13 @@ export async function handleIncomingMessage(
     phone: inbound.from,
     profileName: inbound.profileName,
   });
+
+  if (isNewUser || !user.optedIn) {
+    await recordReferralFromMessage({
+      referredUserId: user.id,
+      message: inbound.body,
+    });
+  }
 
   const inboundText =
     inbound.body.trim() ||

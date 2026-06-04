@@ -5,9 +5,10 @@ import {
   countWaitlistSignups,
   listWaitlistSignups,
 } from "~/lib/waitlist.server";
+import { getReferralAdminSummary } from "~/lib/referrals.server";
 import { formatPadelLevel, isPadelLevel } from "~/types/domain";
 
-export function meta({}: Route.MetaArgs) {
+export function meta() {
   return [
     { title: "Zin in Padel — Admin" },
     { name: "description", content: "WhatsApp bot dashboard" },
@@ -16,14 +17,16 @@ export function meta({}: Route.MetaArgs) {
 
 export async function loader() {
   const db = await getDatabase();
-  const [waitlistCount, waitlist] = await Promise.all([
+  const [waitlistCount, waitlist, referralSummary] = await Promise.all([
     countWaitlistSignups(),
     listWaitlistSignups(),
+    getReferralAdminSummary(),
   ]);
 
   return {
     waitlistCount,
     waitlist,
+    referralSummary,
     users: db.users.map((u) => ({
       ...u,
       maatjesPath: `/maatjes/${u.manageToken}`,
@@ -69,8 +72,15 @@ function formatDate(iso: string) {
 }
 
 export default function Dashboard({ loaderData }: Route.ComponentProps) {
-  const { users, games, messageCount, stats, waitlistCount, waitlist } =
-    loaderData;
+  const {
+    users,
+    games,
+    messageCount,
+    stats,
+    waitlistCount,
+    waitlist,
+    referralSummary,
+  } = loaderData;
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
@@ -113,6 +123,79 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
             value={stats.onboardingComplete}
           />
           <StatCard label="Berichten" value={messageCount} />
+        </section>
+
+        <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <div className="border-b border-gray-200 px-4 py-4 dark:border-gray-800 sm:px-6">
+            <h2 className="text-lg font-medium">Vriendenactie</h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Referrals tellen mee zodra de nieuwe gebruiker opt-in doet via
+              WhatsApp.
+            </p>
+          </div>
+          <div className="grid gap-4 border-b border-gray-200 p-4 dark:border-gray-800 sm:grid-cols-3 sm:p-6">
+            <StatCard label="Pending" value={referralSummary.pendingCount} />
+            <StatCard label="Gekwalificeerd" value={referralSummary.qualifiedCount} />
+            <StatCard label="Uitgesloten" value={referralSummary.disqualifiedCount} />
+          </div>
+          <div className="grid gap-6 p-4 sm:p-6 lg:grid-cols-2">
+            <div>
+              <h3 className="text-sm font-semibold">Top referrers</h3>
+              {referralSummary.leaderboard.length === 0 ? (
+                <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                  Nog geen gekwalificeerde referrals.
+                </p>
+              ) : (
+                <ol className="mt-3 space-y-2">
+                  {referralSummary.leaderboard.map((entry, index) => (
+                    <li
+                      key={entry.userId}
+                      className="flex justify-between rounded-lg bg-gray-50 px-3 py-2 text-sm dark:bg-gray-950/50"
+                    >
+                      <span>
+                        {index + 1}. {entry.displayName}
+                      </span>
+                      <span className="font-medium">
+                        {entry.qualifiedCount}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold">Recente referrals</h3>
+              {referralSummary.recent.length === 0 ? (
+                <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                  Nog geen referral-attributies.
+                </p>
+              ) : (
+                <ul className="mt-3 space-y-2">
+                  {referralSummary.recent.map((row) => (
+                    <li
+                      key={row.id}
+                      className="rounded-lg bg-gray-50 px-3 py-2 text-sm dark:bg-gray-950/50"
+                    >
+                      <div className="flex justify-between gap-3">
+                        <span>
+                          {row.inviterName} → {row.referredName}
+                        </span>
+                        <span className="font-medium">
+                          {formatReferralStatus(row.status)}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        {formatDate(row.attributedAt.toISOString())}
+                        {row.qualifiedAt
+                          ? ` · gekwalificeerd ${formatDate(row.qualifiedAt.toISOString())}`
+                          : ""}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
         </section>
 
         <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
@@ -347,4 +430,13 @@ function GameStatus({ status }: { status: string }) {
   return (
     <span className="text-sm capitalize">{labels[status] ?? status}</span>
   );
+}
+
+function formatReferralStatus(status: string): string {
+  const labels: Record<string, string> = {
+    pending: "In afwachting",
+    qualified: "Gekwalificeerd",
+    disqualified: "Uitgesloten",
+  };
+  return labels[status] ?? status;
 }

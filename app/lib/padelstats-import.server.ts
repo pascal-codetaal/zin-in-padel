@@ -20,6 +20,7 @@ export type ClubMembersExport = {
   processed: number;
   matched: number;
   totalMembers: number;
+  uniqueMembers?: number;
   rows: ClubMembersExportRow[];
 };
 
@@ -154,7 +155,9 @@ export async function importPadelstatsRosters(options: {
 
   const memberById = new Map<number, PadelstatsMemberDto>();
   for (const row of rosterRows) {
-    for (const m of row.report!.members) {
+    const report = row.report;
+    if (!report) continue;
+    for (const m of report.members) {
       memberById.set(m.id, m);
     }
   }
@@ -181,7 +184,7 @@ export async function importPadelstatsRosters(options: {
       batch.map((row) =>
         prisma.club.update({
           where: { id: row.catalogClub.id },
-          data: { padelstatsClubId: row.padelstatsClub!.id },
+          data: { padelstatsClubId: row.padelstatsClub?.id ?? null },
         }),
       ),
       TX_OPTS,
@@ -216,7 +219,8 @@ export async function importPadelstatsRosters(options: {
 
   for (const row of rosterRows) {
     const { catalogClub, report } = row;
-    const members = report!.members;
+    if (!report) continue;
+    const members = report.members;
 
     await prisma.club.update({
       where: { id: catalogClub.id },

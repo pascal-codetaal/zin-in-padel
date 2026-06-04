@@ -6,6 +6,7 @@
  *
  * Requires DIRECT_URL in .env (same as prisma.config.ts).
  */
+import "dotenv/config";
 import { createHash } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";

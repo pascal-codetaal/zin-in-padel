@@ -22,6 +22,7 @@ type Props = {
 };
 
 export function PadelstatsMemberAutocomplete({ selected, onSelect }: Props) {
+  const inputId = useId();
   const listId = useId();
   const hintId = useId();
   const [query, setQuery] = useState(selected ? formatSelectedValue(selected) : "");
@@ -111,7 +112,7 @@ export function PadelstatsMemberAutocomplete({ selected, onSelect }: Props) {
       <input type="hidden" name="tvMemberId" value={selected?.id ?? ""} />
       <input type="hidden" name="clubId" value={selected?.clubId ?? ""} />
 
-      <label className="block space-y-1.5">
+      <label htmlFor={inputId} className="block space-y-1.5">
         <span className="text-sm font-medium">
           Zoek je profiel op Tennis & Padel Vlaanderen
         </span>
@@ -120,135 +121,132 @@ export function PadelstatsMemberAutocomplete({ selected, onSelect }: Props) {
           clubledenlijst en selecteer jezelf. Zo koppelen we je WhatsApp-nummer
           straks aan het juiste TV-profiel.
         </span>
-        <div className="relative">
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setOpen(true);
-              setPickHint(false);
-              if (selected) onSelect(null);
-            }}
-            onFocus={() => {
-              setOpen(true);
-              if (selected) {
-                onSelect(null);
-                setQuery("");
-              }
-            }}
-            onBlur={() => {
-              setTimeout(() => {
-                setOpen(false);
-                if (!selected && needsPickFromList) setPickHint(true);
-              }, 150);
-            }}
-            autoComplete="off"
-            role="combobox"
-            aria-expanded={showDropdown}
-            aria-controls={listId}
-            aria-describedby={helperText ? hintId : undefined}
-            aria-invalid={showPickHint}
-            readOnly={!!selected}
-            className={`w-full rounded-xl border bg-background py-3 pl-4 text-base ${
-              selected ? "cursor-default pr-14" : "pr-4"
-            } ${
-              showPickHint
-                ? "border-amber-500/70 ring-2 ring-amber-500/20"
-                : selected
-                  ? "border-primary/40 ring-2 ring-primary/15"
-                  : "border-input"
-            }`}
-            placeholder="Zoek je naam zoals bij TV (bv. Van Hecke Pascal)"
-          />
-
-          {selected && (
-            <button
-              type="button"
-              className="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-primary hover:underline"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => {
-                onSelect(null);
-                setQuery("");
-                setOpen(true);
-              }}
-            >
-              Wijzigen
-            </button>
-          )}
-
-          {showDropdown && (
-            <ul
-              id={listId}
-              role="listbox"
-              aria-label="Clubleden Tennis en Padel Vlaanderen"
-              className="absolute inset-x-0 top-full z-30 mt-1 max-h-60 overflow-y-auto rounded-xl border border-border bg-card py-1 shadow-soft"
-            >
-              {!loading && members.length > 0 && (
-                <li
-                  className="border-b border-border/80 px-4 py-2 text-xs font-medium text-muted-foreground"
-                  aria-hidden
-                >
-                  Selecteer je TV-profiel
-                </li>
-              )}
-              {loading && (
-                <li className="px-4 py-2 text-sm text-muted-foreground">
-                  Zoeken in TV-clubleden…
-                </li>
-              )}
-              {!loading &&
-                members.map((m) => (
-                  <li key={m.id} role="option">
-                    <button
-                      type="button"
-                      className="w-full px-4 py-2.5 text-left hover:bg-secondary/80"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => {
-                        onSelect(m);
-                        setQuery(formatSelectedValue(m));
-                        setOpen(false);
-                        setPickHint(false);
-                      }}
-                    >
-                      <span className="block text-sm font-medium text-foreground">
-                        {m.name}
-                        {m.rankLabel && (
-                          <span className="font-normal text-muted-foreground">
-                            {" "}
-                            · {m.rankLabel}
-                          </span>
-                        )}
-                      </span>
-                      <MemberOptionMeta member={m} />
-                    </button>
-                  </li>
-                ))}
-              {!loading && error && (
-                <li className="px-4 py-2 text-sm text-destructive">
-                  Zoeken mislukt. Probeer opnieuw.
-                </li>
-              )}
-              {!loading && !error && searched && members.length === 0 && (
-                <li className="px-4 py-2 text-sm text-muted-foreground">
-                  Geen clublid gevonden bij Tennis & Padel Vlaanderen.
-                  Controleer de spelling of zoek op familienaam.
-                </li>
-              )}
-            </ul>
-          )}
-        </div>
-        {helperText && (
-          <span
-            id={hintId}
-            className={`block text-xs ${
-              showPickHint ? "font-medium text-amber-700 dark:text-amber-400" : "text-muted-foreground"
-            }`}
-          >
-            {helperText}
-          </span>
-        )}
       </label>
+      <div className="relative">
+        <input
+          id={inputId}
+          type="search"
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+            setPickHint(false);
+            if (selected) onSelect(null);
+          }}
+          onFocus={() => {
+            if (!selected) setOpen(true);
+          }}
+          onBlur={() => {
+            setTimeout(() => {
+              setOpen(false);
+              if (!selected && needsPickFromList) setPickHint(true);
+            }, 150);
+          }}
+          autoComplete="off"
+          role="combobox"
+          aria-expanded={showDropdown}
+          aria-controls={listId}
+          aria-describedby={helperText ? hintId : undefined}
+          aria-invalid={showPickHint}
+          readOnly={!!selected}
+          className={`w-full rounded-xl border bg-background py-3 pl-4 text-base ${
+            selected ? "cursor-default pr-14" : "pr-4"
+          } ${
+            showPickHint
+              ? "border-amber-500/70 ring-2 ring-amber-500/20"
+              : selected
+                ? "border-primary/40 ring-2 ring-primary/15"
+                : "border-input"
+          }`}
+          placeholder="Zoek je naam zoals bij TV (bv. Van Hecke Pascal)"
+        />
+
+        {selected && (
+          <button
+            type="button"
+            className="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-primary hover:underline"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              onSelect(null);
+              setQuery("");
+              setOpen(true);
+            }}
+          >
+            Wijzigen
+          </button>
+        )}
+
+        {showDropdown && (
+          <ul
+            id={listId}
+            role="listbox"
+            aria-label="Clubleden Tennis en Padel Vlaanderen"
+            className="absolute inset-x-0 top-full z-30 mt-1 max-h-60 overflow-y-auto rounded-xl border border-border bg-card py-1 shadow-soft"
+          >
+            {!loading && members.length > 0 && (
+              <li
+                className="border-b border-border/80 px-4 py-2 text-xs font-medium text-muted-foreground"
+                aria-hidden
+              >
+                Selecteer je TV-profiel
+              </li>
+            )}
+            {loading && (
+              <li className="px-4 py-2 text-sm text-muted-foreground">
+                Zoeken in TV-clubleden…
+              </li>
+            )}
+            {!loading &&
+              members.map((m) => (
+                <li key={m.id} role="option">
+                  <button
+                    type="button"
+                    className="w-full px-4 py-2.5 text-left hover:bg-secondary/80"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      onSelect(m);
+                      setQuery(formatSelectedValue(m));
+                      setOpen(false);
+                      setPickHint(false);
+                    }}
+                  >
+                    <span className="block text-sm font-medium text-foreground">
+                      {m.name}
+                      {m.rankLabel && (
+                        <span className="font-normal text-muted-foreground">
+                          {" "}
+                          · {m.rankLabel}
+                        </span>
+                      )}
+                    </span>
+                    <MemberOptionMeta member={m} />
+                  </button>
+                </li>
+              ))}
+            {!loading && error && (
+              <li className="px-4 py-2 text-sm text-destructive">
+                Zoeken mislukt. Probeer opnieuw.
+              </li>
+            )}
+            {!loading && !error && searched && members.length === 0 && (
+              <li className="px-4 py-2 text-sm text-muted-foreground">
+                Geen clublid gevonden bij Tennis & Padel Vlaanderen.
+                Controleer de spelling of zoek op familienaam.
+              </li>
+            )}
+          </ul>
+        )}
+      </div>
+      {helperText && (
+        <span
+          id={hintId}
+          className={`block text-xs ${
+            showPickHint ? "font-medium text-amber-700 dark:text-amber-400" : "text-muted-foreground"
+          }`}
+        >
+          {helperText}
+        </span>
+      )}
     </div>
   );
 }

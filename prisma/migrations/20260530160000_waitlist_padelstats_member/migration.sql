@@ -12,11 +12,6 @@ ALTER TABLE "WaitlistSignup" ADD COLUMN "padelstatsMemberId" INTEGER NOT NULL;
 ALTER TABLE "WaitlistSignup" ADD COLUMN "clubId" TEXT;
 
 ALTER TABLE "WaitlistSignup"
-  ADD CONSTRAINT "WaitlistSignup_padelstatsMemberId_fkey"
-  FOREIGN KEY ("padelstatsMemberId") REFERENCES "PadelstatsMember"("id")
-  ON DELETE RESTRICT ON UPDATE CASCADE;
-
-ALTER TABLE "WaitlistSignup"
   ADD CONSTRAINT "WaitlistSignup_clubId_fkey"
   FOREIGN KEY ("clubId") REFERENCES "Club"("id")
   ON DELETE SET NULL ON UPDATE CASCADE;
