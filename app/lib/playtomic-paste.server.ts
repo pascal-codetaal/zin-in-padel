@@ -11,7 +11,7 @@ import {
 import {
   buildDraftMatchOverviewUrl,
   buildNewMatchPageUrl,
-} from "~/lib/maatjes-url.server";
+} from "~/lib/vrienden-url.server";
 import {
   filterInvitableFriendRefs,
   getMatchPickerPlayers,

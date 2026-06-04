@@ -16,6 +16,7 @@ import {
 } from "~/lib/match-roster.server";
 import { phonesEquivalent } from "~/lib/phone-match.server";
 import type { Player, User } from "~/types/domain";
+import { resolveFavoriteName } from "~/types/domain";
 
 export {
   filterInvitableFriendRefs,
@@ -53,14 +54,28 @@ export async function getMatchPickerPlayers(
       (await findPlayerByRef(ref)) ?? db.players.find((p) => p.ref === ref);
 
     if (!player) {
-      players.push({ ref, name: "Onbekende speler", level: null });
+      players.push({
+        ref,
+        name: resolveFavoriteName(
+          user.favoriteNames,
+          ref,
+          undefined,
+          "Onbekende speler",
+        ),
+        level: null,
+      });
       continue;
     }
 
     const matchedUser = findUserForPlayerPhone(db.users, player.phone);
     players.push({
       ref: player.ref,
-      name: player.name,
+      name: resolveFavoriteName(
+        user.favoriteNames,
+        player.ref,
+        player.name,
+        "Onbekende speler",
+      ),
       level: matchedUser?.level ?? null,
     });
   }

@@ -1,6 +1,6 @@
 import { findUserById, updateUserProfile } from "~/lib/db.server";
 import { messages } from "~/lib/bot-messages.nl";
-import { buildNewMatchPageUrl } from "~/lib/maatjes-url.server";
+import { buildNewMatchPageUrl } from "~/lib/vrienden-url.server";
 import { firstNameFromDisplayName, formatPersonName } from "~/lib/person-name";
 import { isProfielFormComplete } from "~/lib/profiel-completion";
 import { sendWhatsAppMessage } from "~/lib/whatsapp-messaging.server";

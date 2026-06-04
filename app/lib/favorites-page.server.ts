@@ -8,6 +8,7 @@ import { findOptedInUserForPhone } from "~/lib/friend-invite.server";
 import { formatPersonName } from "~/lib/person-name";
 import { phonesEquivalent } from "~/lib/phone-match.server";
 import type { Player, User } from "~/types/domain";
+import { resolveFavoriteName } from "~/types/domain";
 
 export type FavoritePlayerView = {
   ref: string;
@@ -82,15 +83,21 @@ export async function getFavoritePlayersForUser(
       db.players.find((p) => p.ref === ref);
 
     if (!player) {
+      const name = resolveFavoriteName(
+        user.favoriteNames,
+        ref,
+        undefined,
+        "Onbekende speler",
+      );
       const invite = inviteFieldsForPlayer(
-        { name: "Onbekende speler", phone: ref },
+        { name, phone: ref },
         inviterName,
         twilioWhatsAppFrom,
         Boolean(findOptedInUserForPhone(db.users, ref)),
       );
       players.push({
         ref,
-        name: "Onbekende speler",
+        name,
         phone: ref,
         isAppUser: false,
         optedIn: false,
@@ -101,8 +108,14 @@ export async function getFavoritePlayersForUser(
 
     const matchedUser = findUserForPlayerPhone(db.users, player.phone);
     const optedIn = matchedUser?.optedIn ?? false;
+    const name = resolveFavoriteName(
+      user.favoriteNames,
+      player.ref,
+      player.name,
+      "Onbekende speler",
+    );
     const invite = inviteFieldsForPlayer(
-      player,
+      { name, phone: player.phone },
       inviterName,
       twilioWhatsAppFrom,
       optedIn,
@@ -110,7 +123,7 @@ export async function getFavoritePlayersForUser(
 
     players.push({
       ref: player.ref,
-      name: player.name,
+      name,
       phone: player.phone,
       isAppUser: Boolean(matchedUser),
       optedIn,

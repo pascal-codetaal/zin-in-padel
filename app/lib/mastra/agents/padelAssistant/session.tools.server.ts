@@ -4,7 +4,7 @@ import { findUserById } from "~/lib/db.server";
 import {
   buildMaatjesPageUrl,
   buildProfielPageUrl,
-} from "~/lib/maatjes-url.server";
+} from "~/lib/vrienden-url.server";
 import { resolveAppOrigin } from "~/lib/app-origin.server";
 import {
   optInUser,

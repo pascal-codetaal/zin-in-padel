@@ -17,7 +17,7 @@ import {
 } from "~/lib/match-picker.server";
 import { formatPersonName } from "~/lib/person-name";
 import { StepFooter } from "~/components/step-footer";
-import type { Route } from "./+types/match.nieuw.$token.maatjes";
+import type { Route } from "./+types/match.nieuw.$token.vrienden";
 
 const STEP_SLUG = "maatjes" as const;
 const PREV_SLUG = prevMatchStep(STEP_SLUG)!;

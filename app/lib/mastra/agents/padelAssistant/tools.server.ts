@@ -18,10 +18,10 @@ import {
   buildMaatjesPageUrl,
   buildNewMatchPageUrl,
   buildProfielPageUrl,
-} from "~/lib/maatjes-url.server";
+} from "~/lib/vrienden-url.server";
 import { resolveAppOrigin } from "~/lib/app-origin.server";
 import { messages } from "~/lib/bot-messages.nl";
-import { ALL_PADEL_LEVELS } from "~/types/domain";
+import { ALL_PADEL_LEVELS, resolveFavoriteName } from "~/types/domain";
 
 const padelLevelSchema = z
   .number()
@@ -114,7 +114,12 @@ export const readProfileTool = createTool({
           .filter((p) => user.favoritePlayerRefs.includes(p.ref))
           .map((p) => ({
             ref: p.ref,
-            name: p.name,
+            name: resolveFavoriteName(
+              user.favoriteNames,
+              p.ref,
+              p.name,
+              p.name,
+            ),
             phone: p.phone,
           }))
       : [];

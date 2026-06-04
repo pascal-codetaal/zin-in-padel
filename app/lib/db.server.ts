@@ -33,7 +33,7 @@ import {
   parsePersonName,
   syncProfileNameFromParts,
 } from "~/lib/person-name";
-import { createManageToken } from "~/lib/maatjes-url.server";
+import { createManageToken } from "~/lib/vrienden-url.server";
 import { createInviteToken } from "~/lib/cascade/token";
 import { computeInitialCascadeState } from "~/lib/cascade/finalize";
 import { prisma } from "~/lib/prisma.server";
@@ -136,6 +136,11 @@ export function userRowToDomain(row: UserRow): User {
     preferredSide: asPreferredSide(row.preferredSide),
     playsBothSides: row.playsBothSides,
     favoritePlayerRefs: row.favorites.map((f) => f.playerRef),
+    favoriteNames: Object.fromEntries(
+      row.favorites
+        .filter((f) => f.name != null && f.name !== "")
+        .map((f) => [f.playerRef, f.name as string]),
+    ),
     preferredClubIds: row.preferredClubs.map((c) => c.clubId),
     matchPreference: asMatchPreference(row.matchPreference),
     matchLevelMin: asLevel(row.matchLevelMin),
@@ -387,7 +392,7 @@ export async function updateUser(
     if (patch.favoritePlayerRefs !== undefined) {
       await tx.userFavorite.deleteMany({ where: { userId } });
       for (const ref of patch.favoritePlayerRefs) {
-        // Skip if the Player row doesn't yet exist — callers should `upsertPlayer`
+        // Skip if the Player row doesn't yet exist — callers should `ensurePlayer`
         // first. Defensive guard avoids FK errors on stale callers.
         const exists = await tx.player.findUnique({ where: { ref } });
         if (!exists) continue;
@@ -500,13 +505,19 @@ export async function findPlayerByRef(
   return row ? playerRowToDomain(row) : undefined;
 }
 
-export async function upsertPlayer(
+/**
+ * Ensure a Player row exists for `ref` (required for FK targets). Never
+ * overwrites an existing Player's name — the canonical name stays stable and
+ * per-user labels live on `UserFavorite.name`. The provided name only seeds a
+ * brand-new row.
+ */
+export async function ensurePlayer(
   input: Pick<Player, "ref" | "name" | "phone">,
 ): Promise<Player> {
   const row = await prisma.player.upsert({
     where: { ref: input.ref },
     create: { ref: input.ref, name: input.name, phone: input.phone },
-    update: { name: input.name, phone: input.phone },
+    update: {},
   });
   return playerRowToDomain(row);
 }
@@ -514,22 +525,22 @@ export async function upsertPlayer(
 export async function addFavoriteToUser(
   userId: string,
   ref: PlayerRef,
+  name?: string,
 ): Promise<User> {
   return prisma.$transaction(async (tx) => {
     const user = await tx.user.findUnique({ where: { id: userId } });
     if (!user) throw new Error(`User not found: ${userId}`);
 
-    const exists = await tx.userFavorite.findUnique({
+    // Caller is expected to have ensured the Player row first.
+    await tx.userFavorite.upsert({
       where: { userId_playerRef: { userId, playerRef: ref } },
+      create: { userId, playerRef: ref, name: name ?? null },
+      update: name === undefined ? {} : { name },
     });
-    if (!exists) {
-      // Caller is expected to have upserted the Player first.
-      await tx.userFavorite.create({ data: { userId, playerRef: ref } });
-      await tx.user.update({
-        where: { id: userId },
-        data: { updatedAt: new Date() },
-      });
-    }
+    await tx.user.update({
+      where: { id: userId },
+      data: { updatedAt: new Date() },
+    });
 
     const row = await tx.user.findUniqueOrThrow({
       where: { id: userId },

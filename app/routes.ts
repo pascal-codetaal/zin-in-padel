@@ -4,7 +4,7 @@ export default [
   index("routes/_index.tsx"),
   route("privacy", "routes/privacy.tsx"),
   route("admin", "routes/admin._index.tsx"),
-  route("maatjes/:token", "routes/maatjes.$token.tsx"),
+  route("maatjes/:token", "routes/vrienden.$token.tsx"),
   route("profiel/:token", "routes/profiel.$token.tsx", [
     index("routes/profiel.$token._index.tsx"),
     route("basis", "routes/profiel.$token.basis.tsx"),
@@ -18,7 +18,7 @@ export default [
   route("match/nieuw/:token", "routes/match.nieuw.$token.tsx", [
     index("routes/match.nieuw.$token._index.tsx"),
     route("spelers", "routes/match.nieuw.$token.spelers.tsx"),
-    route("maatjes", "routes/match.nieuw.$token.maatjes.tsx"),
+    route("maatjes", "routes/match.nieuw.$token.vrienden.tsx"),
     route("wanneer", "routes/match.nieuw.$token.wanneer.tsx"),
     route("formaat", "routes/match.nieuw.$token.formaat.tsx"),
     route("uitnodigingen", "routes/match.nieuw.$token.uitnodigingen.tsx"),

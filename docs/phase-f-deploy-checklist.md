@@ -58,8 +58,6 @@ fly secrets set TWILIO_ACCOUNT_SID='AC...' TWILIO_AUTH_TOKEN='...' \
 
 ```bash
 pnpm db:migrate:deploy
-# or, if the pooler URL can't run DDL:
-pnpm db:migrate:deploy:direct
 ```
 
 - [ ] Migrations applied against prod DB.

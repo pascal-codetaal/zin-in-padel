@@ -56,6 +56,8 @@ model Player {
 model UserFavorite {
   userId    String
   playerRef String
+  /** Per-user nickname for this friend. Decoupled from the shared Player/User name. */
+  name      String?
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   player Player @relation(fields: [playerRef], references: [ref], onDelete: Cascade)

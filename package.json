@@ -21,7 +21,6 @@
     "prisma:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:migrate:repair-checksums": "tsx scripts/repair-migration-checksums.ts",
-    "db:migrate:deploy:direct": "sh -c 'DATABASE_URL=\"$DIRECT_URL\" prisma migrate deploy'",
     "db:push": "prisma db push",
     "seed:users": "tsx scripts/seed-users.ts",
     "seed:users:cleanup": "tsx scripts/seed-users.ts --cleanup",

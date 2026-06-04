@@ -66,6 +66,8 @@ export type User = {
   preferredSide: PreferredSide | null;
   playsBothSides: boolean;
   favoritePlayerRefs: string[];
+  /** Per-user nickname per favorite ref. Falls back to Player.name when absent. */
+  favoriteNames: Record<PlayerRef, string>;
   preferredClubIds: string[];
   matchPreference: MatchPreference | null;
   matchLevelMin: PadelLevel | null;
@@ -280,6 +282,20 @@ export function stepLevel(
 
 export function playerRefFromPhone(phone: string): PlayerRef {
   return phone;
+}
+
+/**
+ * Display name for a favorite from the viewer's perspective: the viewer's own
+ * nickname wins, then the canonical Player name, then a fallback. Keeps the
+ * per-user nickname decoupled from the shared Player/User identity.
+ */
+export function resolveFavoriteName(
+  favoriteNames: Record<PlayerRef, string>,
+  ref: PlayerRef,
+  playerName: string | null | undefined,
+  fallback: string,
+): string {
+  return favoriteNames[ref] || playerName || fallback;
 }
 
 /** Human-readable side label ("links" / "rechts", "beide kanten", …). */

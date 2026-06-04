@@ -23,6 +23,7 @@ export function makeUser(overrides: Partial<User> = {}): User {
     preferredSide: null,
     playsBothSides: false,
     favoritePlayerRefs: [],
+    favoriteNames: {},
     preferredClubIds: ["club_1"],
     matchPreference: "open",
     matchLevelMin: null,

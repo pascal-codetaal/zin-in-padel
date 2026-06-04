@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { makeInvite, makeMatch } from "~/lib/cascade/test-fixtures";
-import { acceptedPlayerRefsOf, isMatchFull, openSlotsOf } from "./domain";
+import {
+  acceptedPlayerRefsOf,
+  isMatchFull,
+  openSlotsOf,
+  resolveFavoriteName,
+} from "./domain";
 
 describe("acceptedPlayerRefsOf", () => {
   it("returns only player refs whose invite status is 'accepted'", () => {
@@ -93,5 +98,43 @@ describe("isMatchFull", () => {
       invitedPlayers: [makeInvite({ playerRef: "p1", status: "accepted" })],
     });
     expect(isMatchFull(match)).toBe(false);
+  });
+});
+
+describe("resolveFavoriteName", () => {
+  const ref = "+32470123456";
+
+  it("prefers the viewer's own nickname over the canonical Player name", () => {
+    expect(
+      resolveFavoriteName({ [ref]: "Bobke" }, ref, "Robert Smith", "fallback"),
+    ).toBe("Bobke");
+  });
+
+  it("falls back to the canonical Player name when no nickname is set", () => {
+    expect(resolveFavoriteName({}, ref, "Robert Smith", "fallback")).toBe(
+      "Robert Smith",
+    );
+  });
+
+  it("uses the fallback when neither nickname nor Player name is available", () => {
+    expect(resolveFavoriteName({}, ref, null, "Onbekende speler")).toBe(
+      "Onbekende speler",
+    );
+    expect(resolveFavoriteName({}, ref, undefined, "Onbekende speler")).toBe(
+      "Onbekende speler",
+    );
+  });
+
+  it("treats an empty Player name as absent and uses the fallback", () => {
+    expect(resolveFavoriteName({}, ref, "", "Onbekende speler")).toBe(
+      "Onbekende speler",
+    );
+  });
+
+  it("only applies a nickname to its own ref", () => {
+    const names = { [ref]: "Bobke" };
+    expect(resolveFavoriteName(names, "+32499999999", "Other", "fallback")).toBe(
+      "Other",
+    );
   });
 });

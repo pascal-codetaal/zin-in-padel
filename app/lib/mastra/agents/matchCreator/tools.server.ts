@@ -14,7 +14,7 @@ import {
   getDatabase,
   updateMatchDraft,
 } from "~/lib/db.server";
-import { buildMaatjesPageUrl } from "~/lib/maatjes-url.server";
+import { buildMaatjesPageUrl } from "~/lib/vrienden-url.server";
 import {
   dispatchOrEnqueueInvites,
   scheduleCascadeFallbackEvents,
@@ -31,6 +31,7 @@ import {
   acceptedPlayerRefsOf,
   formatMatchFormat,
   openSlotsOf,
+  resolveFavoriteName,
   type PadelLevel,
 } from "~/types/domain";
 
@@ -115,7 +116,11 @@ export const readMatchProfileTool = createTool({
     const favoritePlayers = user
       ? db.players
           .filter((p) => user.favoritePlayerRefs.includes(p.ref))
-          .map((p) => ({ ref: p.ref, name: p.name, phone: p.phone }))
+          .map((p) => ({
+            ref: p.ref,
+            name: resolveFavoriteName(user.favoriteNames, p.ref, p.name, p.name),
+            phone: p.phone,
+          }))
       : [];
 
     const preferredClubs = user ? await getClubsByIds(user.preferredClubIds) : [];

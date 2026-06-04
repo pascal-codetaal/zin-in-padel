@@ -7,7 +7,7 @@ import {
   useNavigation,
 } from "react-router";
 import { AddFromContacts } from "~/components/add-from-contacts";
-import type { Route } from "./+types/maatjes.$token";
+import type { Route } from "./+types/vrienden.$token";
 import {
   findUserByManageToken,
   removeFavoriteFromUser,

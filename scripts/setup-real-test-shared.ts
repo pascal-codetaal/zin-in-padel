@@ -5,7 +5,7 @@
  */
 
 import { prisma } from "../app/lib/prisma.server";
-import { createManageToken } from "../app/lib/maatjes-url.server";
+import { createManageToken } from "../app/lib/vrienden-url.server";
 import { playerRefFromPhone } from "../app/types/domain";
 import { createInviteToken } from "../app/lib/cascade/token";
 import { finalizeMatchDraft } from "../app/lib/db.server";

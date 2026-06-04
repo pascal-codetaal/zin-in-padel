@@ -6,7 +6,7 @@
  */
 import "dotenv/config";
 import { prisma } from "../app/lib/prisma.server";
-import { createManageToken } from "../app/lib/maatjes-url.server";
+import { createManageToken } from "../app/lib/vrienden-url.server";
 import {
   levelsForGender,
   stepLevel,

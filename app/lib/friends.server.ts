@@ -1,9 +1,9 @@
 import {
   addFavoriteToUser,
   clearPendingFriend,
+  ensurePlayer,
   findUserById,
   setPendingFriend,
-  upsertPlayer,
 } from "~/lib/db.server";
 import {
   buildFriendInviteFollowUp,
@@ -56,8 +56,8 @@ export async function addFriend(
   const ref = playerRefFromPhone(phone);
   const alreadyFavorite = user.favoritePlayerRefs.includes(ref);
 
-  await upsertPlayer({ ref, name: name.trim(), phone });
-  await addFavoriteToUser(userId, ref);
+  await ensurePlayer({ ref, name: name.trim(), phone });
+  await addFavoriteToUser(userId, ref, name.trim());
   await clearPendingFriend(userId);
 
   return { ok: true, name: name.trim(), phone, alreadyFavorite };

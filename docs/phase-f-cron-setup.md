@@ -55,8 +55,6 @@ Setting secrets restarts the affected machines.
 
 ```bash
 pnpm db:migrate:deploy
-# or, if the pooler URL can't run DDL:
-pnpm db:migrate:deploy:direct
 ```
 
 ## Step 4 — Confirm the worker is alive

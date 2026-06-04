@@ -20,14 +20,13 @@ De app gebruikt **PostgreSQL op Supabase**. Zet in `.env` (zie `.env.example`):
 
 Haal beide strings op in Supabase: **Project Settings → Database → Connection string**.
 
-Prisma 7 gebruikt één `DATABASE_URL` per commando. Voor migraties tijdelijk de directe URL gebruiken:
+Migraties draaien automatisch via de directe URL (poort 5432) — vastgezet in
+`prisma.config.ts`, dus geen URL-swap nodig:
 
 ```bash
 pnpm prisma:generate
-DATABASE_URL="$DIRECT_URL" pnpm db:migrate:deploy
+pnpm db:migrate:deploy
 ```
-
-Daarna weer de pooler-URL in `DATABASE_URL` voor `pnpm dev` / productie.
 
 ### Lokaal ontwikkelen
 
