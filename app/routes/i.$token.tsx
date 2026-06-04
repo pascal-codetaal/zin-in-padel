@@ -14,18 +14,11 @@ import { isValidInviteTokenShape } from "~/lib/cascade/token";
 import { canonicalRefName } from "~/lib/friend-name.server";
 import { formatPersonName } from "~/lib/person-name";
 import type { Route } from "./+types/i.$token";
-
-type RejectReason =
-  | "match-full"
-  | "match-cancelled"
-  | "match-started"
-  | "invite-expired";
-
-type LoaderState =
-  | { kind: "ok"; openSlots: number }
-  | { kind: "already-accepted"; openSlots: number }
-  | { kind: "declined"; openSlots: number }
-  | { kind: "blocked"; reason: RejectReason };
+import {
+  deriveRenderState,
+  type LoaderState,
+  type RejectReason,
+} from "./i.$token.state";
 
 type AcceptedName = { name: string; isSelf: boolean };
 
@@ -153,13 +146,7 @@ export default function AcceptPage({
     state,
   } = loaderData;
 
-  const justAccepted = actionData?.ok === true;
-  const acceptRejected = actionData && !actionData.ok && "reason" in actionData;
-  const renderState: LoaderState = justAccepted
-    ? { kind: "already-accepted", openSlots: state.kind === "ok" ? state.openSlots - 1 : 0 }
-    : acceptRejected
-      ? { kind: "blocked", reason: actionData.reason as RejectReason }
-      : state;
+  const renderState = deriveRenderState(state, actionData);
 
   return (
     <main className="mx-auto min-h-screen max-w-md bg-gray-50 p-5 dark:bg-gray-950">
