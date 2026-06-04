@@ -8,6 +8,7 @@ import {
   type Match,
   type PadelLevel,
 } from "~/types/domain";
+import { displayFriendName } from "~/lib/friend-name.server";
 
 export type DraftOverviewInvitedPlayer = {
   ref: string;
@@ -66,6 +67,7 @@ export function formatCascadeLabel(draft: {
 
 export async function loadDraftOverviewData(
   draft: Match,
+  favoriteNames: Record<string, string>,
 ): Promise<DraftOverviewData> {
   const [clubs, db] = await Promise.all([
     getClubsByIds(draft.clubIds),
@@ -74,9 +76,10 @@ export async function loadDraftOverviewData(
 
   const invitedPlayers = draft.invitedFriendRefs.map((ref) => {
     const p = db.players.find((player) => player.ref === ref);
-    return p
-      ? { ref: p.ref, name: p.name }
-      : { ref, name: "Onbekende speler" };
+    return {
+      ref,
+      name: displayFriendName(favoriteNames, ref, p, db.users, "Onbekende speler"),
+    };
   });
 
   const openSlots = openSlotsOf(draft);

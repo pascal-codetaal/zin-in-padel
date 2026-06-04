@@ -4,11 +4,13 @@ import {
   getDatabase,
 } from "~/lib/db.server";
 import { buildFriendInviteContent } from "~/lib/friend-invite-message.server";
+import {
+  displayFriendName,
+  findUserForPlayerPhone,
+} from "~/lib/friend-name.server";
 import { findOptedInUserForPhone } from "~/lib/friend-invite.server";
 import { formatPersonName } from "~/lib/person-name";
-import { phonesEquivalent } from "~/lib/phone-match.server";
-import type { Player, User } from "~/types/domain";
-import { resolveFavoriteName } from "~/types/domain";
+import type { Player } from "~/types/domain";
 
 export type FavoritePlayerView = {
   ref: string;
@@ -21,17 +23,6 @@ export type FavoritePlayerView = {
   /** Message the user forwards to their friend */
   inviteForwardText: string | null;
 };
-
-function findUserForPlayerPhone(
-  users: User[],
-  playerPhone: string,
-): User | undefined {
-  return users.find(
-    (u) =>
-      phonesEquivalent(playerPhone, u.phone) ||
-      phonesEquivalent(playerPhone, u.waId),
-  );
-}
 
 function inviteFieldsForPlayer(
   player: { name: string; phone: string },
@@ -83,10 +74,11 @@ export async function getFavoritePlayersForUser(
       db.players.find((p) => p.ref === ref);
 
     if (!player) {
-      const name = resolveFavoriteName(
+      const name = displayFriendName(
         user.favoriteNames,
         ref,
         undefined,
+        db.users,
         "Onbekende speler",
       );
       const invite = inviteFieldsForPlayer(
@@ -108,10 +100,11 @@ export async function getFavoritePlayersForUser(
 
     const matchedUser = findUserForPlayerPhone(db.users, player.phone);
     const optedIn = matchedUser?.optedIn ?? false;
-    const name = resolveFavoriteName(
+    const name = displayFriendName(
       user.favoriteNames,
       player.ref,
-      player.name,
+      player,
+      db.users,
       "Onbekende speler",
     );
     const invite = inviteFieldsForPlayer(

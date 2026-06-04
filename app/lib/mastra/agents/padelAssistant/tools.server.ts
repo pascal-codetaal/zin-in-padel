@@ -21,7 +21,8 @@ import {
 } from "~/lib/vrienden-url.server";
 import { resolveAppOrigin } from "~/lib/app-origin.server";
 import { messages } from "~/lib/bot-messages.nl";
-import { ALL_PADEL_LEVELS, resolveFavoriteName } from "~/types/domain";
+import { ALL_PADEL_LEVELS } from "~/types/domain";
+import { displayFriendName } from "~/lib/friend-name.server";
 
 const padelLevelSchema = z
   .number()
@@ -114,10 +115,11 @@ export const readProfileTool = createTool({
           .filter((p) => user.favoritePlayerRefs.includes(p.ref))
           .map((p) => ({
             ref: p.ref,
-            name: resolveFavoriteName(
+            name: displayFriendName(
               user.favoriteNames,
               p.ref,
-              p.name,
+              p,
+              db.users,
               p.name,
             ),
             phone: p.phone,

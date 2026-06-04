@@ -6,6 +6,7 @@ import {
 import { isValidInviteTokenShape } from "~/lib/cascade/token";
 import { findPlayerByRef } from "~/lib/db.server";
 import { openSlotsOf } from "~/types/domain";
+import { firstNameFromDisplayName, formatPersonName } from "~/lib/person-name";
 import type { Route } from "./+types/i.$token.nee";
 
 /**
@@ -30,9 +31,15 @@ export async function loader({ params }: Route.LoaderArgs) {
   if (!lookup) throw data("Not Found", { status: 404 });
 
   const player = await findPlayerByRef(lookup.invite.playerRef);
-  const firstName =
-    (player?.name ?? lookup.invitee?.profileName ?? "daar").split(/\s+/)[0] ??
-    "daar";
+  const recipientName = lookup.invitee
+    ? formatPersonName({
+        firstName: lookup.invitee.firstName,
+        lastName: lookup.invitee.lastName,
+        profileName: lookup.invitee.profileName,
+        fallback: player?.name ?? "daar",
+      })
+    : (player?.name ?? "daar");
+  const firstName = firstNameFromDisplayName(recipientName);
 
   return {
     token,

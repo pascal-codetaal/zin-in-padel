@@ -7,7 +7,7 @@ import type { Route } from "./+types/match.nieuw.$token.overzicht";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const { user, draft } = await requireDraftFor(params.token);
-  const overview = await loadDraftOverviewData(draft);
+  const overview = await loadDraftOverviewData(draft, user.favoriteNames);
   const organizerName = formatPersonName({
     firstName: user.firstName,
     lastName: user.lastName,

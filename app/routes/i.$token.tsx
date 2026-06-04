@@ -3,7 +3,7 @@ import {
   findInviteByToken,
   respondToInvite,
 } from "~/lib/cascade/respond.server";
-import { findPlayerByRef } from "~/lib/db.server";
+import { findPlayerByRef, findUserByPhone } from "~/lib/db.server";
 import { formatScheduledAt } from "~/lib/match-defaults";
 import {
   acceptedPlayerRefsOf,
@@ -11,6 +11,8 @@ import {
   openSlotsOf,
 } from "~/types/domain";
 import { isValidInviteTokenShape } from "~/lib/cascade/token";
+import { canonicalRefName } from "~/lib/friend-name.server";
+import { formatPersonName } from "~/lib/person-name";
 import type { Route } from "./+types/i.$token";
 
 type RejectReason =
@@ -39,15 +41,23 @@ export async function loader({ params }: Route.LoaderArgs) {
   const { match, invite, invitee, organiser } = lookup;
 
   const player = await findPlayerByRef(invite.playerRef);
-  const recipientName = player?.name ?? invitee?.profileName ?? "daar";
+  const recipientName = invitee
+    ? formatPersonName({
+        firstName: invitee.firstName,
+        lastName: invitee.lastName,
+        profileName: invitee.profileName,
+        fallback: player?.name ?? "daar",
+      })
+    : (player?.name ?? "daar");
   const firstName = recipientName.split(/\s+/)[0] ?? recipientName;
 
   const acceptedRefs = acceptedPlayerRefsOf(match);
   const acceptedNames: AcceptedName[] = await Promise.all(
     acceptedRefs.map(async (ref) => {
       const p = await findPlayerByRef(ref);
+      const owner = await findUserByPhone(p?.phone ?? ref);
       return {
-        name: p?.name ?? ref,
+        name: canonicalRefName(ref, p, owner ? [owner] : [], ref),
         isSelf: ref === invite.playerRef,
       };
     }),
