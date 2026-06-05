@@ -7,6 +7,7 @@ import {
 } from "react-router";
 import type { Route } from "./+types/match.nieuw.$token";
 import { PlayerAppHeader } from "~/components/player-app-header";
+import { ScrollCenteredStepper } from "~/components/scroll-centered-stepper";
 import { findUserByManageToken } from "~/lib/db.server";
 import { formatPersonName } from "~/lib/person-name";
 import type { Match, User } from "~/types/domain";
@@ -25,7 +26,7 @@ export const MATCH_STEPS: { slug: MatchStepSlug; shortTitle: string }[] = [
   { slug: "wanneer", shortTitle: "Wanneer" },
   { slug: "formaat", shortTitle: "Formaat" },
   { slug: "spelers", shortTitle: "Huidige spelers" },
-  { slug: "uitnodigen", shortTitle: "Uitnodigen" },
+  { slug: "uitnodigen", shortTitle: "Uitnodigingsplan" },
   { slug: "maatjes", shortTitle: "Vrienden uitnodigen" },
   { slug: "bevestigen", shortTitle: "Overzicht" },
 ];
@@ -159,10 +160,17 @@ export default function MatchNieuwLayout({ loaderData }: Route.ComponentProps) {
     profileName: organizer.profileName,
     fallback: "speler",
   });
+  const centerLabel = currentSlug
+    ? MATCH_STEPS.find((s) => s.slug === currentSlug)?.shortTitle
+    : "Nieuwe match";
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <PlayerAppHeader token={token} displayName={displayName}>
+      <PlayerAppHeader
+        token={token}
+        displayName={displayName}
+        centerLabel={centerLabel}
+      >
         {currentSlug !== null && (
           <div className="mx-auto max-w-3xl px-4 pb-3 pt-1 sm:px-6">
             <Stepper currentSlug={currentSlug} />
@@ -189,18 +197,27 @@ function currentStepFromPath(pathname: string): MatchStepSlug | null {
 function Stepper({ currentSlug }: { currentSlug: MatchStepSlug }) {
   const currentIndex = findMatchStepIndex(currentSlug);
   return (
-    <ol className="grid grid-cols-6 gap-0.5" aria-label="Stappen match aanmaken">
-      {MATCH_STEPS.map((step, i) => {
-        const isActive = step.slug === currentSlug;
-        const isDone = i < currentIndex;
-        const state: StepState = isActive ? "active" : isDone ? "done" : "todo";
-        return (
-          <li key={step.slug}>
-            <StepChip label={step.shortTitle} index={i + 1} state={state} />
-          </li>
-        );
-      })}
-    </ol>
+    <ScrollCenteredStepper activeKey={currentSlug}>
+      <ol
+        className="flex min-w-max gap-0.5 md:grid md:min-w-0 md:w-full md:grid-cols-6"
+        aria-label="Stappen match aanmaken"
+      >
+        {MATCH_STEPS.map((step, i) => {
+          const isActive = step.slug === currentSlug;
+          const isDone = i < currentIndex;
+          const state: StepState = isActive ? "active" : isDone ? "done" : "todo";
+          return (
+            <li
+              key={step.slug}
+              className="w-19 shrink-0 md:w-auto md:shrink"
+              data-active-step={isActive ? "true" : undefined}
+            >
+              <StepChip label={step.shortTitle} index={i + 1} state={state} />
+            </li>
+          );
+        })}
+      </ol>
+    </ScrollCenteredStepper>
   );
 }
 

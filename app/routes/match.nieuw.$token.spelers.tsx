@@ -109,7 +109,7 @@ export default function SpelersStep({ loaderData }: Route.ComponentProps) {
         primary={{
           type: "submit",
           form: FORM_ID,
-          label: "Volgende: uitnodigen →",
+          label: "Volgende: uitnodigingsplan →",
           busyLabel: "Opslaan…",
           busy: isSubmitting,
           disabled: cannotContinue,

@@ -60,7 +60,7 @@ export default function UitnodigenStep({ loaderData }: Route.ComponentProps) {
     <>
       <Form id={FORM_ID} method="post" className="space-y-5">
         <header>
-          <h2 className="text-2xl font-bold leading-tight">Uitnodigen</h2>
+          <h2 className="text-2xl font-bold leading-tight">Uitnodigingsplan</h2>
           <p className="mt-1 text-xs text-muted-foreground">
             Kies wie een uitnodiging krijgt en welke extra zoeklagen je
             inschakelt.
@@ -87,7 +87,7 @@ export default function UitnodigenStep({ loaderData }: Route.ComponentProps) {
           type: "submit",
           form: FORM_ID,
           label: friendsOn
-            ? "Volgende: vrienden selecteren →"
+            ? "Volgende: vrienden uitnodigen →"
             : "Volgende: overzicht →",
           busyLabel: "Opslaan…",
           busy: isSubmitting,
