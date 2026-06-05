@@ -14,8 +14,8 @@ const STEP_BULLETS = [
   { title: "Wanneer", sub: "Datum, uur en club" },
   { title: "Formaat", sub: "Mixed, heren of dames" },
   { title: "Huidige spelers", sub: "Wie speelt al mee op de baan" },
-  { title: "Vrienden selecteren", sub: "Vraag vrienden voor open plekken" },
-  { title: "Uitnodigingen", sub: "Eerst vrienden, dan breder zoeken" },
+  { title: "Uitnodigen", sub: "Zoeklagen en vrienden aan/uit" },
+  { title: "Vrienden uitnodigen", sub: "Alleen als je vrienden inschakelt" },
   { title: "Overzicht", sub: "Controleren en match aanmaken" },
 ];
 

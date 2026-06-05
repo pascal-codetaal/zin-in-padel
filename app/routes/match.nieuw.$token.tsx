@@ -6,6 +6,7 @@ import {
   useRouteLoaderData,
 } from "react-router";
 import type { Route } from "./+types/match.nieuw.$token";
+import { PlayerAppHeader } from "~/components/player-app-header";
 import { findUserByManageToken } from "~/lib/db.server";
 import { formatPersonName } from "~/lib/person-name";
 import type { Match, User } from "~/types/domain";
@@ -17,17 +18,42 @@ export type MatchStepSlug =
   | "maatjes"
   | "wanneer"
   | "formaat"
-  | "uitnodigingen"
+  | "uitnodigen"
   | "bevestigen";
 
 export const MATCH_STEPS: { slug: MatchStepSlug; shortTitle: string }[] = [
   { slug: "wanneer", shortTitle: "Wanneer" },
   { slug: "formaat", shortTitle: "Formaat" },
   { slug: "spelers", shortTitle: "Huidige spelers" },
-  { slug: "maatjes", shortTitle: "Vrienden selecteren" },
-  { slug: "uitnodigingen", shortTitle: "Uitnodigingen" },
+  { slug: "uitnodigen", shortTitle: "Uitnodigen" },
+  { slug: "maatjes", shortTitle: "Vrienden uitnodigen" },
   { slug: "bevestigen", shortTitle: "Overzicht" },
 ];
+
+type WizardNavDraft = Pick<Match, "inviteFriendsEnabled"> | null;
+
+/** Next step; skips vrienden selecteren when friends are disabled. */
+export function nextWizardStep(
+  slug: MatchStepSlug,
+  draft: WizardNavDraft,
+): MatchStepSlug | null {
+  if (slug === "uitnodigen") {
+    return draft?.inviteFriendsEnabled ? "maatjes" : "bevestigen";
+  }
+  return nextMatchStep(slug);
+}
+
+/** Previous step; skips vrienden selecteren when friends are disabled. */
+export function prevWizardStep(
+  slug: MatchStepSlug,
+  draft: WizardNavDraft,
+): MatchStepSlug | null {
+  if (slug === "bevestigen") {
+    return draft?.inviteFriendsEnabled ? "maatjes" : "uitnodigen";
+  }
+  if (slug === "maatjes") return "uitnodigen";
+  return prevMatchStep(slug);
+}
 
 export function findMatchStepIndex(slug: MatchStepSlug): number {
   return MATCH_STEPS.findIndex((s) => s.slug === slug);
@@ -52,10 +78,10 @@ export function isMatchStepComplete(
   if (!draft) return false;
   if (slug === "spelers") return true;
   if (slug === "maatjes") return true;
+  if (slug === "uitnodigen") return true;
   if (slug === "wanneer")
     return draft.scheduledAt !== null && draft.clubIds.length > 0;
   if (slug === "formaat") return true; // always has a value
-  if (slug === "uitnodigingen") return true;
   if (slug === "bevestigen") return draft.status !== "draft";
   return false;
 }
@@ -111,21 +137,9 @@ export function useMatchWizardData() {
   return value;
 }
 
-export function meta({ loaderData }: Route.MetaArgs) {
-  const name = loaderData
-    ? formatPersonName({
-        firstName: loaderData.organizer.firstName,
-        lastName: loaderData.organizer.lastName,
-        profileName: loaderData.organizer.profileName,
-        fallback: "speler",
-      })
-    : undefined;
+export function meta() {
   return [
-    {
-      title: name
-        ? `Nieuwe match van ${name} — PadelMatch`
-        : "Nieuwe match — PadelMatch",
-    },
+    { title: "PadelMatch | Nieuwe match" },
     {
       name: "description",
       content: "Plan een nieuwe padel-match en nodig spelers uit",
@@ -136,36 +150,25 @@ export function meta({ loaderData }: Route.MetaArgs) {
 /* ---------- Layout ---------- */
 
 export default function MatchNieuwLayout({ loaderData }: Route.ComponentProps) {
-  const { token } = loaderData;
+  const { token, organizer } = loaderData;
   const location = useLocation();
   const currentSlug = currentStepFromPath(location.pathname);
+  const displayName = formatPersonName({
+    firstName: organizer.firstName,
+    lastName: organizer.lastName,
+    profileName: organizer.profileName,
+    fallback: "speler",
+  });
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 pt-3 sm:px-6">
-          <Link
-            to={`/match/nieuw/${token}`}
-            className="flex items-center gap-2 font-display text-base font-bold"
-          >
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-hero text-primary-foreground shadow-glow">
-              <BallIcon className="h-3.5 w-3.5" />
-            </span>
-            Nieuwe match
-          </Link>
-          <Link
-            to={`/maatjes/${token}`}
-            className="text-xs font-medium text-muted-foreground transition hover:text-foreground"
-          >
-            Vrienden →
-          </Link>
-        </div>
+      <PlayerAppHeader token={token} displayName={displayName}>
         {currentSlug !== null && (
-          <div className="mx-auto max-w-3xl px-4 pb-3 pt-3 sm:px-6">
+          <div className="mx-auto max-w-3xl px-4 pb-3 pt-1 sm:px-6">
             <Stepper currentSlug={currentSlug} />
           </div>
         )}
-      </header>
+      </PlayerAppHeader>
 
       <main className="mx-auto max-w-3xl px-4 pb-32 pt-6 sm:px-6">
         <Outlet />
@@ -266,26 +269,6 @@ function StepBadge({ state, index }: { state: StepState; index: number }) {
 }
 
 /* ---------- Icons ---------- */
-
-function BallIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <circle cx="12" cy="12" r="9" />
-      <path d="M5.4 6.2C8.6 8.6 8.6 15.4 5.4 17.8" />
-      <path d="M18.6 6.2c-3.2 2.4-3.2 9.2 0 11.6" />
-    </svg>
-  );
-}
 
 function CheckIcon({
   className,

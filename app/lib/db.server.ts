@@ -172,6 +172,7 @@ export function matchRowToDomain(row: MatchRow): Match {
     confirmedSlotNames: confirmed,
     invitedFriendRefs: row.invitedPlayers.map((p) => p.playerRef),
     invitedPlayers: row.invitedPlayers.map(invitedRowToDomain),
+    inviteFriendsEnabled: row.inviteFriendsEnabled,
     fallbackToLevelRange: row.fallbackToLevelRange,
     fallbackLevelMin: asLevel(row.fallbackLevelMin),
     fallbackLevelMax: asLevel(row.fallbackLevelMax),
@@ -871,6 +872,7 @@ export type MatchDraftPatch = Partial<
     | "totalSlots"
     | "confirmedSlotNames"
     | "invitedFriendRefs"
+    | "inviteFriendsEnabled"
     | "fallbackToLevelRange"
     | "fallbackLevelMin"
     | "fallbackLevelMax"
@@ -912,6 +914,8 @@ export async function updateMatchDraft(
       data.durationMinutes = patch.durationMinutes;
     if (patch.format !== undefined) data.format = patch.format;
     if (patch.totalSlots !== undefined) data.totalSlots = patch.totalSlots;
+    if (patch.inviteFriendsEnabled !== undefined)
+      data.inviteFriendsEnabled = patch.inviteFriendsEnabled;
     if (patch.fallbackToLevelRange !== undefined)
       data.fallbackToLevelRange = patch.fallbackToLevelRange;
     if (patch.fallbackLevelMin !== undefined)

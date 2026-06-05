@@ -63,6 +63,7 @@ export function makeMatch(overrides: Partial<Match> = {}): Match {
     confirmedSlotNames: ["Organiser"],
     invitedFriendRefs: [],
     invitedPlayers: [],
+    inviteFriendsEnabled: true,
     fallbackToLevelRange: false,
     fallbackLevelMin: null,
     fallbackLevelMax: null,

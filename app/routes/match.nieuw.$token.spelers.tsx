@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Form, Link, redirect, useNavigation } from "react-router";
+import { Form, redirect, useNavigation } from "react-router";
 import { isMaatjeCourtFull } from "~/lib/match-picker";
 import { MatchCourtPicker } from "~/components/match-court-picker";
+import { MatchNewPlayerButton } from "~/components/match-new-player-button";
 import {
   nextMatchStep,
   prevMatchStep,
@@ -85,15 +86,13 @@ export default function SpelersStep({ loaderData }: Route.ComponentProps) {
         </header>
 
         {players.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-border bg-secondary/30 px-4 py-6 text-center text-sm text-muted-foreground">
-            Nog geen vrienden in je lijst.{" "}
-            <Link
-              to={`/maatjes/${token}`}
-              className="font-medium text-foreground underline"
-            >
-              Voeg vrienden toe →
-            </Link>
-          </p>
+          <div className="space-y-4">
+            <p className="rounded-2xl border border-dashed border-border bg-secondary/30 px-4 py-6 text-center text-sm text-muted-foreground">
+              Nog geen vrienden in je lijst. Maak een speler aan om verder te
+              gaan.
+            </p>
+            <MatchNewPlayerButton href={`/maatjes/${token}`} />
+          </div>
         ) : (
           <MatchCourtPicker
             organizerName={organizerName}
@@ -110,7 +109,7 @@ export default function SpelersStep({ loaderData }: Route.ComponentProps) {
         primary={{
           type: "submit",
           form: FORM_ID,
-          label: "Volgende: vrienden selecteren →",
+          label: "Volgende: uitnodigen →",
           busyLabel: "Opslaan…",
           busy: isSubmitting,
           disabled: cannotContinue,

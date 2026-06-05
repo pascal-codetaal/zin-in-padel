@@ -134,6 +134,7 @@ model Match {
   durationMinutes              Int      @default(90)
   format                       String
   totalSlots                   Int      @default(4)
+  inviteFriendsEnabled         Boolean  @default(true)
   fallbackToLevelRange         Boolean  @default(false)
   fallbackLevelMin             Int?
   fallbackLevelMax             Int?

@@ -6,8 +6,9 @@ import {
   type MatchPickerPlayer,
 } from "~/lib/match-picker";
 import { Link } from "react-router";
+import { MatchNewPlayerButton } from "~/components/match-new-player-button";
 import {
-  formatPadelLevel,
+  formatPadelLevelLabel,
   type PadelLevel,
 } from "~/types/domain";
 
@@ -123,6 +124,7 @@ export function MatchCourtPicker({
                 slotIndex={slotIndex}
                 name={player?.name}
                 level={player?.level ?? null}
+                isAppUser={player?.isAppUser ?? false}
                 isActive={isActive}
                 onSelect={() => setActiveSlot(slotIndex)}
                 onClear={() => clearSlot(slotIndex)}
@@ -170,9 +172,10 @@ export function MatchCourtPicker({
                     <span className="w-full truncate text-center text-sm font-medium">
                       {player.name}
                     </span>
-                    {player.level !== null && (
-                      <LevelBadge level={player.level} />
-                    )}
+                    <LevelBadge
+                      level={player.level}
+                      isAppUser={player.isAppUser}
+                    />
                   </button>
                 </li>
               ))}
@@ -195,6 +198,8 @@ export function MatchCourtPicker({
           readOnly
         />
       ))}
+
+      <MatchNewPlayerButton href={maatjesHref} />
     </div>
   );
 }
@@ -202,10 +207,12 @@ export function MatchCourtPicker({
 function CourtSlotDisplay({
   name,
   level,
+  isAppUser = true,
   fixed,
 }: {
   name: string;
   level: PadelLevel | null;
+  isAppUser?: boolean;
   fixed?: boolean;
 }) {
   return (
@@ -214,7 +221,7 @@ function CourtSlotDisplay({
       <span className="w-full truncate text-center text-xs font-medium">
         {name}
       </span>
-      {level !== null && <LevelBadge level={level} />}
+      <LevelBadge level={level} isAppUser={isAppUser} />
     </div>
   );
 }
@@ -223,6 +230,7 @@ function CourtSlotButton({
   slotIndex,
   name,
   level,
+  isAppUser = false,
   isActive,
   onSelect,
   onClear,
@@ -230,6 +238,7 @@ function CourtSlotButton({
   slotIndex: number;
   name?: string;
   level: PadelLevel | null;
+  isAppUser?: boolean;
   isActive: boolean;
   onSelect: () => void;
   onClear: () => void;
@@ -270,7 +279,7 @@ function CourtSlotButton({
           <span className="w-full truncate text-center text-xs font-medium">
             {name}
           </span>
-          {level !== null && <LevelBadge level={level} />}
+          <LevelBadge level={level} isAppUser={isAppUser} />
         </>
       ) : (
         <span className="text-[10px] text-muted-foreground">Plek {slotIndex + 2}</span>
@@ -299,10 +308,16 @@ function PlayerAvatar({
   );
 }
 
-function LevelBadge({ level }: { level: PadelLevel }) {
+function LevelBadge({
+  level,
+  isAppUser = true,
+}: {
+  level: PadelLevel | null;
+  isAppUser?: boolean;
+}) {
   return (
     <span className="inline-flex rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold tabular-nums text-accent-foreground">
-      {formatPadelLevel(level)}
+      {formatPadelLevelLabel(level, isAppUser)}
     </span>
   );
 }

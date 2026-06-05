@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { makeInvite, makeMatch } from "~/lib/cascade/test-fixtures";
 import {
   acceptedPlayerRefsOf,
+  formatPadelLevelLabel,
   isMatchFull,
   openSlotsOf,
   resolveFavoriteName,
@@ -136,5 +137,17 @@ describe("resolveFavoriteName", () => {
     expect(resolveFavoriteName(names, "+32499999999", "Other", "fallback")).toBe(
       "Other",
     );
+  });
+});
+
+describe("formatPadelLevelLabel", () => {
+  it("shows Gast for contacts without a PadelMatch account", () => {
+    expect(formatPadelLevelLabel(null, false)).toBe("Gast");
+    expect(formatPadelLevelLabel(300, false)).toBe("Gast");
+  });
+
+  it("shows level or Ongekend for app users", () => {
+    expect(formatPadelLevelLabel(300, true)).toBe("P300");
+    expect(formatPadelLevelLabel(null, true)).toBe("Ongekend");
   });
 });

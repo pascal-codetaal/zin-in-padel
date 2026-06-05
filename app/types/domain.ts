@@ -144,6 +144,8 @@ export type Match = {
   confirmedSlotNames: string[];
   /** Friend refs invited explicitly (subset of organizer.favoritePlayerRefs). */
   invitedFriendRefs: string[];
+  /** Phase 1: invite selected friends via WhatsApp (wizard default on). */
+  inviteFriendsEnabled: boolean;
   /**
    * Full invite lifecycle for this match — single source of truth for who was
    * invited, in which cascade phase, and how they responded. The set of
@@ -226,6 +228,15 @@ export function levelsForGender(gender: Gender | null): readonly PadelLevel[] {
 /** "P100", "P50", etc. */
 export function formatPadelLevel(level: PadelLevel): string {
   return `P${level}`;
+}
+
+/** Badge on friend tiles in the match wizard. */
+export function formatPadelLevelLabel(
+  level: PadelLevel | null,
+  isAppUser = true,
+): string {
+  if (!isAppUser) return "Gast";
+  return level !== null ? formatPadelLevel(level) : "Ongekend";
 }
 
 /** Compact rating for UI badges, e.g. P270 → "2,7". */

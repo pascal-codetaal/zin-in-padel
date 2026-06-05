@@ -59,14 +59,14 @@ export function MatchDraftOverviewCard({
             editTo={editable ? `/match/nieuw/${token}/spelers` : undefined}
           />
           <OverviewField
-            label="Vrienden selecteren"
+            label="Vrienden uitnodigen"
             value={data.invitedLabel}
             editTo={editable ? `/match/nieuw/${token}/maatjes` : undefined}
           />
           <OverviewField
-            label="Uitnodigingen"
+            label="Uitnodigen"
             value={data.cascadeLabel}
-            editTo={editable ? `/match/nieuw/${token}/uitnodigingen` : undefined}
+            editTo={editable ? `/match/nieuw/${token}/uitnodigen` : undefined}
             className="sm:col-span-2"
           />
         </dl>
