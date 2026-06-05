@@ -4,10 +4,12 @@ import { displayFriendName } from "~/lib/friend-name.server";
 import { formatPersonName } from "~/lib/person-name";
 import type {
   LiveMatchOverviewData,
+  LiveMatchInvite,
   LiveMatchPlayer,
 } from "~/components/match-live-overview";
 import {
   acceptedPlayerRefsOf,
+  formatPadelLevel,
   openSlotsOf,
   type Match,
   type User,
@@ -65,6 +67,28 @@ export async function buildLiveMatchOverviewData(
     }),
   );
   const openSlots = openSlotsOf(match);
+  const invites: LiveMatchInvite[] = [...match.invitedPlayers]
+    .sort((a, b) => {
+      if (a.cascadePhase !== b.cascadePhase) return a.cascadePhase - b.cascadePhase;
+      return (a.sentAt ?? "").localeCompare(b.sentAt ?? "");
+    })
+    .map((invite) => ({
+      id: `${invite.cascadePhase}-${invite.playerRef}`,
+      name: displayFriendName(
+        viewer.favoriteNames,
+        invite.playerRef,
+        playersByRef.get(invite.playerRef),
+        db.users,
+        invite.playerRef,
+      ),
+      status: invite.status,
+      cascadePhase: invite.cascadePhase,
+      sentAt: invite.sentAt,
+      respondedAt: invite.respondedAt,
+    }));
+  const nextBatchLabel = getNextBatchLabel(match);
+  const canInviteNextBatch =
+    match.status === "open" && openSlots > 0 && nextBatchLabel !== null;
 
   return {
     id: match.id,
@@ -77,5 +101,28 @@ export async function buildLiveMatchOverviewData(
     filledSlots: match.totalSlots - openSlots,
     players: [...confirmedRoster, ...acceptedRoster],
     clubs: clubs.map((c) => ({ id: c.id, name: c.name, city: c.city })),
+    invites,
+    cascade: {
+      currentPhase: match.currentCascadePhase,
+      nextCascadeAt: match.nextCascadeAt,
+      canInviteNextBatch,
+      nextBatchLabel,
+    },
   };
+}
+
+function getNextBatchLabel(match: Match): string | null {
+  if (match.currentCascadePhase < 2 && match.fallbackToLevelRange) {
+    const min = match.fallbackLevelMin
+      ? formatPadelLevel(match.fallbackLevelMin)
+      : "?";
+    const max = match.fallbackLevelMax
+      ? formatPadelLevel(match.fallbackLevelMax)
+      : "?";
+    return `spelers op niveau ${min}-${max}`;
+  }
+  if (match.currentCascadePhase < 3 && match.fallbackToEveryone) {
+    return "iedereen";
+  }
+  return null;
 }

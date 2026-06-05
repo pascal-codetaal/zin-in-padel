@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Form, Link, useNavigation } from "react-router";
 import { formatScheduledAt } from "~/lib/match-defaults";
 import {
@@ -31,6 +31,8 @@ export type LiveMatchOverviewData = {
   filledSlots: number;
   clubs: { id: string; name: string; city: string }[];
   players: LiveMatchPlayer[];
+  invites: LiveMatchInvite[];
+  cascade: LiveMatchCascade;
 };
 
 export type MatchLiveOverviewProps = {
@@ -45,6 +47,22 @@ export type MatchLiveOverviewProps = {
     status: MatchInviteStatus;
     canLeave: boolean;
   };
+};
+
+export type LiveMatchInvite = {
+  id: string;
+  name: string;
+  status: MatchInviteStatus;
+  cascadePhase: 1 | 2 | 3;
+  sentAt: string | null;
+  respondedAt: string | null;
+};
+
+export type LiveMatchCascade = {
+  currentPhase: 0 | 1 | 2 | 3;
+  nextCascadeAt: string | null;
+  canInviteNextBatch: boolean;
+  nextBatchLabel: string | null;
 };
 
 function initials(name: string): string {
@@ -159,6 +177,14 @@ export function MatchLiveOverview({
           </InfoCard>
         </section>
 
+        {role === "organiser" && (
+          <InviteReactionPanel
+            invites={match.invites}
+            cascade={match.cascade}
+            isSubmitting={isSubmitting}
+          />
+        )}
+
         {role === "participant" && participant?.canLeave && (
           <Form method="post" className="rounded-2xl border border-border bg-card p-4 shadow-soft">
             <input type="hidden" name="intent" value="leave" />
@@ -212,6 +238,137 @@ export function MatchLiveOverview({
         </div>
       )}
     </div>
+  );
+}
+
+function InviteReactionPanel({
+  invites,
+  cascade,
+  isSubmitting,
+}: {
+  invites: LiveMatchInvite[];
+  cascade: LiveMatchCascade;
+  isSubmitting: boolean;
+}) {
+  const [showAll, setShowAll] = useState(false);
+  const declinedInvites = invites.filter((invite) => invite.status === "declined");
+  const visibleInvites = showAll ? invites : declinedInvites;
+
+  return (
+    <section className="space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-base font-semibold">Uitnodigingen</h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Standaard tonen we wie liet weten dat ze niet kunnen.
+          </p>
+        </div>
+        <span className="rounded-full border border-border bg-secondary/40 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+          Fase {cascade.currentPhase}
+        </span>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-card p-3 shadow-soft">
+        {invites.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Er zijn nog geen uitnodigingen verstuurd.
+          </p>
+        ) : visibleInvites.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Nog niemand heeft laten weten dat ze niet kunnen.
+          </p>
+        ) : (
+          <ul className="divide-y divide-border/70">
+            {visibleInvites.map((invite) => (
+              <li
+                key={invite.id}
+                className="flex items-center justify-between gap-3 py-2 first:pt-0 last:pb-0"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{invite.name}</p>
+                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                    Batch {invite.cascadePhase}
+                  </p>
+                </div>
+                <InviteStatusBadge invite={invite} />
+              </li>
+            ))}
+          </ul>
+        )}
+        {invites.length > declinedInvites.length && (
+          <button
+            type="button"
+            onClick={() => setShowAll((value) => !value)}
+            className="mt-3 text-xs font-medium text-accent transition hover:text-accent-foreground"
+          >
+            {showAll
+              ? "Toon alleen wie niet kan"
+              : `Toon alle uitnodigingen (${invites.length})`}
+          </button>
+        )}
+      </div>
+
+      <div className="rounded-2xl border border-border bg-secondary/20 px-4 py-3">
+        {cascade.canInviteNextBatch && cascade.nextBatchLabel ? (
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-muted-foreground">
+              Volgende batch beschikbaar:{" "}
+              <span className="font-medium text-foreground">
+                {cascade.nextBatchLabel}
+              </span>
+            </p>
+            <Form method="post">
+              <input type="hidden" name="intent" value="skip-phase" />
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="inline-flex h-9 items-center justify-center rounded-full bg-accent px-4 text-xs font-semibold text-accent-foreground transition hover:bg-accent/90 disabled:opacity-50"
+              >
+                {isSubmitting ? "Bezig..." : "Nodig volgende batch uit"}
+              </button>
+            </Form>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            Er is geen volgende batch beschikbaar voor deze match.
+          </p>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function InviteStatusBadge({ invite }: { invite: LiveMatchInvite }) {
+  const label =
+    invite.status === "accepted"
+      ? "Doet mee"
+      : invite.status === "declined"
+        ? "Kan niet"
+        : invite.status === "expired"
+          ? "Verlopen"
+          : "Nog geen reactie";
+  const style =
+    invite.status === "accepted"
+      ? "border-emerald-300 bg-emerald-100 text-emerald-900"
+      : invite.status === "declined"
+        ? "border-amber-300 bg-amber-50 text-amber-900"
+        : invite.status === "expired"
+          ? "border-border bg-secondary text-muted-foreground"
+          : "border-border bg-card text-muted-foreground";
+
+  return (
+    <span
+      title={
+        invite.respondedAt
+          ? `Gereageerd: ${new Date(invite.respondedAt).toLocaleString("nl-BE")}`
+          : invite.sentAt
+            ? `Verstuurd: ${new Date(invite.sentAt).toLocaleString("nl-BE")}`
+            : undefined
+      }
+      className={`inline-flex flex-none rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide ${style}`}
+    >
+      {label}
+    </span>
   );
 }
 

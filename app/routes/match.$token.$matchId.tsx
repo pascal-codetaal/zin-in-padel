@@ -10,6 +10,7 @@ import type { Match, User } from "~/types/domain";
 import {
   cancelMatchAsOrganiser,
   removePlayerFromMatch,
+  skipCascadePhase,
 } from "~/lib/cascade/organiser.server";
 import type { Route } from "./+types/match.$token.$matchId";
 
@@ -77,6 +78,11 @@ export async function action({ request, params }: Route.ActionArgs) {
       confirmedSlotName: confirmedSlotName || undefined,
       now,
     });
+    return redirect(`/match/${token}/${match.id}`);
+  }
+
+  if (intent === "skip-phase") {
+    await skipCascadePhase({ matchId: match.id, now });
     return redirect(`/match/${token}/${match.id}`);
   }
 
