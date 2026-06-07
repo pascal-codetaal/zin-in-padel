@@ -2,3 +2,13 @@
 build
 node_modules
 README.md
+
+# Not needed by the build (react-router build + prisma generate); excluded so
+# `flyctl deploy --remote-only` doesn't upload them to the remote builder.
+.git
+.github
+.env
+.env.*
+data
+docs
+*.md
