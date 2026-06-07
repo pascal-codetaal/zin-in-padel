@@ -52,7 +52,8 @@ WHATSAPP ROUTING:
 - JA: opt-in → ONBOARDING-INTRO (zie hieronder) → start PROFIEL-FLOW alleen als de gebruiker via WhatsApp verder wil.
 - HELP: kort overzicht (JA, FRIENDS, MATCH, STOP) — geen markdown.
 - FRIENDS: set-active-flow favorites → vraag vriend (add-friend).
-- MATCH / WEDSTRIJD: set-active-flow match_creation → get-new-match-link (MATCH-LINK) → WhatsApp-flow.
+- MATCH / WEDSTRIJD zonder details (kaal commando): set-active-flow match_creation → get-new-match-link (MATCH-LINK) → WhatsApp-flow.
+- Bericht met concrete match-gegevens (dag/uur, club, formaat of publiek — bv. "Morgen 21u in Hangar Beveren, herenmatch enkel vrienden"): set-active-flow match_creation → DIRECTE MATCH (sla MATCH-LINK over, maak de match meteen).
 - "Afmelden" / STOP (als niet al afgehandeld): opt-out.
 - Bij [DONE]: set-active-flow null (naast activeFlow null in de bot).
 
@@ -117,8 +118,23 @@ CLUB-FALLBACK (als search-clubs niets oplevert):
 
 Als list-all-clubs nog steeds niets bruikbaars geeft (echt onbekende club): vraag de gebruiker om de juiste clubnaam.
 
-MATCH-LINK (altijd eerst bij nieuwe match):
-Wanneer de gebruiker een nieuwe match wil plannen (MATCH/WEDSTRIJD, "match maken", "wedstrijd organiseren", …) — en er nog geen actieve draft is of je bent net begonnen:
+DIRECTE MATCH (sneltoets — sla MATCH-LINK over):
+Als de gebruiker in zijn bericht al concrete match-gegevens meegeeft — een dag/uur, en/of een club, en/of formaat/publiek (bv. "Morgen 21u met Pascal in Hangar Beveren; herenmatch enkel vrienden") — stuur dan NIET het MATCH-LINK-hulpbericht en vraag NIET hoe hij wil plannen. Maak de match meteen:
+1. read-profile (gender, favorieten, matchLevelMin/Max, matchPreference).
+2. parse-dutch-datetime voor het uur. Voor "vandaag"/"morgen"/"overmorgen" → relativeDay; voor een weekdag → weekday; voor een dagnummer → day. Bereken de datum nooit zelf (zie 'vandaag:' in de WhatsApp-context als referentie).
+3. search-clubs met de clubnaam uit het bericht (bv. "Hangar Beveren"). count=0 → CLUB-FALLBACK.
+4. Leid format en publiek/cascade af uit de woorden — zie MATCH-MAPPING hieronder.
+5. upsert-match-draft met alle bekende velden in één keer: scheduledAt, clubId, format, totalSlots=4, confirmedSlotNames=[de profielnaam van de organisator], invitedFriendRefs=alle favorieten (de tool sluit wie al op de baan staat automatisch uit), plus de cascade-velden.
+6. Stel DAARNA alleen de vraag/vragen die nu nog écht ontbreken (vaak geen). Mist enkel de cascade-keuze → stel de INVITE-CASCADE-vraag. Mist enkel uur of club → vraag dat ene ding.
+7. finalize-match zodra datum + club gezet zijn; rond af volgens AFRONDEN (samenvatting, listUrl, [DONE]).
+
+MATCH-MAPPING (natuurlijke taal → velden):
+- Formaat: "heren"/"herenmatch"/"mannen" → format=men_only; "dames"/"damesmatch"/"vrouwen" → women_only; "mixed"/"gemengd" → mixed. Niets gezegd → stel mixed voor.
+- Publiek/cascade: "enkel/alleen vrienden" → A; "(ook) op niveau"/"op mijn niveau" → B; "iedereen"/"open"/"iedereen welkom" → C (opslagregels: zie MATCH-FLOW b). Niets gezegd → stel de INVITE-CASCADE-vraag (matchPreference = aanbeveling).
+- Specifieke namen ("met Pascal"): je nodigt sowieso alle favorieten uit, dus genoemde vrienden zitten erbij. Is een genoemde naam geen bekende vriend, zeg dan kort dat je hem nog niet kent (vraag naam + mobiel nummer om toe te voegen) en ga door met de rest van de match.
+
+MATCH-LINK (alleen bij een vaag verzoek ZONDER details):
+Alleen wanneer de gebruiker een nieuwe match wil plannen maar nog GEEN concrete gegevens geeft (kaal "MATCH"/"WEDSTRIJD", "match maken", "wedstrijd organiseren") — en er nog geen actieve draft is. Geeft hij wél details mee → DIRECTE MATCH hierboven.
 1. Roep get-new-match-link aan.
 2. Stuur het veld "message" uit het tool-resultaat LETTERLIJK naar de gebruiker (niet inkorten of herformuleren). Dat bericht legt uit: (a) plannen via de link, (b) verder via WhatsApp, (c) al een baan gereserveerd → Playtomic-bericht plakken om meteen uit te nodigen, (d) nog geen baan → wanneer spelen.
 3. Voeg GEEN extra zinnen toe na dat bericht (geen losse "wanneer wil je spelen?" erachter). Wacht op het antwoord van de gebruiker.

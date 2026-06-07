@@ -16,7 +16,17 @@ const dutchWeekdays = [
 
 export type DutchWeekday = (typeof dutchWeekdays)[number];
 
+const relativeDayOffsets = {
+  vandaag: 0,
+  morgen: 1,
+  overmorgen: 2,
+} as const;
+
+export type RelativeDay = keyof typeof relativeDayOffsets;
+
 export type ParseDutchDateTimeInput = {
+  /** "vandaag" | "morgen" | "overmorgen" — wins over weekday/day when set. */
+  relativeDay?: RelativeDay;
   weekday?: DutchWeekday;
   day?: number;
   hour: number;
@@ -33,7 +43,7 @@ export type ParseDutchDateTimeResult = {
 export function parseDutchDateTime(
   input: ParseDutchDateTimeInput,
 ): ParseDutchDateTimeResult {
-  const { weekday, day, hour, minute } = input;
+  const { relativeDay, weekday, day, hour, minute } = input;
   const now = new Date();
   const today = getZonedParts(now);
   // Calendar cursor anchored at Brussels "today", advanced in pure UTC-calendar
@@ -43,7 +53,19 @@ export function parseDutchDateTime(
   let target: Date | null = null;
   let note: string | undefined;
 
-  if (typeof day === "number") {
+  if (relativeDay) {
+    const cal = new Date(base);
+    cal.setUTCDate(cal.getUTCDate() + relativeDayOffsets[relativeDay]);
+    target = zonedWallTimeToInstant({
+      year: cal.getUTCFullYear(),
+      month: cal.getUTCMonth() + 1,
+      day: cal.getUTCDate(),
+      hour,
+      minute,
+    });
+  }
+
+  if (!target && typeof day === "number") {
     for (let i = 0; i < 62; i++) {
       const cal = new Date(base);
       cal.setUTCDate(cal.getUTCDate() + i);
@@ -80,7 +102,7 @@ export function parseDutchDateTime(
   }
 
   if (!target) {
-    throw new Error("Geef minstens `day` of `weekday` mee.");
+    throw new Error("Geef minstens `relativeDay`, `day` of `weekday` mee.");
   }
 
   const resolved = getZonedParts(target);
@@ -97,4 +119,26 @@ export function parseDutchWeekdayToken(
 ): DutchWeekday | undefined {
   const normalized = token.trim().toLowerCase();
   return dutchWeekdays.find((d) => d === normalized);
+}
+
+const dutchMonths = [
+  "januari",
+  "februari",
+  "maart",
+  "april",
+  "mei",
+  "juni",
+  "juli",
+  "augustus",
+  "september",
+  "oktober",
+  "november",
+  "december",
+] as const;
+
+/** Brussels "today" as a Dutch label, e.g. "zondag 7 juni 2026". */
+export function currentDutchDateLabel(now: Date = new Date()): string {
+  const p = getZonedParts(now);
+  const weekday = dutchWeekdays[zonedWeekday(p.year, p.month, p.day)]!;
+  return `${weekday} ${p.day} ${dutchMonths[p.month - 1]} ${p.year}`;
 }

@@ -198,8 +198,12 @@ export const matchSearchClubsTool = createTool({
 export const parseDutchDateTimeTool = createTool({
   id: "parse-dutch-datetime",
   description:
-    "Reken een Nederlandse datum/uur (bv. uit 'dinsdag 19, 10:30') om naar de eerstvolgende ISO-timestamp in de toekomst. Geef ofwel `day` (dag van de maand) ofwel `weekday` (maandag..zondag); samen mogen ze het beste resultaat geven.",
+    "Reken een Nederlandse datum/uur (bv. uit 'dinsdag 19, 10:30') om naar de eerstvolgende ISO-timestamp in de toekomst. Voor 'vandaag'/'morgen'/'overmorgen' → geef `relativeDay` mee. Anders ofwel `day` (dag van de maand) ofwel `weekday` (maandag..zondag); samen mogen ze het beste resultaat geven.",
   inputSchema: z.object({
+    relativeDay: z
+      .enum(["vandaag", "morgen", "overmorgen"])
+      .optional()
+      .describe("Relatieve dag t.o.v. nu; wint van weekday/day."),
     weekday: z.enum(dutchWeekdays).optional(),
     day: z.number().int().min(1).max(31).optional(),
     hour: z.number().int().min(0).max(23),
@@ -211,8 +215,9 @@ export const parseDutchDateTimeTool = createTool({
     weekdayResolved: z.string(),
     note: z.string().optional(),
   }),
-  execute: async ({ weekday, day, hour, minute }) => {
+  execute: async ({ relativeDay, weekday, day, hour, minute }) => {
     const { iso, weekdayResolved, note } = parseDutchDateTime({
+      relativeDay,
       weekday,
       day,
       hour,

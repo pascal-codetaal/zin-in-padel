@@ -23,6 +23,7 @@ import {
   sendWhatsAppTypingIndicator,
 } from "~/lib/whatsapp-messaging.server";
 import { resolveAppOriginFromRequest } from "~/lib/app-origin.server";
+import { currentDutchDateLabel } from "~/lib/dutch-datetime.server";
 import { formatPersonName, firstNameFromDisplayName } from "~/lib/person-name";
 import {
   applyPlaytomicPasteToDraft,
@@ -83,6 +84,7 @@ function buildAgentMessage(
     `onboardingComplete: ${user.onboardingComplete}`,
     `activeFlow: ${user.activeFlow ?? "none"}`,
     `isNewUser: ${isNewUser}`,
+    `vandaag: ${currentDutchDateLabel()}`,
   ];
 
   if (playtomicPrefill?.applied) {
