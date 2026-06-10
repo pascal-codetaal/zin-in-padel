@@ -39,6 +39,19 @@ duration, format (mixed / men_only / women_only), and `totalSlots` (always 4
 for padel). Carries the cascade configuration (see Cascade below) plus
 runtime cascade state (`currentCascadePhase`, `nextCascadeAt`).
 
+### Match Opening
+The draft → open transition of a Match — the cascade kickoff. Owned by a
+single module: `openMatch(matchId, now)` in
+`app/lib/cascade/open-match.server.ts` (pure openability decision in
+`open-match.ts`). On open: phase-1 Match Invites are dispatched and the
+fallback phase events are scheduled, with one `now` threading all steps.
+Openable = status `draft` + `scheduledAt` set + ≥1 club. Only a draft can
+open: the status flip is conditional (`WHERE status='draft'`), so re-taps
+and agent retries get `already-open` with the live Match instead of
+shifting cascade deadlines. I/O failures after the flip propagate to the
+caller; retrying `openMatch` is safe. Callers: wizard bevestigen step,
+matchCreator agent tool, real-device setup scripts.
+
 ### Match Invite
 An ask sent to one specific Player to fill one open slot of one Match.
 Stored as `MatchInvitedPlayer` rows — the **single source of truth** for

@@ -2,14 +2,8 @@ import type { ReactNode } from "react";
 import { Form, Link, redirect, useNavigation } from "react-router";
 import { prevWizardStep, useMatchWizardData } from "./match.nieuw.$token";
 import { requireDraftFor } from "~/lib/match-wizard.server";
-import {
-  finalizeMatchDraft,
-  getDatabase,
-} from "~/lib/db.server";
-import {
-  dispatchOrEnqueueInvites,
-  scheduleCascadeFallbackEvents,
-} from "~/lib/cascade/dispatch.server";
+import { getDatabase } from "~/lib/db.server";
+import { openMatch } from "~/lib/cascade/open-match.server";
 import { formatScheduledAt } from "~/lib/match-defaults";
 import {
   formatMatchFormat,
@@ -65,19 +59,17 @@ export async function loader({ params }: Route.LoaderArgs) {
 export async function action({ request, params }: Route.ActionArgs) {
   const { draft } = await requireDraftFor(params.token);
 
-  if (!draft.scheduledAt || draft.clubIds.length === 0) {
-    return redirect(`/match/nieuw/${params.token}/wanneer`);
-  }
-
   const form = await request.formData();
   const intent = form.get("intent")?.toString();
 
   if (intent === "create") {
-    const finalized = await finalizeMatchDraft(draft.id, "open");
-    await dispatchOrEnqueueInvites(finalized.id, new Date());
-    await scheduleCascadeFallbackEvents(finalized.id);
+    const result = await openMatch(draft.id, new Date());
+    if (!result || result.kind === "not-openable") {
+      // Incomplete or vanished draft — back to step 1.
+      return redirect(`/match/nieuw/${params.token}/wanneer`);
+    }
     return redirect(
-      buildMatchDetailUrl(request, params.token!, finalized.id),
+      buildMatchDetailUrl(request, params.token!, result.match.id),
     );
   }
 

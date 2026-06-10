@@ -10,7 +10,6 @@ import {
   findDraftMatch,
   findOrCreateDraftMatch,
   findUserById,
-  finalizeMatchDraft,
   getDatabase,
   updateMatchDraft,
 } from "~/lib/db.server";
@@ -18,10 +17,7 @@ import {
   buildMaatjesPageUrl,
   buildMatchDetailUrl,
 } from "~/lib/vrienden-url.server";
-import {
-  dispatchOrEnqueueInvites,
-  scheduleCascadeFallbackEvents,
-} from "~/lib/cascade/dispatch.server";
+import { openMatch } from "~/lib/cascade/open-match.server";
 import { resolveAppOrigin } from "~/lib/app-origin.server";
 import {
   filterInvitableFriendRefs,
@@ -446,16 +442,22 @@ export const finalizeMatchTool = createTool({
 
     const draft = await findDraftMatch(userId);
     if (!draft) return { ok: false, error: "no_draft" };
-    if (!draft.scheduledAt || draft.clubIds.length === 0) {
-      return { ok: false, error: "draft_incomplete" };
-    }
 
-    const finalized = await finalizeMatchDraft(draft.id, "open");
-    // Phase E.0: fire phase-1 invite messages now that the match is live.
+    // Match opening: status flip + phase-1 invites + fallback scheduling.
     // Safe to await — POC scale, and surfacing failures to the agent turn
-    // is better than silently dropping invites.
-    await dispatchOrEnqueueInvites(finalized.id, new Date());
-    await scheduleCascadeFallbackEvents(finalized.id);
+    // is better than silently dropping invites. Idempotent on retry.
+    const result = await openMatch(draft.id, new Date());
+    if (!result) return { ok: false, error: "no_draft" };
+    if (result.kind === "not-openable") {
+      return {
+        ok: false,
+        error:
+          result.reason === "cancelled"
+            ? "draft_cancelled"
+            : "draft_incomplete",
+      };
+    }
+    const finalized = result.match;
     const clubs = await getClubsByIds(draft.clubIds);
     const db = await getDatabase();
     const inviteeNames = finalized.invitedFriendRefs
@@ -489,9 +491,13 @@ export const finalizeMatchTool = createTool({
           ? "1 open plaats."
           : `${openSlots} open plaatsen.`;
 
-    const summary = `${summaryParts.join(" ")}. ${slotsLine}${
+    const baseSummary = `${summaryParts.join(" ")}. ${slotsLine}${
       inviteeNames ? ` Uitgenodigd: ${inviteeNames}.` : ""
     }`;
+    const summary =
+      result.kind === "already-open"
+        ? `Deze match staat al open. ${baseSummary}`
+        : baseSummary;
 
     const appOrigin = resolveAppOrigin(context);
     const listUrl = buildMatchDetailUrl(

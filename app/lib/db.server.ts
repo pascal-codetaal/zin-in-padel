@@ -968,29 +968,42 @@ export async function updateMatchDraft(
   });
 }
 
+/**
+ * Flip a draft Match to `open`, computing its initial cascade schedule.
+ *
+ * The status flip is conditional on `status = 'draft'` so concurrent or
+ * repeated opens cannot re-run the cascade computation and shift phase
+ * deadlines: when the Match is missing or no longer a draft this returns
+ * `null` and writes nothing. `now` is injected by the caller (ADR-0004)
+ * and threads the whole Match-opening kickoff.
+ */
 export async function finalizeMatchDraft(
   matchId: string,
-  status: MatchStatus = "open",
-): Promise<Match> {
-  const now = new Date();
-
+  now: Date,
+): Promise<Match | null> {
   // Load the draft so the cascade helper can decide the initial schedule
   // (phase 1 is implicit at finalize; nextCascadeAt depends on which
   // fallbacks are enabled).
-  const draftRow = await prisma.match.findUniqueOrThrow({
+  const draftRow = await prisma.match.findUnique({
     where: { id: matchId },
     include: MATCH_INCLUDE,
   });
+  if (!draftRow) return null;
   const cascade = computeInitialCascadeState(matchRowToDomain(draftRow), now);
 
-  const row = await prisma.match.update({
-    where: { id: matchId },
+  const flipped = await prisma.match.updateMany({
+    where: { id: matchId, status: "draft" },
     data: {
-      status,
+      status: "open",
       currentCascadePhase: cascade.currentCascadePhase,
       nextCascadeAt: cascade.nextCascadeAt,
       updatedAt: now,
     },
+  });
+  if (flipped.count === 0) return null;
+
+  const row = await prisma.match.findUniqueOrThrow({
+    where: { id: matchId },
     include: MATCH_INCLUDE,
   });
   return matchRowToDomain(row);

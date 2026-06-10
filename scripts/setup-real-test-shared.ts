@@ -8,11 +8,7 @@ import { prisma } from "../app/lib/prisma.server";
 import { createManageToken } from "../app/lib/vrienden-url.server";
 import { playerRefFromPhone } from "../app/types/domain";
 import { createInviteToken } from "../app/lib/cascade/token";
-import { finalizeMatchDraft } from "../app/lib/db.server";
-import {
-  dispatchOrEnqueueInvites,
-  scheduleCascadeFallbackEvents,
-} from "../app/lib/cascade/dispatch.server";
+import { openMatch } from "../app/lib/cascade/open-match.server";
 
 export type Person = {
   firstName: string;
@@ -192,18 +188,18 @@ export async function runSetup(args: {
   });
   console.log("✓ Draft match created:", matchId);
 
-  // ---- Finalise → phase=1, schedules phase-2 tick ----
-  const finalised = await finalizeMatchDraft(matchId, "open");
+  // ---- Open → phase=1, dispatches phase-1 invite, schedules fallback ticks ----
+  const opened = await openMatch(matchId, new Date());
+  if (!opened || opened.kind !== "opened") {
+    throw new Error(
+      `expected to open draft, got: ${opened ? opened.kind : "not-found"}`,
+    );
+  }
   console.log(
-    "✓ Finalised match. currentCascadePhase:",
-    finalised.currentCascadePhase,
+    "✓ Opened match. currentCascadePhase:",
+    opened.match.currentCascadePhase,
   );
-  console.log("  nextCascadeAt:", finalised.nextCascadeAt);
-
-  // ---- Dispatch phase-1 invite ----
-  const result = await dispatchOrEnqueueInvites(matchId, new Date());
-  await scheduleCascadeFallbackEvents(matchId);
-  console.log("✓ Dispatch result:", result);
+  console.log("  nextCascadeAt:", opened.match.nextCascadeAt);
 
   console.log(`\nDone. ${organiserName} invited ${inviteeName}.`);
   console.log(`Check WhatsApp on ${invitee.phone}.`);

@@ -196,7 +196,8 @@ async function main(): Promise<void> {
     fallbackEveryoneDelayMinutes: 60,
   });
 
-  const finalized = await finalizeMatchDraft(draft.id);
+  const finalized = await finalizeMatchDraft(draft.id, NOW);
+  if (!finalized) throw new Error("draft should flip to open");
   assert(
     finalized.currentCascadePhase === 1,
     `phase 1 should be active after finalize, got ${finalized.currentCascadePhase}`,
